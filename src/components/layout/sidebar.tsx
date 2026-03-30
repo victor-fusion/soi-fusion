@@ -1,36 +1,143 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, Startup } from "@/types";
 import { AREAS } from "@/constants/areas";
 import {
-  Text,
-  Group,
-  Box,
-  Avatar,
-  UnstyledButton,
-  ScrollArea,
-  Tooltip,
+  Text, Box, Avatar, UnstyledButton, ScrollArea, Tooltip, Group,
 } from "@mantine/core";
 import {
-  IconLayoutDashboard,
-  IconMap,
-  IconBook2,
-  IconUsers,
-  IconRobot,
-  IconLogout,
-  IconChevronRight,
+  IconLayoutDashboard, IconLogout, IconChevronRight,
+  IconChevronDown, IconSearch, IconTarget, IconBox,
+  IconTrendingUp, IconCoin, IconScale, IconSettings, IconUsers,
 } from "@tabler/icons-react";
+
+const AREA_ICONS: Record<string, typeof IconTarget> = {
+  estrategia:  IconTarget,
+  producto:    IconBox,
+  growth:      IconTrendingUp,
+  finanzas:    IconCoin,
+  legal:       IconScale,
+  operaciones: IconSettings,
+  equipo:      IconUsers,
+};
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Panel del Ciclo", icon: IconLayoutDashboard, exact: true },
-  { href: "/dashboard/roadmap", label: "Roadmap", icon: IconMap },
-  { href: "/dashboard/recursos", label: "Recursos", icon: IconBook2 },
-  { href: "/dashboard/crm", label: "CRM", icon: IconUsers },
-  { href: "/dashboard/agente", label: "Agente SDR", icon: IconRobot, badge: "IA" },
 ];
+
+// ─── Componente interno que usa useSearchParams ───────────────
+// Necesita estar separado para que Suspense funcione correctamente
+
+interface AreasAccordionProps {
+  expandedArea: string | null;
+  setExpandedArea: (id: string | null) => void;
+  pathname: string;
+  isSearching: boolean;
+  visibleAreas: typeof AREAS;
+}
+
+function AreasAccordion({
+  expandedArea,
+  setExpandedArea,
+  pathname,
+  isSearching,
+  visibleAreas,
+}: AreasAccordionProps) {
+  const searchParams = useSearchParams();
+  const activeSection = searchParams.get("section");
+
+  return (
+    <>
+      {visibleAreas.map((area) => {
+        const isAreaActive = pathname.startsWith(`/dashboard/recursos/${area.id}`);
+        const isExpanded = isSearching || expandedArea === area.id;
+
+        return (
+          <Box key={area.id} mb={2}>
+            <UnstyledButton
+              w="100%"
+              px={10}
+              py={7}
+              onClick={() => {
+                if (!isSearching) {
+                  setExpandedArea(isExpanded ? null : area.id);
+                }
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                borderRadius: 8,
+                cursor: "pointer",
+                backgroundColor: "transparent",
+              }}
+            >
+              {(() => { const Icon = AREA_ICONS[area.id] ?? IconBox; return <Icon size={15} color={area.color} style={{ flexShrink: 0 }} />; })()}
+              <Text
+                style={{
+                  fontSize: "13px",
+                  fontWeight: isAreaActive ? 700 : 500,
+                  color: isAreaActive ? "#111827" : "#374151",
+                  flex: 1,
+                }}
+              >
+                {area.name}
+              </Text>
+              <IconChevronDown
+                size={13}
+                color="#9ca3af"
+                style={{
+                  transform: isExpanded ? "rotate(180deg)" : "none",
+                  transition: "transform 0.15s",
+                  flexShrink: 0,
+                }}
+              />
+            </UnstyledButton>
+
+            {isExpanded && (
+              <Box pl={28} pb={4}>
+                {area.sections.map((section) => {
+                  const isSectionActive =
+                    isAreaActive &&
+                    pathname === `/dashboard/recursos/${area.id}` &&
+                    activeSection === section.id;
+
+                  return (
+                    <UnstyledButton
+                      key={section.id}
+                      component={Link}
+                      href={`/dashboard/recursos/${area.id}?section=${section.id}`}
+                      w="100%"
+                      px={10}
+                      py={5}
+                      style={{ display: "block", borderRadius: 6, textDecoration: "none" }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: "13px",
+                          color: isSectionActive ? "#111827" : "#9ca3af",
+                          fontWeight: isSectionActive ? 600 : 400,
+                        }}
+                      >
+                        {section.name}
+                      </Text>
+                    </UnstyledButton>
+                  );
+                })}
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+    </>
+  );
+}
+
+// ─── Sidebar principal ────────────────────────────────────────
 
 interface SidebarProps {
   profile: Profile;
@@ -40,6 +147,13 @@ interface SidebarProps {
 export function Sidebar({ profile, startup }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [expandedArea, setExpandedArea] = useState<string | null>(null);
+
+  useEffect(() => {
+    const match = pathname.match(/\/dashboard\/recursos\/([^/?]+)/);
+    if (match?.[1]) setExpandedArea(match[1]);
+  }, [pathname]);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -52,6 +166,28 @@ export function Sidebar({ profile, startup }: SidebarProps) {
     router.push("/login");
     router.refresh();
   };
+
+  const searchTerm = search.trim().toLowerCase();
+
+  const visibleAreas = searchTerm
+    ? AREAS.map((area) => ({
+        ...area,
+        sections: area.sections.filter(
+          (s) =>
+            s.name.toLowerCase().includes(searchTerm) ||
+            area.name.toLowerCase().includes(searchTerm)
+        ),
+      })).filter((a) => a.sections.length > 0)
+    : AREAS;
+
+  const isSearching = searchTerm.length > 0;
+
+  const initials = profile.full_name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <Box
@@ -68,48 +204,18 @@ export function Sidebar({ profile, startup }: SidebarProps) {
       }}
     >
       {/* Logo */}
-      <Box px={20} py={20}>
-        <Text style={{ fontSize: "13px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#16a34a" }}>
-          Fusión Startups
-        </Text>
-        <Text style={{ fontSize: "12px", color: "#9ca3af", marginTop: 2 }}>
-          SOI · Ciclo 5
+      <Box px={20} py={18}>
+        <Text style={{ fontSize: "16px", color: "#111827" }}>
+          <Text component="span" style={{ fontWeight: 800 }}>SOI</Text>
+          {" "}
+          <Text component="span" style={{ fontWeight: 400 }}>Fusión</Text>
         </Text>
       </Box>
 
-      {/* Startup */}
-      {startup && (
-        <Box px={12} pb={12}>
-          <Box
-            p={12}
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 10,
-              border: "1px solid #f3f4f6",
-            }}
-          >
-            <Text style={{ fontSize: "11px", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Tu startup
-            </Text>
-            <Text style={{ fontSize: "14px", fontWeight: 600, color: "#111827", marginTop: 2 }} truncate>
-              {startup.name}
-            </Text>
-            <Group gap={6} mt={4}>
-              <Box
-                style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#16a34a", flexShrink: 0 }}
-              />
-              <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                Fase {startup.current_phase} de 6
-              </Text>
-            </Group>
-          </Box>
-        </Box>
-      )}
-
       <ScrollArea flex={1} px={12}>
 
-        {/* Nav principal */}
-        <Box mb={8}>
+        {/* Panel del Ciclo */}
+        <Box mb={12}>
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
@@ -121,7 +227,6 @@ export function Sidebar({ profile, startup }: SidebarProps) {
                 w="100%"
                 px={10}
                 py={8}
-                mb={2}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -139,65 +244,68 @@ export function Sidebar({ profile, startup }: SidebarProps) {
                 <Text style={{ fontSize: "14px", fontWeight: active ? 600 : 500, flex: 1, color: "inherit" }}>
                   {item.label}
                 </Text>
-                {item.badge && (
-                  <Box
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      padding: "1px 6px",
-                      borderRadius: 4,
-                      backgroundColor: "#fff7ed",
-                      color: "#ea580c",
-                    }}
-                  >
-                    {item.badge}
-                  </Box>
-                )}
                 {active && <IconChevronRight size={12} color="#16a34a" />}
               </UnstyledButton>
             );
           })}
         </Box>
 
-        {/* 7 Áreas */}
-        <Box pt={8} style={{ borderTop: "1px solid #f3f4f6" }}>
+        {/* Buscador */}
+        <Box mb={16} style={{ position: "relative" }}>
+          <IconSearch
+            size={13}
+            color="#9ca3af"
+            style={{
+              position: "absolute",
+              left: 10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+            }}
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar secciones..."
+            style={{
+              width: "100%",
+              padding: "7px 10px 7px 30px",
+              fontSize: 13,
+              borderRadius: 8,
+              border: "1px solid #f3f4f6",
+              backgroundColor: "#f3f4f6",
+              color: "#374151",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </Box>
+
+        {/* Áreas */}
+        <Box>
           <Text
             px={10}
             mb={6}
-            style={{ fontSize: "11px", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "#9ca3af",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
           >
-            7 Áreas
+            Áreas
           </Text>
-          {AREAS.map((area) => {
-            const active = pathname === `/dashboard/recursos/${area.id}`;
-            return (
-              <UnstyledButton
-                key={area.id}
-                component={Link}
-                href={`/dashboard/recursos/${area.id}`}
-                w="100%"
-                px={10}
-                py={7}
-                mb={1}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  borderRadius: 8,
-                  backgroundColor: active ? "#fff" : "transparent",
-                  textDecoration: "none",
-                  transition: "background 0.15s",
-                }}
-              >
-                <Box
-                  style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: area.color, flexShrink: 0 }}
-                />
-                <Text style={{ fontSize: "13px", fontWeight: active ? 600 : 400, color: active ? "#111827" : "#6b7280" }}>
-                  {area.name}
-                </Text>
-              </UnstyledButton>
-            );
-          })}
+
+          <Suspense fallback={null}>
+            <AreasAccordion
+              expandedArea={expandedArea}
+              setExpandedArea={setExpandedArea}
+              pathname={pathname}
+              isSearching={isSearching}
+              visibleAreas={visibleAreas}
+            />
+          </Suspense>
         </Box>
       </ScrollArea>
 
@@ -217,15 +325,25 @@ export function Sidebar({ profile, startup }: SidebarProps) {
           onClick={handleLogout}
         >
           <Group gap={10}>
-            <Avatar color="green" radius="xl" size={28} style={{ fontSize: "12px" }}>
-              {profile.full_name.charAt(0).toUpperCase()}
+            <Avatar
+              radius="xl"
+              size={32}
+              style={{
+                backgroundColor: "#e5e7eb",
+                color: "#374151",
+                fontSize: "12px",
+                fontWeight: 600,
+                flexShrink: 0,
+              }}
+            >
+              {initials}
             </Avatar>
             <Box>
-              <Text style={{ fontSize: "13px", fontWeight: 500, color: "#111827" }} truncate maw={130}>
+              <Text style={{ fontSize: "13px", fontWeight: 600, color: "#111827" }} truncate maw={130}>
                 {profile.full_name}
               </Text>
-              <Text style={{ fontSize: "11px", color: "#9ca3af" }}>
-                {profile.role === "admin" ? "Admin" : "Founder"}
+              <Text style={{ fontSize: "11px", color: "#9ca3af" }} truncate maw={130}>
+                {startup?.name ?? (profile.role === "admin" ? "Admin" : "Fusión")}
               </Text>
             </Box>
           </Group>

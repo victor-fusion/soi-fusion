@@ -126,10 +126,10 @@ export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
           })}
         </Box>
 
-        {/* Meses del ciclo */}
+        {/* Fases del ciclo */}
         <Box pt={8} style={{ borderTop: "1px solid #f3f4f6" }}>
           <Text px={10} mb={6} style={{ fontSize: "11px", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            Meses del ciclo
+            Fases del ciclo
           </Text>
           {PHASES.map((m) => (
             <Box key={m.number} px={10} py={5} style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -18,7 +18,7 @@ export default function ArsenalPage() {
         {AREAS.map((area) => (
           <Link
             key={area.id}
-            href={`/dashboard/arsenal/${area.id}`}
+            href={`/dashboard/recursos/${area.id}`}
             style={{ textDecoration: "none" }}
           >
             <Box
