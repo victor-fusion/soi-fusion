@@ -57,7 +57,7 @@ export default async function AdminPage() {
   const { data: entregables } = startupIds.length > 0
     ? await supabase
         .from("entregables")
-        .select("startup_id, status, month")
+        .select("startup_id, status, phase")
         .in("startup_id", startupIds)
     : { data: [] };
 

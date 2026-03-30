@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git -C /Users/vhumanes/Code/soi-fusion log --oneline -10)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
