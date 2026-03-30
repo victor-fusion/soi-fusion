@@ -10,7 +10,7 @@ export default function ArsenalPage() {
       <Box mb={40}>
         <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500 }}>Recursos y herramientas</Text>
         <Title order={1} style={{ fontSize: "2rem", color: "#111827", marginTop: 4 }}>
-          El Arsenal
+          Recursos
         </Title>
       </Box>
 

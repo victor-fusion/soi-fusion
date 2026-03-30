@@ -232,7 +232,7 @@ export default async function DashboardPage() {
                         return (
                           <Link
                             key={area.id}
-                            href={`/dashboard/arsenal/${area.id}`}
+                            href={`/dashboard/recursos/${area.id}`}
                             style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}
                           >
                             <Box style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: area.color, flexShrink: 0 }} />
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
                   {[
                     { href: "/dashboard/crm", label: "Ver CRM", color: "#2563eb" },
                     { href: "/dashboard/agente", label: "Agente SDR", color: "#ea580c" },
-                    { href: "/dashboard/arsenal", label: "El Arsenal", color: "#7c3aed" },
+                    { href: "/dashboard/recursos", label: "Recursos", color: "#7c3aed" },
                   ].map((link) => (
                     <Link
                       key={link.href}

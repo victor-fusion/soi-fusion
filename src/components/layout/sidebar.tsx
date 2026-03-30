@@ -27,7 +27,7 @@ import {
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Panel del Ciclo", icon: IconLayoutDashboard, exact: true },
   { href: "/dashboard/roadmap", label: "Roadmap", icon: IconMap },
-  { href: "/dashboard/arsenal", label: "El Arsenal", icon: IconBook2 },
+  { href: "/dashboard/recursos", label: "Recursos", icon: IconBook2 },
   { href: "/dashboard/crm", label: "CRM", icon: IconUsers },
   { href: "/dashboard/agente", label: "Agente SDR", icon: IconRobot, badge: "IA" },
 ];
@@ -169,12 +169,12 @@ export function Sidebar({ profile, startup }: SidebarProps) {
             7 Áreas
           </Text>
           {AREAS.map((area) => {
-            const active = pathname === `/dashboard/arsenal/${area.id}`;
+            const active = pathname === `/dashboard/recursos/${area.id}`;
             return (
               <UnstyledButton
                 key={area.id}
                 component={Link}
-                href={`/dashboard/arsenal/${area.id}`}
+                href={`/dashboard/recursos/${area.id}`}
                 w="100%"
                 px={10}
                 py={7}

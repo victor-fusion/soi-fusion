@@ -58,7 +58,7 @@ export default async function CardPage({ params }: PageProps) {
       <Box mb={40}>
         <Group gap={8} mb={16}>
           <Link
-            href={`/dashboard/arsenal/${areaId}`}
+            href={`/dashboard/recursos/${areaId}`}
             style={{
               display: "flex", alignItems: "center", gap: 6,
               fontSize: 13, color: "#6b7280", textDecoration: "none",

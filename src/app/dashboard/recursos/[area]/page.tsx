@@ -67,10 +67,10 @@ export default async function ArsenalAreaPage({ params }: PageProps) {
         <Group gap={8} mb={6}>
           <Text
             component={Link}
-            href="/dashboard/arsenal"
+            href="/dashboard/recursos"
             style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}
           >
-            El Arsenal
+            Recursos
           </Text>
           <Text style={{ fontSize: 13, color: "#d1d5db" }}>·</Text>
           <Text style={{ fontSize: 13, color: "#9ca3af" }}>{area.name}</Text>
@@ -186,7 +186,7 @@ export default async function ArsenalAreaPage({ params }: PageProps) {
                   }
 
                   return (
-                    <Link key={card.id} href={`/dashboard/arsenal/${areaId}/${card.id}`} style={{ textDecoration: "none" }}>
+                    <Link key={card.id} href={`/dashboard/recursos/${areaId}/${card.id}`} style={{ textDecoration: "none" }}>
                       {cardContent}
                     </Link>
                   );
