@@ -31,7 +31,6 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Rutas públicas
   if (pathname.startsWith("/login")) {
     if (user) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -39,7 +38,6 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Rutas protegidas
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
