@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/layout/sidebar";
-import type { Profile, Startup } from "@/types";
+import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import type { Profile } from "@/types";
 
-export default async function DashboardLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -19,21 +19,16 @@ export default async function DashboardLayout({
     .eq("id", session.user.id)
     .single();
 
-  if (!profile) redirect("/login");
+  if (!profile || profile.role !== "admin") redirect("/dashboard");
 
-  let startup: Startup | null = null;
-  if (profile.startup_id) {
-    const { data } = await supabase
-      .from("startups")
-      .select("*")
-      .eq("id", profile.startup_id)
-      .single();
-    startup = data;
-  }
+  const { count } = await supabase
+    .from("startups")
+    .select("*", { count: "exact", head: true })
+    .eq("batch", 5);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-      <Sidebar profile={profile as Profile} startup={startup} />
+      <AdminSidebar profile={profile as Profile} startupCount={count ?? 0} />
       <main style={{ flex: 1, overflowY: "auto" }}>
         {children}
       </main>

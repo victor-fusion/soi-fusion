@@ -18,5 +18,5 @@ export async function login(
     return { error: "Email o contraseña incorrectos. Inténtalo de nuevo." };
   }
 
-  redirect("/dashboard");
+  redirect("/");
 }
