@@ -12,7 +12,7 @@ export interface Startup {
   type: StartupType;
   status: StartupStatus;
   batch: number;
-  current_month: number; // 1-6
+  current_phase: number; // 1-6
   progress: number; // 0-100
   north_star_metric?: string;
   north_star_value?: string;
@@ -40,7 +40,7 @@ export interface Entregable {
   description?: string;
   area: string;
   section: string;
-  month: number; // 1-6
+  phase: number; // 1-6
   week?: number;
   status: EntregableStatus;
   deadline?: string;

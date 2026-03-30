@@ -99,7 +99,7 @@ export function Sidebar({ profile, startup }: SidebarProps) {
                 style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#16a34a", flexShrink: 0 }}
               />
               <Text style={{ fontSize: "12px", color: "#6b7280" }}>
-                Mes {startup.current_month} de 6
+                Fase {startup.current_phase} de 6
               </Text>
             </Group>
           </Box>

@@ -88,11 +88,14 @@ export const AREAS: Area[] = [
 export const AREA_MAP = Object.fromEntries(AREAS.map((a) => [a.id, a]));
 export const AREA_COLORS = Object.fromEntries(AREAS.map((a) => [a.name, a.color]));
 
-export const MONTHS = [
-  { number: 1, name: "Descubrir y Definir", color: "#2563EB" },
-  { number: 2, name: "Solucionar y Conectar", color: "#D97706" },
-  { number: 3, name: "Activar y Demostrar", color: "#EA580C" },
-  { number: 4, name: "Vender y Medir", color: "#16A34A" },
-  { number: 5, name: "Escalar y Convencer", color: "#7C3AED" },
-  { number: 6, name: "Consolidar y Proyectar", color: "#DB2777" },
+export const PHASES = [
+  { number: 1, name: "Descubrimiento", color: "#2563EB" },
+  { number: 2, name: "Formulación", color: "#D97706" },
+  { number: 3, name: "Activación", color: "#EA580C" },
+  { number: 4, name: "Tracción", color: "#16A34A" },
+  { number: 5, name: "Escalado", color: "#7C3AED" },
+  { number: 6, name: "Consolidación", color: "#DB2777" },
 ];
+
+/** @deprecated usar PHASES */
+export const MONTHS = PHASES;

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { MONTHS } from "@/constants/areas";
+import { PHASES } from "@/constants/areas";
 import type { Startup } from "@/types";
 import Link from "next/link";
 import {
@@ -64,8 +64,8 @@ export default async function AdminPage() {
   const progressMap = Object.fromEntries(
     allStartups.map((s) => {
       const mine = (entregables ?? []).filter(
-        (e: { startup_id: string; month: number; status: string }) =>
-          e.startup_id === s.id && e.month === s.current_month
+        (e: { startup_id: string; phase: number; status: string }) =>
+          e.startup_id === s.id && e.phase === s.current_phase
       );
       const done = mine.filter((e: { status: string }) => e.status === "done").length;
       const pct = mine.length > 0 ? Math.round((done / mine.length) * 100) : 0;
@@ -201,7 +201,7 @@ export default async function AdminPage() {
           <Stack gap={0}>
             {allStartups.map((startup, i) => {
               const prog = progressMap[startup.id] ?? { done: 0, total: 0, pct: 0 };
-              const month = MONTHS.find((m) => m.number === startup.current_month) ?? MONTHS[0];
+              const month = PHASES.find((m) => m.number === startup.current_phase) ?? PHASES[0];
               const founder = founderMap[startup.id];
               const isLast = i === allStartups.length - 1;
 
@@ -317,7 +317,7 @@ export default async function AdminPage() {
           Meses del ciclo
         </Text>
         <Group gap={12} wrap="wrap">
-          {MONTHS.map((m) => (
+          {PHASES.map((m) => (
             <Group key={m.number} gap={6}>
               <Box
                 style={{

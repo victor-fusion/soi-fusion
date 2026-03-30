@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AREAS, MONTHS } from "@/constants/areas";
+import { AREAS, PHASES } from "@/constants/areas";
 import type { Entregable } from "@/types";
 import Link from "next/link";
 import {
@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   if (!profile) redirect("/login");
 
   const startup = profile.startups as {
-    id: string; name: string; current_month: number;
+    id: string; name: string; current_phase: number;
     north_star_metric?: string; north_star_value?: string; type: string;
   } | null;
 
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       .from("entregables")
       .select("*")
       .eq("startup_id", startup.id)
-      .eq("month", startup.current_month)
+      .eq("phase", startup.current_phase)
       .order("area");
     entregables = (data ?? []) as Entregable[];
   }
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
   const totalDone = entregables.filter((e) => e.status === "done").length;
   const totalEntregables = entregables.length;
   const progressPct = totalEntregables > 0 ? Math.round((totalDone / totalEntregables) * 100) : 0;
-  const currentMonth = MONTHS.find((m) => m.number === (startup?.current_month ?? 1)) ?? MONTHS[0];
+  const currentPhase = PHASES.find((m) => m.number === (startup?.current_phase ?? 1)) ?? PHASES[0];
   const pending = entregables.filter((e) => e.status !== "done").slice(0, 4);
   const byArea = AREAS.map((area) => ({
     area,
@@ -101,7 +101,7 @@ export default async function DashboardPage() {
             p={28}
             style={{
               borderRadius: 16,
-              backgroundColor: currentMonth.color,
+              backgroundColor: currentPhase.color,
               color: "white",
               position: "relative",
               overflow: "hidden",
@@ -117,9 +117,9 @@ export default async function DashboardPage() {
               <Group justify="space-between" mb={16} align="flex-start">
                 <Box>
                   <Text style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.7 }}>
-                    Mes {currentMonth.number} de 6
+                    Fase {currentPhase.number} de 6
                   </Text>
-                  <Title order={2} style={{ color: "white", marginTop: 4 }}>{currentMonth.name}</Title>
+                  <Title order={2} style={{ color: "white", marginTop: 4 }}>{currentPhase.name}</Title>
                 </Box>
                 <Box style={{ textAlign: "right" }}>
                   <Text style={{ fontSize: 11, opacity: 0.7 }}>Progreso del mes</Text>
@@ -260,11 +260,11 @@ export default async function DashboardPage() {
 
               {/* Tu ciclo */}
               <Paper p={24} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
-                <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827", marginBottom: 16 }}>Tu ciclo</Text>
+                <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827", marginBottom: 16 }}>Las 6 fases</Text>
                 <Stack gap={8}>
-                  {MONTHS.map((m) => {
-                    const isCurrent = m.number === startup.current_month;
-                    const isPast = m.number < startup.current_month;
+                  {PHASES.map((m) => {
+                    const isCurrent = m.number === startup.current_phase;
+                    const isPast = m.number < startup.current_phase;
                     return (
                       <Group key={m.number} gap={10}>
                         <Box

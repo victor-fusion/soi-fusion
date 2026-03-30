@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types";
-import { MONTHS } from "@/constants/areas";
+import { PHASES } from "@/constants/areas";
 import {
   Text, Box, Avatar, UnstyledButton, ScrollArea, Tooltip, Group,
 } from "@mantine/core";
@@ -131,7 +131,7 @@ export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
           <Text px={10} mb={6} style={{ fontSize: "11px", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             Meses del ciclo
           </Text>
-          {MONTHS.map((m) => (
+          {PHASES.map((m) => (
             <Box key={m.number} px={10} py={5} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Box
                 style={{
