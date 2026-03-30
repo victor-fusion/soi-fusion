@@ -26,7 +26,7 @@ import {
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Panel del Ciclo", icon: IconLayoutDashboard, exact: true },
-  { href: "/dashboard/roadmap", label: "El Camino", icon: IconMap },
+  { href: "/dashboard/roadmap", label: "Roadmap", icon: IconMap },
   { href: "/dashboard/arsenal", label: "El Arsenal", icon: IconBook2 },
   { href: "/dashboard/crm", label: "CRM", icon: IconUsers },
   { href: "/dashboard/agente", label: "Agente SDR", icon: IconRobot, badge: "IA" },

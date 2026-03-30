@@ -5,6 +5,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npx tsc:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/vhumanes/Code/soi-fusion/src/app/dashboard/arsenal/[area]"
     ]
   }
 }
