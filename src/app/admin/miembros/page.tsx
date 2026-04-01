@@ -75,7 +75,7 @@ export default async function MiembrosPage({
     dedication: string | null;
     phone?: string;
     linkedin_url?: string;
-    startups: { id: string; name: string; batch: number } | null;
+    startups: { id: string; name: string; batch: number } | { id: string; name: string; batch: number }[] | null;
   };
 
   let query = supabase
@@ -183,7 +183,7 @@ export default async function MiembrosPage({
         ) : (
           <Stack gap={0}>
             {membersData.map((member, i) => {
-              const startup = member.startups;
+              const startup = Array.isArray(member.startups) ? member.startups[0] ?? null : member.startups;
               const isLast = i === membersData.length - 1;
               const typeColor = member.member_type ? (TYPE_COLORS[member.member_type] ?? "#9ca3af") : "#9ca3af";
               const initials = member.full_name
