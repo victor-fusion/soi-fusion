@@ -8,18 +8,37 @@ export type StartupStatus = "activa" | "en_pausa" | "en_revision" | "inactiva" |
 export interface Startup {
   id: string;
   name: string;
-  sector: string;
+  logo_url?: string;
+  tagline?: string;
+  sector?: string;
   type: StartupType;
   status: StartupStatus;
   batch: number;
   current_phase: number; // 1-6
-  progress: number; // 0-100
-  north_star_metric?: string;
-  north_star_value?: string;
+  cycle_start_date?: string; // ISO date string, e.g. "2026-04-01"
   created_at: string;
+  updated_at: string;
 }
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
+export type MemberType = "cofundador" | "empleado" | "advisor" | "becario" | "contratista";
+export type MemberDedication = "full-time" | "part-time" | "puntual";
+
+export interface DaySchedule {
+  start: string; // "09:00"
+  end: string;   // "18:00"
+}
+
+export interface OfficeSchedule {
+  monday?:    DaySchedule[];
+  tuesday?:   DaySchedule[];
+  wednesday?: DaySchedule[];
+  thursday?:  DaySchedule[];
+  friday?:    DaySchedule[];
+  saturday?:  DaySchedule[];
+  sunday?:    DaySchedule[];
+}
+
 export interface Profile {
   id: string;
   email: string;
@@ -28,6 +47,16 @@ export interface Profile {
   startup_id?: string;
   avatar_url?: string;
   created_at: string;
+  // Campos de equipo (fusionados desde startup_members)
+  role_title?: string;
+  member_type?: MemberType;
+  dedication?: MemberDedication;
+  office_schedule: OfficeSchedule;
+  joined_at?: string;
+  phone?: string;
+  linkedin_url?: string;
+  calendar_url?: string;
+  display_order: number;
 }
 
 // ─── ENTREGABLES ─────────────────────────────────────────────────────────────
@@ -77,6 +106,15 @@ export type CardType =
   | "external_link"
   | "agent";
 
+export interface TemplateField {
+  id: string;
+  type: "text" | "textarea";
+  label: string;
+  hint?: string;
+  placeholder?: string;
+  required?: boolean;
+}
+
 export interface Card {
   id: string;
   section_id: string;
@@ -85,10 +123,12 @@ export interface Card {
   type: CardType;
   content?: string; // markdown content
   url?: string;
+  template_fields?: TemplateField[];
   order: number;
   is_active: boolean;
   created_at: string;
 }
+
 
 // ─── CRM ─────────────────────────────────────────────────────────────────────
 export type ContactStage =

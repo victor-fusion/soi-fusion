@@ -1,18 +1,33 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AREAS, PHASES } from "@/constants/areas";
-import type { Entregable } from "@/types";
+import type { Entregable, Profile } from "@/types";
 import Link from "next/link";
 import {
-  Box, Text, Title, Group, Stack, Badge, Paper, Progress,
+  Box, Text, Title, Group, Stack, Badge, Paper, Progress, Avatar,
 } from "@mantine/core";
 import {
   IconArrowLeft, IconCircleCheck, IconCircle, IconClock,
-  IconChevronRight,
+  IconChevronRight, IconCalendar, IconUsers,
 } from "@tabler/icons-react";
+
+function formatDeadline(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((d.getTime() - today.getTime()) / 86400000);
+  const label = d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  if (diffDays < 0) return { label, color: "#ef4444", bg: "#fef2f2" };      // vencido
+  if (diffDays <= 7) return { label, color: "#d97706", bg: "#fffbeb" };     // próximo
+  return { label, color: "#9ca3af", bg: "#f9fafb" };                        // normal
+}
 import { changePhase } from "./actions";
+import { getStartupRelatedCounts } from "./delete-action";
 import { StatusSelect } from "./_components/StatusSelect";
 import { AddEntregableForm } from "./_components/AddEntregableForm";
+import { TeamSection } from "./_components/TeamSection";
+import { StartupEditForm } from "./_components/StartupEditForm";
+import { DeleteStartupModal } from "./_components/DeleteStartupModal";
 
 const TYPE_LABELS: Record<string, string> = {
   b2b_saas: "B2B SaaS",
@@ -48,14 +63,6 @@ export default async function StartupDetailPage({
 
   if (!startup) notFound();
 
-  // Founder
-  const { data: founderProfile } = await supabase
-    .from("profiles")
-    .select("full_name, email")
-    .eq("startup_id", id)
-    .eq("role", "founder")
-    .maybeSingle();
-
   // Entregables (fase actual)
   const { data: entregablesData } = await supabase
     .from("entregables")
@@ -65,6 +72,19 @@ export default async function StartupDetailPage({
     .order("area");
 
   const entregables = (entregablesData ?? []) as Entregable[];
+
+  // Miembros del equipo
+  const { data: membersData } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("startup_id", id)
+    .order("display_order")
+    .order("created_at");
+
+  const members = (membersData ?? []) as Profile[];
+
+  // Conteos para modal de eliminación
+  const relatedCounts = await getStartupRelatedCounts(id);
 
   const currentPhase = PHASES.find((p) => p.number === startup.current_phase) ?? PHASES[0];
   const totalDone = entregables.filter((e) => e.status === "done").length;
@@ -77,11 +97,11 @@ export default async function StartupDetailPage({
   })).filter((g) => g.items.length > 0);
 
   return (
-    <Box p={40} maw={900} mx="auto">
+    <Box p={40} maw={1100} mx="auto">
 
       {/* Back */}
       <Link
-        href="/admin"
+        href="/admin/startups"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           fontSize: 13, color: "#9ca3af", textDecoration: "none",
@@ -89,52 +109,82 @@ export default async function StartupDetailPage({
         }}
       >
         <IconArrowLeft size={14} />
-        Centro de Control
+        Startups
       </Link>
 
       {/* Header */}
       <Box mb={32}>
-        <Group align="center" gap={12} mb={8}>
-          <Title order={1} style={{ fontSize: "1.75rem", color: "#111827" }}>
-            {startup.name}
-          </Title>
-          <Badge size="sm" color="gray" variant="light">
-            {TYPE_LABELS[startup.type] ?? startup.type}
-          </Badge>
-          <Badge
-            size="sm"
-            variant="dot"
-            styles={{
-              root: {
-                color: startup.status === "activa" ? "#16a34a" : "#d97706",
-                borderColor: "transparent",
-              },
-            }}
-          >
-            {startup.status === "activa" ? "Activa" : startup.status}
-          </Badge>
-        </Group>
+        <Group justify="space-between" align="flex-start">
+          <Group gap={16} align="flex-start">
+            <Avatar
+              src={startup.logo_url || undefined}
+              radius="lg"
+              size={56}
+              style={{ backgroundColor: "#f3f4f6", color: "#9ca3af", fontSize: 20, fontWeight: 700, flexShrink: 0 }}
+            >
+              {startup.name.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box>
+              <Group align="center" gap={10} mb={4}>
+                <Title order={1} style={{ fontSize: "1.75rem", color: "#111827" }}>
+                  {startup.name}
+                </Title>
+                <Badge size="sm" color="gray" variant="light">
+                  {TYPE_LABELS[startup.type] ?? startup.type}
+                </Badge>
+                <Badge
+                  size="sm"
+                  variant="dot"
+                  styles={{ root: { color: startup.status === "activa" ? "#16a34a" : "#d97706", borderColor: "transparent" } }}
+                >
+                  {startup.status === "activa" ? "Activa" : startup.status}
+                </Badge>
+              </Group>
 
-        <Group gap={20}>
-          {founderProfile && (
-            <Text style={{ fontSize: 13, color: "#6b7280" }}>
-              Founder: <strong style={{ color: "#374151" }}>{founderProfile.full_name}</strong>
-              {founderProfile.email && (
-                <Text component="span" style={{ color: "#9ca3af" }}> · {founderProfile.email}</Text>
+              {startup.tagline && (
+                <Text style={{ fontSize: 14, color: "#6b7280", marginBottom: 8 }}>
+                  {startup.tagline}
+                </Text>
               )}
-            </Text>
-          )}
-          {startup.sector && (
-            <Text style={{ fontSize: 13, color: "#6b7280" }}>
-              Sector: <strong style={{ color: "#374151" }}>{startup.sector}</strong>
-            </Text>
-          )}
-          {startup.north_star_metric && (
-            <Text style={{ fontSize: 13, color: "#6b7280" }}>
-              North star: <strong style={{ color: "#374151" }}>{startup.north_star_metric}</strong>
-              {" "}→ <strong style={{ color: currentPhase.color }}>{startup.north_star_value ?? "—"}</strong>
-            </Text>
-          )}
+
+              <Group gap={20}>
+                <Link
+                  href={`/admin/miembros?startup=${id}`}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    fontSize: 13, color: "#6b7280", textDecoration: "none",
+                  }}
+                >
+                  <IconUsers size={13} />
+                  Ver miembros
+                </Link>
+                {startup.sector && (
+                  <Text style={{ fontSize: 13, color: "#6b7280" }}>
+                    Sector: <strong style={{ color: "#374151" }}>{startup.sector}</strong>
+                  </Text>
+                )}
+                <Text style={{ fontSize: 13, color: "#6b7280" }}>
+                  Ciclo <strong style={{ color: "#374151" }}>{startup.batch}</strong>
+                </Text>
+                {startup.cycle_start_date && (
+                  <Text style={{ fontSize: 13, color: "#6b7280" }}>
+                    Inicio: <strong style={{ color: "#374151" }}>
+                      {new Date(startup.cycle_start_date + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                    </strong>
+                  </Text>
+                )}
+              </Group>
+            </Box>
+          </Group>
+
+          <Group gap={8}>
+            <StartupEditForm startup={startup} />
+            <DeleteStartupModal
+              startupId={id}
+              startupName={startup.name}
+              counts={relatedCounts}
+            />
+          </Group>
         </Group>
       </Box>
 
@@ -246,19 +296,33 @@ export default async function StartupDetailPage({
                     {items.map((item) => {
                       const s = STATUS_ICON[item.status as keyof typeof STATUS_ICON] ?? STATUS_ICON.pending;
                       const Icon = s.Icon;
+                      const dl = item.deadline ? formatDeadline(item.deadline) : null;
                       return (
                         <Box
                           key={item.id}
                           style={{
-                            display: "flex", alignItems: "center", gap: 10,
-                            padding: "8px 10px", borderRadius: 8,
+                            display: "flex", alignItems: "flex-start", gap: 10,
+                            padding: "10px 10px", borderRadius: 8,
                             backgroundColor: "#fafafa",
                           }}
                         >
-                          <Icon size={14} color={s.color} style={{ flexShrink: 0 }} />
-                          <Text style={{ fontSize: 13, color: "#374151", flex: 1 }} lineClamp={1}>
-                            {item.title}
-                          </Text>
+                          <Icon size={14} color={s.color} style={{ flexShrink: 0, marginTop: 2 }} />
+                          <Box style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={{ fontSize: 13, color: "#374151" }} lineClamp={1}>
+                              {item.title}
+                            </Text>
+                            {item.description && (
+                              <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }} lineClamp={2}>
+                                {item.description}
+                              </Text>
+                            )}
+                            {dl && (
+                              <Box style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, padding: "2px 7px", borderRadius: 5, backgroundColor: dl.bg }}>
+                                <IconCalendar size={10} color={dl.color} />
+                                <Text style={{ fontSize: 10, fontWeight: 600, color: dl.color }}>{dl.label}</Text>
+                              </Box>
+                            )}
+                          </Box>
                           <StatusSelect
                             entregableId={item.id}
                             startupId={id}
@@ -275,6 +339,11 @@ export default async function StartupDetailPage({
 
           <AddEntregableForm startupId={id} currentPhase={startup.current_phase} />
         </Stack>
+      </Box>
+
+      {/* Equipo */}
+      <Box mt={40} style={{ borderTop: "1px solid #f3f4f6", paddingTop: 32 }}>
+        <TeamSection startupId={id} members={members} />
       </Box>
 
     </Box>

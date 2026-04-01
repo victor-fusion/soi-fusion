@@ -10,12 +10,13 @@ import {
 } from "@mantine/core";
 import {
   IconLayoutDashboard, IconLogout, IconChevronRight,
-  IconUsers, IconRobot, IconSettings,
+  IconUsers, IconRobot, IconSettings, IconUsersGroup,
 } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Centro de Control", icon: IconLayoutDashboard, exact: true },
   { href: "/admin/startups", label: "Startups", icon: IconUsers },
+  { href: "/admin/miembros", label: "Miembros", icon: IconUsersGroup },
   { href: "/admin/agente", label: "Agente SDR", icon: IconRobot, badge: "IA" },
   { href: "/admin/config", label: "Configuración", icon: IconSettings },
 ];

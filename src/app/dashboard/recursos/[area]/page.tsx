@@ -89,7 +89,7 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
   // Sin sección seleccionada → lista de secciones
   if (!sectionId) {
     return (
-      <Box p={40} maw={900} mx="auto">
+      <Box p={40} maw={1100} mx="auto">
         <Box mb={32}>
           <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500 }}>
             Recursos · {area.name}
@@ -152,21 +152,14 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
   const cards = (data ?? []) as Card[];
 
   return (
-    <Box p={40} maw={900} mx="auto">
+    <Box p={40} maw={1100} mx="auto">
 
       {/* Breadcrumb */}
       <Box mb={32}>
         <Group gap={6} mb={6}>
-          <Text style={{ fontSize: 13, color: "#9ca3af" }}>Recursos</Text>
-          <Text style={{ fontSize: 13, color: "#d1d5db" }}>·</Text>
-          <Link
-            href={`/dashboard/recursos/${areaId}`}
-            style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}
-          >
-            {area.name}
-          </Link>
-          <Text style={{ fontSize: 13, color: "#d1d5db" }}>·</Text>
-          <Text style={{ fontSize: 13, color: "#6b7280" }}>{section?.name}</Text>
+          <Text style={{ fontSize: 13, color: "#9ca3af" }}>{area.name}</Text>
+          <Text style={{ fontSize: 13, color: "#d1d5db" }}>›</Text>
+          <Text style={{ fontSize: 13, color: "#9ca3af" }}>{section?.name}</Text>
         </Group>
         <Group gap={10} align="center">
           {(() => { const Icon = AREA_ICONS[areaId] ?? IconBox; return <Icon size={22} color={area.color} style={{ flexShrink: 0 }} />; })()}
@@ -198,26 +191,31 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
                 const s = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.pending;
                 const Icon = s.icon;
                 return (
-                  <Box
+                  <Link
                     key={item.id}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      padding: "8px 10px", borderRadius: 8,
-                      backgroundColor: "#fafafa",
-                    }}
+                    href={`/dashboard/entregables/${item.id}`}
+                    style={{ textDecoration: "none" }}
                   >
-                    <Icon size={14} color={s.color} style={{ flexShrink: 0 }} />
-                    <Text style={{ fontSize: 13, color: "#374151", flex: 1 }} lineClamp={1}>
-                      {item.title}
-                    </Text>
-                    <Badge
-                      size="xs"
-                      variant="light"
-                      style={{ backgroundColor: `${s.color}18`, color: s.color, flexShrink: 0 }}
+                    <Box
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "8px 10px", borderRadius: 8,
+                        backgroundColor: "#fafafa", cursor: "pointer",
+                      }}
                     >
-                      {s.label}
-                    </Badge>
-                  </Box>
+                      <Icon size={14} color={s.color} style={{ flexShrink: 0 }} />
+                      <Text style={{ fontSize: 13, color: "#374151", flex: 1 }} lineClamp={1}>
+                        {item.title}
+                      </Text>
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        style={{ backgroundColor: `${s.color}18`, color: s.color, flexShrink: 0 }}
+                      >
+                        {s.label}
+                      </Badge>
+                    </Box>
+                  </Link>
                 );
               })}
             </Stack>

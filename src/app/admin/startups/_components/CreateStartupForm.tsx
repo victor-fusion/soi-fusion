@@ -71,13 +71,20 @@ export function CreateStartupForm() {
         gap: 12,
       }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 160px", gap: 10 }}>
-        <input name="name" required placeholder="Nombre de la startup" style={inputStyle} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <input name="name" required placeholder="Nombre de la startup *" style={inputStyle} />
         <input name="sector" placeholder="Sector (ej: Educación, Salud…)" style={inputStyle} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 120px", gap: 10 }}>
         <select name="type" required style={inputStyle}>
-          <option value="">Tipo…</option>
+          <option value="">Tipo de startup *</option>
           {TYPE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select name="batch" defaultValue={5} style={inputStyle}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <option key={n} value={n}>Ciclo {n}</option>
           ))}
         </select>
       </div>

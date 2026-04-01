@@ -12,15 +12,18 @@ export async function createStartup(formData: FormData) {
 
   if (!name || !type) return;
 
-  await supabase.from("startups").insert({
+  const batch = parseInt((formData.get("batch") as string) || "5", 10);
+
+  const { error } = await supabase.from("startups").insert({
     name,
     sector: sector || null,
     type,
     status: "activa",
     current_phase: 1,
-    progress: 0,
-    batch: 5,
+    batch,
   });
+
+  if (error) throw new Error(error.message);
 
   revalidatePath("/admin/startups");
   revalidatePath("/admin");

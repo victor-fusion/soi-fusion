@@ -3,11 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { PHASES } from "@/constants/areas";
 import type { Startup } from "@/types";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   Box, Text, Title, Group, Stack, Badge, Paper, Progress, ThemeIcon,
 } from "@mantine/core";
 import { IconArrowRight, IconUsers } from "@tabler/icons-react";
 import { CreateStartupForm } from "./_components/CreateStartupForm";
+import { BatchFilter } from "../_components/BatchFilter";
 
 const TYPE_LABELS: Record<string, string> = {
   b2b_saas: "B2B SaaS",
@@ -25,29 +27,33 @@ const STATUS_COLOR: Record<string, string> = {
   cerrada: "#ef4444",
 };
 
-export default async function StartupsPage() {
+export default async function StartupsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ batch?: string }>;
+}) {
+  const { batch: batchParam } = await searchParams;
   const supabase = await createClient();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");
 
-  const { data: startups } = await supabase
+  // Ciclos disponibles
+  const { data: batchRows } = await supabase
     .from("startups")
-    .select("*")
-    .order("name");
+    .select("batch")
+    .order("batch");
+  const availableBatches = [...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch))].sort() as number[];
 
+  const latestBatch = availableBatches.at(-1) ?? 5;
+  const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : latestBatch;
+  const showAll = selectedBatch === 0;
+
+  let query = supabase.from("startups").select("*").order("name");
+  if (!showAll) query = query.eq("batch", selectedBatch);
+
+  const { data: startups } = await query;
   const allStartups = (startups ?? []) as Startup[];
-
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("startup_id, full_name")
-    .eq("role", "founder");
-
-  const founderMap = Object.fromEntries(
-    (profiles ?? [])
-      .filter((p) => p.startup_id)
-      .map((p: { startup_id: string; full_name: string }) => [p.startup_id, p.full_name])
-  );
 
   const startupIds = allStartups.map((s) => s.id);
   const { data: entregables } = startupIds.length > 0
@@ -74,11 +80,16 @@ export default async function StartupsPage() {
 
       <Box mb={32}>
         <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500 }}>Admin</Text>
-        <Group justify="space-between" align="flex-end" mt={4}>
+        <Group justify="space-between" align="center" mt={4}>
           <Title order={1} style={{ fontSize: "2rem", color: "#111827" }}>
             Startups
           </Title>
-          <CreateStartupForm />
+          <Group gap={12}>
+            <Suspense fallback={null}>
+              <BatchFilter batches={availableBatches} activeBatch={selectedBatch} basePath="/admin/startups" />
+            </Suspense>
+            <CreateStartupForm />
+          </Group>
         </Group>
       </Box>
 
@@ -115,7 +126,6 @@ export default async function StartupsPage() {
             {allStartups.map((startup, i) => {
               const prog = progressMap[startup.id] ?? { done: 0, total: 0, pct: 0 };
               const phase = PHASES.find((p) => p.number === startup.current_phase) ?? PHASES[0];
-              const founder = founderMap[startup.id];
               const isLast = i === allStartups.length - 1;
 
               return (
@@ -133,9 +143,9 @@ export default async function StartupsPage() {
                     <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>
                       {startup.name}
                     </Text>
-                    {founder && (
+                    {startup.tagline && (
                       <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }} truncate>
-                        {founder}
+                        {startup.tagline}
                       </Text>
                     )}
                   </Box>

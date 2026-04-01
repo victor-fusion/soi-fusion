@@ -10,6 +10,7 @@ import {
   IconArrowLeft, IconFileText, IconTool,
   IconRobot, IconChecklist, IconLink, IconBook2,
 } from "@tabler/icons-react";
+import { TemplateForm } from "./_components/TemplateForm";
 
 const CARD_TYPE_CONFIG: Record<string, { label: string; icon: typeof IconFileText; color: string }> = {
   playbook:      { label: "Playbook",    icon: IconBook2,     color: "#2563eb" },
@@ -51,8 +52,31 @@ export default async function CardPage({ params }: PageProps) {
   // Encontrar la sección a la que pertenece
   const section = area.sections.find((s) => s.id === card.section_id);
 
+  // Respuesta guardada del template (si aplica)
+  let savedResponses: Record<string, string> = {};
+  let savedAt: string | null = null;
+  if (card.type === "template") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("startup_id")
+      .eq("id", session.user.id)
+      .single();
+    if (profile?.startup_id) {
+      const { data: existing } = await supabase
+        .from("template_responses")
+        .select("responses, updated_at")
+        .eq("card_id", card.id)
+        .eq("startup_id", profile.startup_id)
+        .single();
+      if (existing) {
+        savedResponses = existing.responses as Record<string, string>;
+        savedAt = existing.updated_at;
+      }
+    }
+  }
+
   return (
-    <Box p={40} maw={760} mx="auto">
+    <Box p={40} maw={1100} mx="auto">
 
       {/* Breadcrumb + volver */}
       <Box mb={40}>
@@ -99,36 +123,39 @@ export default async function CardPage({ params }: PageProps) {
       </Box>
 
       {/* Contenido */}
-      <Box
-        style={{
-          fontSize: 15,
-          lineHeight: 1.8,
-          color: "#374151",
-        }}
-      >
-        {card.content ? (
-          <Box
-            style={{
-              whiteSpace: "pre-wrap",
-              fontFamily: "var(--font-geist-sans), sans-serif",
-            }}
-          >
-            {card.content}
-          </Box>
-        ) : (
-          <Box
-            p={32}
-            style={{
-              borderRadius: 12,
-              border: "1px dashed #e5e7eb",
-              backgroundColor: "#fafafa",
-              textAlign: "center",
-            }}
-          >
-            <Text style={{ color: "#9ca3af" }}>Contenido en preparación.</Text>
-          </Box>
-        )}
-      </Box>
+      {card.type === "template" && card.template_fields ? (
+        <TemplateForm
+          cardId={card.id}
+          fields={card.template_fields}
+          savedResponses={savedResponses}
+          savedAt={savedAt}
+          areaColor={area.color}
+        />
+      ) : card.content ? (
+        <Box
+          style={{
+            fontSize: 15,
+            lineHeight: 1.8,
+            color: "#374151",
+            whiteSpace: "pre-wrap",
+            fontFamily: "var(--font-geist-sans), sans-serif",
+          }}
+        >
+          {card.content}
+        </Box>
+      ) : (
+        <Box
+          p={32}
+          style={{
+            borderRadius: 12,
+            border: "1px dashed #e5e7eb",
+            backgroundColor: "#fafafa",
+            textAlign: "center",
+          }}
+        >
+          <Text style={{ color: "#9ca3af" }}>Contenido en preparación.</Text>
+        </Box>
+      )}
 
     </Box>
   );
