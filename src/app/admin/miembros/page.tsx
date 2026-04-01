@@ -95,7 +95,7 @@ export default async function MiembrosPage({
   if (typeParam) query = query.eq("member_type", typeParam);
 
   const { data } = await query;
-  const membersData = (data ?? []) as MemberRow[];
+  const membersData = (data ?? []) as unknown as MemberRow[];
 
   const selectedStartupName = startupParam
     ? allStartups.find((s) => s.id === startupParam)?.name
