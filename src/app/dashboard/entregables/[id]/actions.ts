@@ -11,22 +11,26 @@ export async function updateEntregableStatus(entregableId: string, status: strin
     .eq("id", entregableId);
   revalidatePath(`/dashboard/entregables/${entregableId}`);
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/roadmap");
 }
 
-export async function toggleStep(
-  entregableId: string,
-  stepIndex: number,
-  currentCompleted: number[]
-) {
+export async function addComment(entregableId: string, body: string, parentId?: string) {
   const supabase = await createClient();
-  const isCompleted = currentCompleted.includes(stepIndex);
-  const newCompleted = isCompleted
-    ? currentCompleted.filter((i) => i !== stepIndex)
-    : [...currentCompleted, stepIndex].sort((a, b) => a - b);
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
 
-  await supabase
-    .from("entregables")
-    .update({ completed_steps: newCompleted, updated_at: new Date().toISOString() })
-    .eq("id", entregableId);
+  await supabase.from("entregable_comments").insert({
+    entregable_id: entregableId,
+    author_id: session.user.id,
+    parent_id: parentId ?? null,
+    body: body.trim(),
+  });
+
+  revalidatePath(`/dashboard/entregables/${entregableId}`);
+}
+
+export async function deleteComment(commentId: string, entregableId: string) {
+  const supabase = await createClient();
+  await supabase.from("entregable_comments").delete().eq("id", commentId);
   revalidatePath(`/dashboard/entregables/${entregableId}`);
 }

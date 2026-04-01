@@ -37,10 +37,12 @@ const TYPE_LABELS: Record<string, string> = {
   servicios: "Servicios",
 };
 
-const STATUS_ICON = {
-  done:        { Icon: IconCircleCheck, color: "#16a34a" },
-  in_progress: { Icon: IconClock,        color: "#2563eb" },
-  pending:     { Icon: IconCircle,       color: "#d1d5db" },
+const STATUS_ICON: Record<string, { Icon: typeof IconCircleCheck; color: string }> = {
+  completado:          { Icon: IconCircleCheck, color: "#16a34a" },
+  en_revision:         { Icon: IconClock,       color: "#ca8a04" },
+  cambios_solicitados: { Icon: IconClock,       color: "#e11d48" },
+  en_progreso:         { Icon: IconClock,       color: "#2563eb" },
+  pendiente:           { Icon: IconCircle,      color: "#d1d5db" },
 };
 
 export default async function StartupDetailPage({
@@ -87,7 +89,7 @@ export default async function StartupDetailPage({
   const relatedCounts = await getStartupRelatedCounts(id);
 
   const currentPhase = PHASES.find((p) => p.number === startup.current_phase) ?? PHASES[0];
-  const totalDone = entregables.filter((e) => e.status === "done").length;
+  const totalDone = entregables.filter((e) => e.status === "completado").length;
   const totalItems = entregables.length;
   const progressPct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
@@ -281,7 +283,7 @@ export default async function StartupDetailPage({
             </Paper>
           ) : (
             byArea.map(({ area, items }) => {
-              const done = items.filter((i) => i.status === "done").length;
+              const done = items.filter((i) => i.status === "completado").length;
               return (
                 <Paper key={area.id} p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
                   <Group justify="space-between" mb={12}>

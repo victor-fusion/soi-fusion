@@ -60,7 +60,24 @@ export interface Profile {
 }
 
 // ─── ENTREGABLES ─────────────────────────────────────────────────────────────
-export type EntregableStatus = "pending" | "in_progress" | "done";
+export type EntregableStatus =
+  | "pendiente"
+  | "en_progreso"
+  | "en_revision"
+  | "cambios_solicitados"
+  | "completado";
+
+export type EntregableTipo =
+  | "archivos"
+  | "formulario"
+  | "link"
+  | "checklist"
+  | "externo";
+
+export interface FileSlot {
+  label: string;
+  required: boolean;
+}
 
 export interface Entregable {
   id: string;
@@ -72,11 +89,25 @@ export interface Entregable {
   phase: number; // 1-6
   week?: number;
   status: EntregableStatus;
+  tipo: EntregableTipo;
+  file_slots: FileSlot[];
+  reviewer_notes?: string;
   deadline?: string;
-  steps?: string[];
-  completed_steps?: number[];
   created_at: string;
   updated_at: string;
+}
+
+export interface EntregableComment {
+  id: string;
+  entregable_id: string;
+  author_id: string | null;
+  parent_id: string | null;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  // joined
+  author?: { full_name: string; avatar_url?: string; role: string };
+  replies?: EntregableComment[];
 }
 
 // ─── ÁREAS ───────────────────────────────────────────────────────────────────

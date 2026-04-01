@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AREA_MAP, PHASES } from "@/constants/areas";
-import type { Entregable } from "@/types";
+import type { Entregable, EntregableComment } from "@/types";
 import Link from "next/link";
 import { Box, Text, Title, Group, Badge, Paper } from "@mantine/core";
 import {
@@ -9,6 +9,7 @@ import {
   IconCoin, IconScale, IconSettings, IconUsers, IconCalendar,
 } from "@tabler/icons-react";
 import { EntregableControls } from "./_components/EntregableControls";
+import { CommentsSection } from "./_components/CommentsSection";
 
 const AREA_ICONS: Record<string, typeof IconTarget> = {
   estrategia:  IconTarget,
@@ -52,6 +53,32 @@ export default async function EntregablePage({
 
   // Seguridad: solo puede ver sus propios entregables
   if (!startup || entregable.startup_id !== startup.id) notFound();
+
+  // Comentarios con datos del autor
+  const { data: commentsRaw } = await supabase
+    .from("entregable_comments")
+    .select("*, author:profiles(full_name, avatar_url, role)")
+    .eq("entregable_id", id)
+    .is("parent_id", null)
+    .order("created_at", { ascending: true });
+
+  const topComments = (commentsRaw ?? []) as EntregableComment[];
+
+  // Replies para cada comentario raíz
+  const { data: repliesRaw } = await supabase
+    .from("entregable_comments")
+    .select("*, author:profiles(full_name, avatar_url, role)")
+    .eq("entregable_id", id)
+    .not("parent_id", "is", null)
+    .order("created_at", { ascending: true });
+
+  const allReplies = (repliesRaw ?? []) as EntregableComment[];
+
+  // Anida replies en sus comentarios padre
+  const comments: EntregableComment[] = topComments.map((c) => ({
+    ...c,
+    replies: allReplies.filter((r) => r.parent_id === c.id),
+  }));
 
   const area = AREA_MAP[entregable.area];
   const section = area?.sections.find((s) => s.id === entregable.section);
@@ -109,23 +136,31 @@ export default async function EntregablePage({
         )}
       </Box>
 
-      {/* Controles interactivos: estado + pasos */}
+      {/* Controles interactivos: estado */}
       <Paper p={24} radius="lg" withBorder style={{ borderColor: "#f3f4f6", marginBottom: 24 }}>
         <EntregableControls
           entregableId={entregable.id}
           currentStatus={entregable.status}
-          steps={entregable.steps ?? []}
-          completedSteps={entregable.completed_steps ?? []}
+          reviewerNotes={entregable.reviewer_notes}
         />
       </Paper>
 
       {/* Deadline */}
       {deadline && (
-        <Group gap={8} style={{ color: "#9ca3af" }}>
+        <Group gap={8} style={{ color: "#9ca3af", marginBottom: 32 }}>
           <IconCalendar size={14} />
           <Text style={{ fontSize: 13 }}>Fecha límite: <strong style={{ color: "#374151" }}>{deadline}</strong></Text>
         </Group>
       )}
+
+      {/* Conversación */}
+      <Paper p={24} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
+        <CommentsSection
+          entregableId={id}
+          comments={comments}
+          currentUserId={session.user.id}
+        />
+      </Paper>
 
     </Box>
   );

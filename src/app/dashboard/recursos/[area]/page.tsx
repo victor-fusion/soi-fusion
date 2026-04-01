@@ -84,7 +84,7 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
     areaEntregables = (data ?? []) as Entregable[];
   }
 
-  const doneCnt = areaEntregables.filter((e) => e.status === "done").length;
+  const doneCnt = areaEntregables.filter((e) => e.status === "completado").length;
 
   // Sin sección seleccionada → lista de secciones
   if (!sectionId) {

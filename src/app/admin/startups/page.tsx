@@ -69,7 +69,7 @@ export default async function StartupsPage({
         (e: { startup_id: string; phase: number; status: string }) =>
           e.startup_id === s.id && e.phase === s.current_phase
       );
-      const done = mine.filter((e: { status: string }) => e.status === "done").length;
+      const done = mine.filter((e: { status: string }) => e.status === "completado").length;
       const pct = mine.length > 0 ? Math.round((done / mine.length) * 100) : 0;
       return [s.id, { done, total: mine.length, pct }];
     })

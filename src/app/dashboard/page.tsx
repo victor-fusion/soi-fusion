@@ -31,10 +31,12 @@ function getGreeting() {
   return "Buenas noches";
 }
 
-const STATUS_CONFIG = {
-  done:        { label: "Completado", color: "#16a34a", bg: "#f0fdf4", icon: IconCircleCheck },
-  in_progress: { label: "En progreso", color: "#2563eb", bg: "#eff6ff", icon: IconClock },
-  pending:     { label: "Pendiente",   color: "#9ca3af", bg: "#f9fafb", icon: IconCircle },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof IconCircleCheck }> = {
+  completado:          { label: "Completado",  color: "#16a34a", bg: "#f0fdf4", icon: IconCircleCheck },
+  en_revision:         { label: "En revisión", color: "#ca8a04", bg: "#fef9c3", icon: IconClock },
+  cambios_solicitados: { label: "Cambios sol.", color: "#e11d48", bg: "#fff1f2", icon: IconClock },
+  en_progreso:         { label: "En progreso", color: "#2563eb", bg: "#eff6ff", icon: IconClock },
+  pendiente:           { label: "Pendiente",   color: "#9ca3af", bg: "#f9fafb", icon: IconCircle },
 };
 
 const PHASE_QUESTION: Record<number, string> = {
@@ -79,7 +81,7 @@ export default async function DashboardPage() {
   const currentPhase = PHASES.find((p) => p.number === currentPhaseNum) ?? PHASES[0];
 
   const currentEntregables = entregables.filter((e) => e.phase === currentPhaseNum);
-  const totalDone = currentEntregables.filter((e) => e.status === "done").length;
+  const totalDone = currentEntregables.filter((e) => e.status === "completado").length;
   const totalEntregables = currentEntregables.length;
   const progressPct = totalEntregables > 0 ? Math.round((totalDone / totalEntregables) * 100) : 0;
 
@@ -228,7 +230,7 @@ export default async function DashboardPage() {
           ) : (
             <Stack gap={12}>
               {byArea.map(({ area, items }) => {
-                const done = items.filter((i) => i.status === "done").length;
+                const done = items.filter((i) => i.status === "completado").length;
                 return (
                   <Paper key={area.id} p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
                     <Group justify="space-between" mb={12}>

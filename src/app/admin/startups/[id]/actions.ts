@@ -52,14 +52,19 @@ export async function changePhase(startupId: string, phase: number) {
 export async function changeEntregableStatus(
   entregableId: string,
   status: string,
-  startupId: string
+  startupId: string,
+  reviewerNotes?: string
 ) {
   const supabase = await createClient();
+  const update: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
+  if (reviewerNotes !== undefined) update.reviewer_notes = reviewerNotes;
   await supabase
     .from("entregables")
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(update)
     .eq("id", entregableId);
   revalidatePath(`/admin/startups/${startupId}`);
+  revalidatePath(`/dashboard/entregables/${entregableId}`);
+  revalidatePath("/dashboard");
 }
 
 export async function addEntregable(formData: FormData) {
@@ -71,13 +76,20 @@ export async function addEntregable(formData: FormData) {
 
   if (!title?.trim() || !area || !phase) return;
 
+  const tipo = (formData.get("tipo") as string) || "externo";
+  const fileSlotsRaw = (formData.get("file_slots") as string) || "[]";
+  let fileSlots: unknown[] = [];
+  try { fileSlots = JSON.parse(fileSlotsRaw); } catch { /* empty */ }
+
   await supabase.from("entregables").insert({
     startup_id: startupId,
     title: title.trim(),
     area,
     phase,
     section: area,
-    status: "pending",
+    status: "pendiente",
+    tipo,
+    file_slots: fileSlots,
   });
 
   revalidatePath(`/admin/startups/${startupId}`);
