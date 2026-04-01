@@ -118,7 +118,7 @@ export function TeamSection({ startupId, members }: TeamSectionProps) {
         ) : (
           <Box style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {members.map((member) => {
-              const typeCfg = TYPE_CONFIG[member.member_type] ?? TYPE_CONFIG.empleado;
+              const typeCfg = TYPE_CONFIG[member.member_type ?? "empleado"] ?? TYPE_CONFIG.empleado;
               const initials = member.full_name
                 .split(" ")
                 .slice(0, 2)
@@ -169,7 +169,7 @@ export function TeamSection({ startupId, members }: TeamSectionProps) {
                         {typeCfg.label}
                       </Badge>
                       <Badge size="xs" color="gray" variant="light">
-                        {DEDICATION_LABELS[member.dedication] ?? member.dedication}
+                        {member.dedication ? (DEDICATION_LABELS[member.dedication] ?? member.dedication) : "—"}
                       </Badge>
                       {member.joined_at && (
                         <Text style={{ fontSize: 11, color: "#d1d5db" }}>
