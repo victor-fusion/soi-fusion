@@ -22,7 +22,7 @@ El objetivo es que sea la herramienta diaria de cada startup durante su ciclo de
 - `academia.fusionstartups.com` — futuro
 
 ## Roles de usuario
-- `founder` — emprendedor de una startup del ciclo actual. Ve solo su startup.
+- `founder` — emprendedor de una startup del ecosistema Fusión Startups. Ve solo su startup.
 - `admin` — equipo Fusión (Víctor y compañeros). Ve todas las startups.
 
 ## Estructura del SOI (4 capas)

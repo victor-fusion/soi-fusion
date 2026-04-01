@@ -8,7 +8,9 @@
       "WebSearch",
       "WebFetch(domain:supabase.com)",
       "WebFetch(domain:github.com)",
-      "Read(//Users/vhumanes/Downloads/Privado y compartido/**)"
+      "Read(//Users/vhumanes/Downloads/Privado y compartido/**)",
+      "Bash(git push:*)",
+      "Bash(npm run:*)"
     ],
     "additionalDirectories": [
       "/Users/vhumanes/Code/soi-fusion/src/app/dashboard/arsenal/[area]",

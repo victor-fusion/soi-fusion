@@ -11,12 +11,18 @@ import {
 import {
   IconLayoutDashboard, IconLogout, IconChevronRight,
   IconUsers, IconRobot, IconSettings, IconUsersGroup,
+  IconCheckbox, IconLayoutGrid,
 } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Centro de Control", icon: IconLayoutDashboard, exact: true },
   { href: "/admin/startups", label: "Startups", icon: IconUsers },
   { href: "/admin/miembros", label: "Miembros", icon: IconUsersGroup },
+  { href: "/admin/entregables", label: "Entregables", icon: IconCheckbox },
+  { href: "/admin/recursos", label: "Recursos", icon: IconLayoutGrid },
+];
+
+const NAV_BOTTOM: { href: string; label: string; icon: typeof IconRobot; badge?: string; exact?: boolean }[] = [
   { href: "/admin/agente", label: "Agente SDR", icon: IconRobot, badge: "IA" },
   { href: "/admin/config", label: "Configuración", icon: IconSettings },
 ];
@@ -88,6 +94,42 @@ export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
       <ScrollArea flex={1} px={12}>
         <Box mb={8}>
           {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href, item.exact);
+            return (
+              <UnstyledButton
+                key={item.href}
+                component={Link}
+                href={item.href}
+                w="100%"
+                px={10}
+                py={8}
+                mb={2}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  borderRadius: 8,
+                  backgroundColor: active ? "#fff" : "transparent",
+                  boxShadow: active ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+                  border: active ? "1px solid #f3f4f6" : "1px solid transparent",
+                  transition: "all 0.15s",
+                  textDecoration: "none",
+                  color: active ? "#111827" : "#6b7280",
+                }}
+              >
+                <Icon size={16} color={active ? "#16a34a" : "#9ca3af"} />
+                <Text style={{ fontSize: "14px", fontWeight: active ? 600 : 500, flex: 1, color: "inherit" }}>
+                  {item.label}
+                </Text>
+                {active && <IconChevronRight size={12} color="#16a34a" />}
+              </UnstyledButton>
+            );
+          })}
+        </Box>
+
+        <Box mb={8} pt={8} style={{ borderTop: "1px solid #f3f4f6" }}>
+          {NAV_BOTTOM.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
             return (

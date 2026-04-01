@@ -59,6 +59,21 @@ export interface Profile {
   display_order: number;
 }
 
+// ─── ENTREGABLE TEMPLATES (MAESTROS) ─────────────────────────────────────────
+export interface EntregableTemplate {
+  id: string;
+  title: string;
+  description?: string;
+  area: string;
+  section: string;
+  phase: number; // 1-6
+  order: number;
+  tipo: EntregableTipo;
+  file_slots: FileSlot[];
+  is_active: boolean;
+  created_at: string;
+}
+
 // ─── ENTREGABLES ─────────────────────────────────────────────────────────────
 export type EntregableStatus =
   | "pendiente"
@@ -82,6 +97,7 @@ export interface FileSlot {
 export interface Entregable {
   id: string;
   startup_id: string;
+  template_id?: string | null;
   title: string;
   description?: string;
   area: string;
