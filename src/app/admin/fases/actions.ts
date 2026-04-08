@@ -5,9 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function createFase(formData: FormData) {
   const supabase = await createClient();
-  const number = parseInt(formData.get("number") as string, 10);
-  const name   = formData.get("name") as string;
-  const color  = formData.get("color") as string;
+  const name  = formData.get("name") as string;
+  const color = formData.get("color") as string;
+
+  const { data: maxRow } = await supabase
+    .from("phases")
+    .select("number")
+    .order("number", { ascending: false })
+    .limit(1)
+    .single();
+
+  const number = (maxRow?.number ?? 0) + 1;
 
   const { error } = await supabase
     .from("phases")
@@ -47,7 +55,7 @@ export async function reorderFases(orderedIds: number[]) {
   const supabase = await createClient();
   await Promise.all(
     orderedIds.map((id, index) =>
-      supabase.from("phases").update({ sort_order: index + 1 }).eq("id", id)
+      supabase.from("phases").update({ sort_order: index + 1, number: index + 1 }).eq("id", id)
     )
   );
   revalidatePath("/admin/fases");

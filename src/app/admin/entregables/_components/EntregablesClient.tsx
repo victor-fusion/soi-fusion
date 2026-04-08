@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconFileDescription } from "@tabler/icons-react";
 import type { EntregableTemplate, Area } from "@/types";
@@ -25,16 +26,15 @@ interface EntregablesClientProps {
 }
 
 export function EntregablesClient({ templates, areas, phases: PHASES }: EntregablesClientProps) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<EntregableTemplate | null>(null);
   const [filterArea, setFilterArea]       = useState("");
   const [filterPhase, setFilterPhase]     = useState(0);
   const [filterSection, setFilterSection] = useState("");
   const [filterTipo, setFilterTipo]       = useState("");
 
-  const openNew = () => { setEditing(null); setDrawerOpen(true); };
-  const openEdit = (t: EntregableTemplate) => { setEditing(t); setDrawerOpen(true); };
-  const close = () => { setDrawerOpen(false); setEditing(null); };
+  const openNew = () => setDrawerOpen(true);
+  const close = () => setDrawerOpen(false);
 
   const clearFilters = () => { setFilterArea(""); setFilterPhase(0); setFilterSection(""); setFilterTipo(""); };
   const hasFilters = filterArea || filterPhase > 0 || filterSection || filterTipo;
@@ -85,13 +85,13 @@ export function EntregablesClient({ templates, areas, phases: PHASES }: Entregab
 
         {/* Filtros */}
         <Group gap={10} mb={24}>
-          <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
-            <option value="">Todas las áreas</option>
-            {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
           <select value={filterPhase} onChange={(e) => setFilterPhase(parseInt(e.target.value, 10))} style={selectStyle}>
             <option value={0}>Todas las fases</option>
             {PHASES.map((p) => <option key={p.number} value={p.number}>Fase {p.number} · {p.name}</option>)}
+          </select>
+          <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
+            <option value="">Todas las áreas</option>
+            {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} style={selectStyle}>
             <option value="">Todas las secciones</option>
@@ -148,7 +148,7 @@ export function EntregablesClient({ templates, areas, phases: PHASES }: Entregab
                   <Box
                     key={t.id}
                     px={20} py={13}
-                    onClick={() => openEdit(t)}
+                    onClick={() => router.push(`/admin/entregables/${t.id}`)}
                     style={{
                       display: "grid",
                       gridTemplateColumns: "1fr 130px 120px 130px 44px",
@@ -211,11 +211,11 @@ export function EntregablesClient({ templates, areas, phases: PHASES }: Entregab
       <SlideDrawer
         open={drawerOpen}
         onClose={close}
-        title={editing ? "Editar entregable maestro" : "Nuevo entregable maestro"}
-        subtitle={editing ? editing.title : "Se asignará automáticamente a nuevas startups"}
+        title="Nuevo entregable maestro"
+        subtitle="Se asignará automáticamente a nuevas startups"
       >
         {drawerOpen && (
-          <TemplateForm template={editing ?? undefined} onClose={close} areas={areas} phases={PHASES} />
+          <TemplateForm onClose={close} areas={areas} phases={PHASES} />
         )}
       </SlideDrawer>
     </>

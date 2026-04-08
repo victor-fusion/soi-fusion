@@ -62,6 +62,13 @@ export async function updateRecurso(formData: FormData) {
   revalidatePath("/admin/recursos");
 }
 
+export async function deleteRecurso(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("cards").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/recursos");
+}
+
 export async function toggleRecursoActive(id: string, is_active: boolean) {
   const supabase = await createClient();
   const { error } = await supabase.from("cards").update({ is_active }).eq("id", id);

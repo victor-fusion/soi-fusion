@@ -15,6 +15,7 @@ interface AreaRecord {
 interface AreaFormProps {
   area?: AreaRecord;
   onClose: () => void;
+  onAfterDelete?: () => void;
 }
 
 const PRESET_COLORS = [
@@ -43,7 +44,7 @@ const toSlug = (name: string) =>
     .trim()
     .replace(/\s+/g, "_");
 
-export function AreaForm({ area, onClose }: AreaFormProps) {
+export function AreaForm({ area, onClose, onAfterDelete }: AreaFormProps) {
   const [isPending, startTransition] = useTransition();
   const [selectedColor, setSelectedColor] = useState(area?.color ?? "#16A34A");
   const [slug, setSlug] = useState(area?.id ?? "");
@@ -69,7 +70,8 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
     if (!confirm(`¿Eliminar el área "${area.name}" y todas sus secciones? Esta acción no se puede deshacer.`)) return;
     startTransition(async () => {
       await deleteArea(area.id);
-      onClose();
+      if (onAfterDelete) onAfterDelete();
+      else onClose();
     });
   };
 

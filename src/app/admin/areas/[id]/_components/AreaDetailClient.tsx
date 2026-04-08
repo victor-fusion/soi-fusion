@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Box, Text, Group, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconPencil } from "@tabler/icons-react";
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
@@ -31,6 +32,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 export function AreaDetailClient({ area, sections }: AreaDetailClientProps) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"area" | "section">("area");
   const [editingSection, setEditingSection] = useState<Section | null>(null);
@@ -163,12 +165,13 @@ export function AreaDetailClient({ area, sections }: AreaDetailClientProps) {
 
       <SlideDrawer open={drawerOpen} onClose={close} title={drawerTitle} subtitle={drawerSubtitle}>
         {drawerOpen && drawerMode === "area" && (
-          <AreaForm area={area} onClose={close} />
+          <AreaForm area={area} onClose={close} onAfterDelete={() => router.push("/admin/areas")} />
         )}
         {drawerOpen && drawerMode === "section" && (
           <SectionForm
             section={editingSection ?? undefined}
             areaId={area.id}
+            areaName={area.name}
             onClose={close}
           />
         )}

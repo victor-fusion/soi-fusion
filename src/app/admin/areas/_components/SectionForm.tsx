@@ -22,6 +22,7 @@ interface Section {
 interface SectionFormProps {
   section?: Section;
   areaId: string;
+  areaName?: string;
   onClose: () => void;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { Box, SimpleGrid } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { IconLoader2 } from "@tabler/icons-react";
 import { createFase, updateFase, deleteFase } from "../actions";
 
@@ -68,31 +68,16 @@ export function FaseForm({ fase, onClose }: FaseFormProps) {
       <Box style={{ display: "flex", flexDirection: "column", gap: 20, padding: "4px 0" }}>
         {isEdit && <input type="hidden" name="id" value={fase.id} />}
 
-        <SimpleGrid cols={2} spacing={16}>
-          <Box>
-            <label style={labelStyle}>Número</label>
-            <input
-              type="number"
-              name="number"
-              required
-              min={1}
-              defaultValue={fase?.number ?? ""}
-              placeholder="1"
-              style={inputStyle}
-              disabled={isEdit}
-            />
-          </Box>
-          <Box>
-            <label style={labelStyle}>Nombre *</label>
-            <input
-              name="name"
-              required
-              defaultValue={fase?.name ?? ""}
-              placeholder="Ej: Descubrir"
-              style={inputStyle}
-            />
-          </Box>
-        </SimpleGrid>
+        <Box>
+          <label style={labelStyle}>Nombre *</label>
+          <input
+            name="name"
+            required
+            defaultValue={fase?.name ?? ""}
+            placeholder="Ej: Descubrir"
+            style={inputStyle}
+          />
+        </Box>
 
         <Box>
           <label style={labelStyle}>Color</label>

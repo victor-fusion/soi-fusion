@@ -70,6 +70,7 @@ export async function createSection(formData: FormData) {
 
   if (error) throw new Error(error.message);
   revalidatePath("/admin/areas");
+  revalidatePath("/admin/secciones");
 }
 
 export async function updateSection(formData: FormData) {
@@ -86,6 +87,7 @@ export async function updateSection(formData: FormData) {
 
   if (error) throw new Error(error.message);
   revalidatePath("/admin/areas");
+  revalidatePath("/admin/secciones");
 }
 
 export async function deleteSection(id: string, area_id: string) {
@@ -98,6 +100,7 @@ export async function deleteSection(id: string, area_id: string) {
 
   if (error) throw new Error(error.message);
   revalidatePath("/admin/areas");
+  revalidatePath("/admin/secciones");
 }
 
 // ─── REORDENACIÓN ────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconLayoutGrid } from "@tabler/icons-react";
 import type { Card, Area } from "@/types";
@@ -39,15 +40,14 @@ interface RecursosClientProps {
 }
 
 export function RecursosClient({ cards, areas }: RecursosClientProps) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<CardWithArea | null>(null);
   const [filterArea, setFilterArea]       = useState("");
   const [filterSection, setFilterSection] = useState("");
   const [filterType, setFilterType]       = useState("");
 
-  const openNew = () => { setEditing(null); setDrawerOpen(true); };
-  const openEdit = (c: CardWithArea) => { setEditing(c); setDrawerOpen(true); };
-  const close = () => { setDrawerOpen(false); setEditing(null); };
+  const openNew = () => setDrawerOpen(true);
+  const close = () => setDrawerOpen(false);
 
   const availableSections = filterArea
     ? (areas.find((a) => a.id === filterArea)?.sections ?? [])
@@ -178,7 +178,7 @@ export function RecursosClient({ cards, areas }: RecursosClientProps) {
                       <Box
                         key={c.id}
                         px={20} py={13}
-                        onClick={() => openEdit(c)}
+                        onClick={() => router.push(`/admin/recursos/${c.id}`)}
                         style={{
                           display: "grid",
                           gridTemplateColumns: "1fr 130px 130px 44px",
@@ -226,11 +226,10 @@ export function RecursosClient({ cards, areas }: RecursosClientProps) {
       <SlideDrawer
         open={drawerOpen}
         onClose={close}
-        title={editing ? "Editar recurso" : "Nuevo recurso"}
-        subtitle={editing ? editing.title : undefined}
+        title="Nuevo recurso"
       >
         {drawerOpen && (
-          <RecursoForm card={editing ?? undefined} onClose={close} areas={areas} />
+          <RecursoForm onClose={close} areas={areas} />
         )}
       </SlideDrawer>
     </>

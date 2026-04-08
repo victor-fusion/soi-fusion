@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Box, Text, Group, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconGripVertical } from "@tabler/icons-react";
 import {
@@ -71,6 +72,7 @@ interface FasesClientProps {
 }
 
 export function FasesClient({ phases: initialPhases }: FasesClientProps) {
+  const router = useRouter();
   const [phases, setPhases] = useState(initialPhases);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Phase | null>(null);
@@ -80,7 +82,7 @@ export function FasesClient({ phases: initialPhases }: FasesClientProps) {
 
   const openNew  = () => { setEditing(null); setDrawerOpen(true); };
   const openEdit = (p: Phase) => { setEditing(p); setDrawerOpen(true); };
-  const close    = () => { setDrawerOpen(false); setEditing(null); };
+  const close    = () => { setDrawerOpen(false); setEditing(null); router.refresh(); };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
