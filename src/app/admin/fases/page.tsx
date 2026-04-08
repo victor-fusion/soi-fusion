@@ -10,8 +10,8 @@ export default async function FasesPage() {
 
   const { data } = await supabase
     .from("phases")
-    .select("id, number, name, color")
-    .order("number");
+    .select("id, number, name, color, sort_order")
+    .order("sort_order");
 
   return <FasesClient phases={data ?? []} />;
 }

@@ -99,3 +99,27 @@ export async function deleteSection(id: string, area_id: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/areas");
 }
+
+// ─── REORDENACIÓN ────────────────────────────────────────────────────────────
+
+export async function reorderAreas(orderedIds: string[]) {
+  const supabase = await createClient();
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from("areas").update({ sort_order: index + 1 }).eq("id", id)
+    )
+  );
+  revalidatePath("/admin/areas");
+  revalidatePath("/admin/secciones");
+}
+
+export async function reorderSections(orderedIds: Array<{ id: string; area_id: string }>) {
+  const supabase = await createClient();
+  await Promise.all(
+    orderedIds.map(({ id, area_id }, index) =>
+      supabase.from("area_sections").update({ sort_order: index + 1 }).eq("id", id).eq("area_id", area_id)
+    )
+  );
+  revalidatePath("/admin/areas");
+  revalidatePath("/admin/secciones");
+}

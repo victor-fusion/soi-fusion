@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Box, Text, Group, Paper, Stack, Badge } from "@mantine/core";
-import { IconPlus, IconChevronDown, IconChevronRight, IconPencil } from "@tabler/icons-react";
+import { IconPlus, IconPencil, IconGripVertical } from "@tabler/icons-react";
+import {
+  DndContext, closestCenter, DragEndEvent,
+  PointerSensor, useSensor, useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext, verticalListSortingStrategy,
+  useSortable, arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
 import { AreaForm } from "./AreaForm";
-import { SectionForm } from "./SectionForm";
+import { reorderAreas } from "../actions";
 
 interface Section {
   id: string;
@@ -22,74 +32,75 @@ interface AreaRecord {
   sections: Section[];
 }
 
+function SortableAreaRow({ area, isLast, onClick }: { area: AreaRecord; isLast: boolean; onClick: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: area.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    display: "grid", gridTemplateColumns: "28px 1fr 100px 32px",
+    gap: 12, alignItems: "center", padding: "14px 20px",
+    borderBottom: isLast ? "none" : "1px solid #f9fafb",
+    cursor: "pointer",
+    opacity: isDragging ? 0.5 : 1,
+    backgroundColor: isDragging ? "#f9fafb" : "",
+  };
+
+  return (
+    <Box
+      ref={setNodeRef}
+      style={style}
+      onClick={onClick}
+      onMouseEnter={(e) => { if (!isDragging) e.currentTarget.style.backgroundColor = "#fafafa"; }}
+      onMouseLeave={(e) => { if (!isDragging) e.currentTarget.style.backgroundColor = ""; }}
+    >
+      <Box
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        style={{ color: "#d1d5db", cursor: "grab", display: "flex", alignItems: "center" }}
+      >
+        <IconGripVertical size={14} />
+      </Box>
+      <Group gap={10}>
+        <Box style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: area.color, flexShrink: 0 }} />
+        <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>{area.name}</Text>
+      </Group>
+      <Badge size="xs" variant="light" color="gray">{area.sections.length} secciones</Badge>
+      <Box style={{ display: "flex", justifyContent: "center", color: "#d1d5db" }}>
+        <IconPencil size={13} />
+      </Box>
+    </Box>
+  );
+}
+
 interface AreasClientProps {
   areas: AreaRecord[];
 }
 
-export function AreasClient({ areas }: AreasClientProps) {
+export function AreasClient({ areas: initialAreas }: AreasClientProps) {
+  const router = useRouter();
+  const [areas, setAreas] = useState(initialAreas);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<"area" | "section">("area");
-  const [editingArea, setEditingArea] = useState<AreaRecord | null>(null);
-  const [editingSection, setEditingSection] = useState<Section | null>(null);
-  const [sectionAreaId, setSectionAreaId] = useState<string>("");
-  const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set(areas.map((a) => a.id)));
+  const [, startTransition] = useTransition();
 
-  const openNewArea = () => {
-    setEditingArea(null);
-    setDrawerMode("area");
-    setDrawerOpen(true);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const openNew = () => setDrawerOpen(true);
+  const close = () => setDrawerOpen(false);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = areas.findIndex((a) => a.id === active.id);
+    const newIndex = areas.findIndex((a) => a.id === over.id);
+    const reordered = arrayMove(areas, oldIndex, newIndex);
+    setAreas(reordered);
+    startTransition(() => reorderAreas(reordered.map((a) => a.id)));
   };
-
-  const openEditArea = (a: AreaRecord, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingArea(a);
-    setDrawerMode("area");
-    setDrawerOpen(true);
-  };
-
-  const openNewSection = (areaId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingSection(null);
-    setSectionAreaId(areaId);
-    setDrawerMode("section");
-    setDrawerOpen(true);
-  };
-
-  const openEditSection = (s: Section, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingSection(s);
-    setSectionAreaId(s.area_id);
-    setDrawerMode("section");
-    setDrawerOpen(true);
-  };
-
-  const close = () => {
-    setDrawerOpen(false);
-    setEditingArea(null);
-    setEditingSection(null);
-  };
-
-  const toggleExpand = (areaId: string) => {
-    setExpandedAreas((prev) => {
-      const next = new Set(prev);
-      if (next.has(areaId)) next.delete(areaId);
-      else next.add(areaId);
-      return next;
-    });
-  };
-
-  const drawerTitle = drawerMode === "area"
-    ? (editingArea ? "Editar área" : "Nueva área")
-    : (editingSection ? "Editar sección" : "Nueva sección");
-
-  const drawerSubtitle = drawerMode === "area"
-    ? (editingArea ? editingArea.name : undefined)
-    : (editingSection ? editingSection.name : areas.find((a) => a.id === sectionAreaId)?.name);
 
   return (
     <>
       <Box p={40} maw={900} mx="auto">
-        {/* Header */}
         <Box mb={32}>
           <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500 }}>Admin</Text>
           <Group justify="space-between" align="center" mt={4}>
@@ -100,7 +111,7 @@ export function AreasClient({ areas }: AreasClientProps) {
               </Text>
             </Box>
             <button
-              onClick={openNewArea}
+              onClick={openNew}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
             >
               <IconPlus size={15} />
@@ -109,87 +120,33 @@ export function AreasClient({ areas }: AreasClientProps) {
           </Group>
         </Box>
 
-        {/* Lista */}
-        <Stack gap={12}>
-          {areas.map((area) => {
-            const expanded = expandedAreas.has(area.id);
-            return (
-              <Paper key={area.id} p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
-                {/* Cabecera de área */}
-                <Box
-                  px={20} py={16}
-                  onClick={() => toggleExpand(area.id)}
-                  style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer", backgroundColor: "#fafafa" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
-                >
-                  <Box style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: area.color, flexShrink: 0 }} />
-                  <Text style={{ fontSize: 15, fontWeight: 600, color: "#111827", flex: 1 }}>{area.name}</Text>
-                  <Badge size="xs" variant="light" color="gray">{area.sections.length} secciones</Badge>
-                  <button
-                    onClick={(e) => openEditArea(area, e)}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", padding: 4 }}
-                  >
-                    <IconPencil size={14} />
-                  </button>
-                  {expanded ? <IconChevronDown size={14} color="#9ca3af" /> : <IconChevronRight size={14} color="#9ca3af" />}
-                </Box>
+        <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
+          <Box px={20} py={11} style={{ display: "grid", gridTemplateColumns: "28px 1fr 100px 32px", gap: 12, alignItems: "center", backgroundColor: "#fafafa", borderBottom: "1px solid #f3f4f6" }}>
+            <Text style={{ fontSize: 11, color: "#9ca3af" }}></Text>
+            {["Área", "Secciones", ""].map((h) => (
+              <Text key={h} style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</Text>
+            ))}
+          </Box>
 
-                {/* Secciones */}
-                {expanded && (
-                  <Box>
-                    {area.sections.map((s, i) => (
-                      <Box
-                        key={s.id}
-                        px={20} py={12}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 12,
-                          borderTop: "1px solid #f3f4f6",
-                        }}
-                      >
-                        <Box style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: area.color, flexShrink: 0, marginLeft: 4 }} />
-                        <Text style={{ fontSize: 13, color: "#374151", flex: 1 }}>{s.name}</Text>
-                        <Text style={{ fontSize: 11, color: "#d1d5db" }}>{s.id}</Text>
-                        <button
-                          onClick={(e) => openEditSection(s, e)}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "#d1d5db", display: "flex", padding: 4 }}
-                        >
-                          <IconPencil size={13} />
-                        </button>
-                      </Box>
-                    ))}
-                    {/* Añadir sección */}
-                    <Box
-                      px={20} py={10}
-                      style={{ borderTop: "1px solid #f3f4f6" }}
-                    >
-                      <button
-                        onClick={(e) => openNewSection(area.id, e)}
-                        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 12, padding: 0 }}
-                      >
-                        <IconPlus size={12} />
-                        Añadir sección
-                      </button>
-                    </Box>
-                  </Box>
-                )}
-              </Paper>
-            );
-          })}
-        </Stack>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={areas.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+              <Stack gap={0}>
+                {areas.map((area, i) => (
+                  <SortableAreaRow
+                    key={area.id}
+                    area={area}
+                    isLast={i === areas.length - 1}
+                    onClick={() => router.push(`/admin/areas/${area.id}`)}
+                  />
+                ))}
+              </Stack>
+            </SortableContext>
+          </DndContext>
+        </Paper>
       </Box>
 
-      <SlideDrawer open={drawerOpen} onClose={close} title={drawerTitle} subtitle={drawerSubtitle}>
-        {drawerOpen && drawerMode === "area" && (
-          <AreaForm area={editingArea ?? undefined} onClose={close} />
-        )}
-        {drawerOpen && drawerMode === "section" && (
-          <SectionForm
-            section={editingSection ?? undefined}
-            areaId={sectionAreaId}
-            onClose={close}
-          />
-        )}
+      <SlideDrawer open={drawerOpen} onClose={close} title="Nueva área">
+        {drawerOpen && <AreaForm onClose={close} />}
       </SlideDrawer>
     </>
   );

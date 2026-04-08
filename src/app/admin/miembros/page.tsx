@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import {
   Box, Text, Title, Group, Stack, Badge, Paper, Avatar,
 } from "@mantine/core";
-import { IconArrowRight, IconMail, IconBrandLinkedin, IconPhone } from "@tabler/icons-react";
+import { IconPencil, IconBrandLinkedin, IconPhone } from "@tabler/icons-react";
 import { BatchFilter } from "../_components/BatchFilter";
 import { StartupFilter, TypeFilter } from "./_components/MiembrosFilters";
 import { NewMemberButton } from "./_components/NewMemberButton";
@@ -176,7 +176,7 @@ export default async function MiembrosPage({
           style={{
             borderBottom: "1px solid #f3f4f6",
             display: "grid",
-            gridTemplateColumns: "1fr 140px 110px 110px 80px",
+            gridTemplateColumns: "1fr 140px 110px 110px 60px",
             gap: 16, alignItems: "center",
             backgroundColor: "#fafafa",
           }}
@@ -206,15 +206,18 @@ export default async function MiembrosPage({
                 .toUpperCase();
 
               return (
-                <Box
+                <Link
                   key={member.id}
-                  px={24} py={14}
+                  href={`/admin/miembros/${member.id}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 140px 110px 110px 80px",
-                    gap: 16, alignItems: "center",
+                    gridTemplateColumns: "1fr 140px 110px 110px 60px",
+                    gap: 16, alignItems: "center", padding: "14px 24px",
                     borderBottom: isLast ? "none" : "1px solid #f9fafb",
+                    textDecoration: "none", color: "inherit", cursor: "pointer",
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
                 >
                   {/* Nombre */}
                   <Group gap={10}>
@@ -270,28 +273,23 @@ export default async function MiembrosPage({
                     {member.dedication ? (DEDICATION_LABELS[member.dedication] ?? member.dedication) : "—"}
                   </Text>
 
-                  {/* Contacto */}
+                  {/* Contacto + editar */}
                   <Group gap={8}>
-                    {member.email && (
-                      <a href={`mailto:${member.email}`} title={member.email} style={{ color: "#9ca3af", display: "flex" }}>
-                        <IconMail size={14} />
-                      </a>
-                    )}
                     {member.linkedin_url && (
-                      <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn" style={{ color: "#9ca3af", display: "flex" }}>
+                      <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" title="LinkedIn" onClick={(e) => e.stopPropagation()} style={{ color: "#9ca3af", display: "flex" }}>
                         <IconBrandLinkedin size={14} />
                       </a>
                     )}
                     {member.phone && (
-                      <a href={`tel:${member.phone}`} title={member.phone} style={{ color: "#9ca3af", display: "flex" }}>
+                      <a href={`tel:${member.phone}`} title={member.phone} onClick={(e) => e.stopPropagation()} style={{ color: "#9ca3af", display: "flex" }}>
                         <IconPhone size={14} />
                       </a>
                     )}
-                    <Link href={`/admin/miembros/${member.id}`} style={{ color: "#d1d5db", display: "flex" }}>
-                      <IconArrowRight size={14} />
-                    </Link>
+                    <Box style={{ color: "#d1d5db", display: "flex" }}>
+                      <IconPencil size={14} />
+                    </Box>
                   </Group>
-                </Box>
+                </Link>
               );
             })}
           </Stack>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Box, Text, SimpleGrid } from "@mantine/core";
-import { IconLoader2, IconCircleCheck } from "@tabler/icons-react";
+import { useState, useTransition, useRef } from "react";
+import { Box, Text, SimpleGrid, Avatar } from "@mantine/core";
+import { IconLoader2, IconCircleCheck, IconCamera } from "@tabler/icons-react";
 import type { Profile, OfficeSchedule } from "@/types";
+import { createClient } from "@/lib/supabase/client";
 import { inviteMiembro, updateMiembro } from "../actions";
 
 interface Startup {
@@ -54,6 +55,27 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
   const [schedule] = useState<OfficeSchedule>(member?.office_schedule ?? {});
   const [invitedCount, setInvitedCount] = useState(0);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState(member?.avatar_url ?? "");
+  const [isUploading, setIsUploading] = useState(false);
+  const [tempMemberId] = useState(() => crypto.randomUUID());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const supabase = createClient();
+    const ext = file.name.split(".").pop();
+    const id = member?.id ?? tempMemberId;
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(`${id}.${ext}`, file, { upsert: true });
+    if (!error && data) {
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(data.path);
+      setAvatarUrl(urlData.publicUrl);
+    }
+    setIsUploading(false);
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -97,6 +119,7 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
       return;
     }
 
+    if (avatarUrl) fd.set("avatar_url", avatarUrl);
     startTransition(async () => {
       if (isEdit) await updateMiembro(fd);
       else await inviteMiembro(fd);
@@ -185,6 +208,27 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
         {/* MODO CREAR — formulario completo */}
         {!isEdit && mode === "crear" && (
           <>
+            {/* Foto de perfil */}
+            <Box style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <Box style={{ position: "relative", flexShrink: 0 }}>
+                <Avatar src={avatarUrl || undefined} size={64} radius="xl" style={{ backgroundColor: "#f3f4f6" }}>
+                  {!avatarUrl && "?"}
+                </Avatar>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, borderRadius: "50%", border: "2px solid #fff", backgroundColor: "#111827", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: isUploading ? "wait" : "pointer", padding: 0 }}
+                >
+                  <IconCamera size={11} />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} style={{ display: "none" }} />
+              </Box>
+              <Text style={{ fontSize: 12, color: "#9ca3af" }}>
+                {isUploading ? "Subiendo…" : "Foto de perfil (opcional)"}
+              </Text>
+            </Box>
+
             <Box>
               <label style={labelStyle}>Email *</label>
               <input type="email" name="email" required placeholder="nombre@ejemplo.com" style={inputStyle} />

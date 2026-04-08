@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { Box, SimpleGrid } from "@mantine/core";
 import { IconLoader2 } from "@tabler/icons-react";
 import { createFase, updateFase, deleteFase } from "../actions";
@@ -38,6 +38,7 @@ const labelStyle: React.CSSProperties = {
 
 export function FaseForm({ fase, onClose }: FaseFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [selectedColor, setSelectedColor] = useState(fase?.color ?? "#2563EB");
   const isEdit = !!fase;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,25 +96,26 @@ export function FaseForm({ fase, onClose }: FaseFormProps) {
 
         <Box>
           <label style={labelStyle}>Color</label>
+          <input type="hidden" name="color" value={selectedColor} readOnly />
           <Box style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
             {PRESET_COLORS.map((c) => (
-              <label key={c} style={{ cursor: "pointer" }}>
-                <input type="radio" name="color" value={c} defaultChecked={fase?.color === c || (!fase && c === "#2563EB")} style={{ display: "none" }} />
-                <Box
-                  style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    backgroundColor: c,
-                    border: (fase?.color ?? "#2563EB") === c ? "3px solid #111827" : "3px solid transparent",
-                    transition: "border-color 0.1s",
-                  }}
-                />
-              </label>
+              <Box
+                key={c}
+                onClick={() => setSelectedColor(c)}
+                style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  backgroundColor: c,
+                  border: selectedColor === c ? "3px solid #111827" : "3px solid transparent",
+                  cursor: "pointer",
+                  transition: "border-color 0.1s",
+                }}
+              />
             ))}
           </Box>
           <input
             type="text"
-            name="color"
-            defaultValue={fase?.color ?? "#2563EB"}
+            value={selectedColor}
+            onChange={(e) => setSelectedColor(e.target.value)}
             placeholder="#2563EB"
             pattern="^#[0-9A-Fa-f]{6}$"
             style={{ ...inputStyle, width: 140 }}

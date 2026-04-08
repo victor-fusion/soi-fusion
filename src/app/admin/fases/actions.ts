@@ -42,3 +42,13 @@ export async function deleteFase(id: number) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/fases");
 }
+
+export async function reorderFases(orderedIds: number[]) {
+  const supabase = await createClient();
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from("phases").update({ sort_order: index + 1 }).eq("id", id)
+    )
+  );
+  revalidatePath("/admin/fases");
+}

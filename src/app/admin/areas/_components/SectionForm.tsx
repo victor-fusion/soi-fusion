@@ -1,9 +1,16 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { Box } from "@mantine/core";
 import { IconLoader2 } from "@tabler/icons-react";
 import { createSection, updateSection, deleteSection } from "../actions";
+
+const toSlug = (name: string) =>
+  name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s_]/g, "")
+    .trim()
+    .replace(/\s+/g, "_");
 
 interface Section {
   id: string;
@@ -34,7 +41,13 @@ const labelStyle: React.CSSProperties = {
 
 export function SectionForm({ section, areaId, onClose }: SectionFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [slug, setSlug] = useState(section?.id ?? "");
+  const [slugTouched, setSlugTouched] = useState(false);
   const isEdit = !!section;
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!slugTouched) setSlug(toSlug(e.target.value));
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,20 +75,6 @@ export function SectionForm({ section, areaId, onClose }: SectionFormProps) {
         <input type="hidden" name="area_id" value={areaId} />
         {isEdit && <input type="hidden" name="id" value={section.id} />}
 
-        {!isEdit && (
-          <Box>
-            <label style={labelStyle}>ID (slug) *</label>
-            <input
-              name="id"
-              required
-              placeholder="ej: captacion (sin espacios)"
-              pattern="[a-z0-9_]+"
-              style={inputStyle}
-            />
-            <Box style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>Solo letras minúsculas, números y guiones bajos</Box>
-          </Box>
-        )}
-
         <Box>
           <label style={labelStyle}>Nombre *</label>
           <input
@@ -84,8 +83,25 @@ export function SectionForm({ section, areaId, onClose }: SectionFormProps) {
             defaultValue={section?.name ?? ""}
             placeholder="Ej: Captación de usuarios"
             style={inputStyle}
+            onChange={handleNameChange}
           />
         </Box>
+
+        {!isEdit && (
+          <Box>
+            <label style={labelStyle}>ID (slug) *</label>
+            <input
+              name="id"
+              required
+              value={slug}
+              onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }}
+              placeholder="ej: captacion"
+              pattern="[a-z0-9_]+"
+              style={inputStyle}
+            />
+            <Box style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>Se genera automáticamente. Solo minúsculas, números y guiones bajos.</Box>
+          </Box>
+        )}
 
         <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 20, display: "flex", justifyContent: isEdit ? "space-between" : "flex-end", alignItems: "center" }}>
           {isEdit && (

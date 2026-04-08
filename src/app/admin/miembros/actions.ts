@@ -30,6 +30,8 @@ export async function inviteMiembro(formData: FormData) {
 
   if (inviteError) throw new Error(inviteError.message);
 
+  const avatarUrl = (formData.get("avatar_url") as string) || null;
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -43,6 +45,7 @@ export async function inviteMiembro(formData: FormData) {
       phone:          (formData.get("phone") as string) || null,
       linkedin_url:   (formData.get("linkedin_url") as string) || null,
       calendar_url:   (formData.get("calendar_url") as string) || null,
+      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
     })
     .eq("id", inviteData.user.id);
 
@@ -60,20 +63,25 @@ export async function updateMiembro(formData: FormData) {
   let office_schedule: OfficeSchedule = {};
   try { office_schedule = JSON.parse(scheduleRaw || "{}"); } catch { /* empty */ }
 
+  const avatarUrl = (formData.get("avatar_url") as string) || null;
+
+  const updateData: Record<string, unknown> = {
+    full_name:      formData.get("full_name") as string,
+    startup_id:     startupId,
+    role_title:     (formData.get("role_title") as string) || null,
+    member_type:    (formData.get("member_type") as string) || null,
+    dedication:     (formData.get("dedication") as string) || null,
+    office_schedule,
+    joined_at:      (formData.get("joined_at") as string) || null,
+    phone:          (formData.get("phone") as string) || null,
+    linkedin_url:   (formData.get("linkedin_url") as string) || null,
+    calendar_url:   (formData.get("calendar_url") as string) || null,
+  };
+  if (avatarUrl !== null) updateData.avatar_url = avatarUrl;
+
   const { error } = await supabase
     .from("profiles")
-    .update({
-      full_name:      formData.get("full_name") as string,
-      startup_id:     startupId,
-      role_title:     (formData.get("role_title") as string) || null,
-      member_type:    (formData.get("member_type") as string) || null,
-      dedication:     (formData.get("dedication") as string) || null,
-      office_schedule,
-      joined_at:      (formData.get("joined_at") as string) || null,
-      phone:          (formData.get("phone") as string) || null,
-      linkedin_url:   (formData.get("linkedin_url") as string) || null,
-      calendar_url:   (formData.get("calendar_url") as string) || null,
-    })
+    .update(updateData)
     .eq("id", memberId);
 
   if (error) throw new Error(error.message);

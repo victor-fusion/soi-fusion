@@ -1,7 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-import { Box, SimpleGrid } from "@mantine/core";
+import { useTransition, useState } from "react";
+import { Box } from "@mantine/core";
 import { IconLoader2 } from "@tabler/icons-react";
 import { createArea, updateArea, deleteArea } from "../actions";
 
@@ -36,9 +36,23 @@ const labelStyle: React.CSSProperties = {
   color: "#6b7280", marginBottom: 6, display: "block",
 };
 
+const toSlug = (name: string) =>
+  name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s_]/g, "")
+    .trim()
+    .replace(/\s+/g, "_");
+
 export function AreaForm({ area, onClose }: AreaFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [selectedColor, setSelectedColor] = useState(area?.color ?? "#16A34A");
+  const [slug, setSlug] = useState(area?.id ?? "");
+  const [slugTouched, setSlugTouched] = useState(false);
   const isEdit = !!area;
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!slugTouched) setSlug(toSlug(e.target.value));
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,20 +78,6 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
       <Box style={{ display: "flex", flexDirection: "column", gap: 20, padding: "4px 0" }}>
         {isEdit && <input type="hidden" name="id" value={area.id} />}
 
-        {!isEdit && (
-          <Box>
-            <label style={labelStyle}>ID (slug) *</label>
-            <input
-              name="id"
-              required
-              placeholder="ej: marketing (sin espacios, minúsculas)"
-              pattern="[a-z0-9_]+"
-              style={inputStyle}
-            />
-            <Box style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>Solo letras minúsculas, números y guiones bajos</Box>
-          </Box>
-        )}
-
         <Box>
           <label style={labelStyle}>Nombre *</label>
           <input
@@ -86,29 +86,48 @@ export function AreaForm({ area, onClose }: AreaFormProps) {
             defaultValue={area?.name ?? ""}
             placeholder="Ej: Estrategia"
             style={inputStyle}
+            onChange={handleNameChange}
           />
         </Box>
 
+        {!isEdit && (
+          <Box>
+            <label style={labelStyle}>ID (slug) *</label>
+            <input
+              name="id"
+              required
+              value={slug}
+              onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }}
+              placeholder="ej: estrategia"
+              pattern="[a-z0-9_]+"
+              style={inputStyle}
+            />
+            <Box style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>Se genera automáticamente. Solo minúsculas, números y guiones bajos.</Box>
+          </Box>
+        )}
+
         <Box>
           <label style={labelStyle}>Color</label>
+          <input type="hidden" name="color" value={selectedColor} readOnly />
           <Box style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
             {PRESET_COLORS.map((c) => (
-              <label key={c} style={{ cursor: "pointer" }}>
-                <input type="radio" name="color" value={c} defaultChecked={(area?.color ?? "#16A34A") === c} style={{ display: "none" }} />
-                <Box
-                  style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    backgroundColor: c,
-                    border: (area?.color ?? "#16A34A") === c ? "3px solid #111827" : "3px solid transparent",
-                  }}
-                />
-              </label>
+              <Box
+                key={c}
+                onClick={() => setSelectedColor(c)}
+                style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  backgroundColor: c,
+                  border: selectedColor === c ? "3px solid #111827" : "3px solid transparent",
+                  cursor: "pointer",
+                  transition: "border-color 0.1s",
+                }}
+              />
             ))}
           </Box>
           <input
             type="text"
-            name="color"
-            defaultValue={area?.color ?? "#16A34A"}
+            value={selectedColor}
+            onChange={(e) => setSelectedColor(e.target.value)}
             placeholder="#16A34A"
             pattern="^#[0-9A-Fa-f]{6}$"
             style={{ ...inputStyle, width: 140 }}

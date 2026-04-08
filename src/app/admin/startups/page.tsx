@@ -7,7 +7,7 @@ import { Suspense } from "react";
 import {
   Box, Text, Group, Stack, Badge, Paper, Progress,
 } from "@mantine/core";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconPencil } from "@tabler/icons-react";
 import { BatchFilter } from "../_components/BatchFilter";
 import { NewStartupButton } from "./_components/NewStartupButton";
 import { Pagination } from "@/components/ui/Pagination";
@@ -154,15 +154,18 @@ export default async function StartupsPage({
               const isLast = i === allStartups.length - 1;
 
               return (
-                <Box
+                <Link
                   key={startup.id}
-                  px={24} py={16}
+                  href={`/admin/startups/${startup.id}`}
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 80px 80px 140px 180px 80px 32px",
-                    gap: 16, alignItems: "center",
+                    gap: 16, alignItems: "center", padding: "16px 24px",
                     borderBottom: isLast ? "none" : "1px solid #f9fafb",
+                    textDecoration: "none", color: "inherit", cursor: "pointer",
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
                 >
                   <Box style={{ minWidth: 0 }}>
                     <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>
@@ -232,13 +235,10 @@ export default async function StartupsPage({
                       : startup.status}
                   </Badge>
 
-                  <Link
-                    href={`/admin/startups/${startup.id}`}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db", textDecoration: "none" }}
-                  >
-                    <IconArrowRight size={14} />
-                  </Link>
-                </Box>
+                  <Box style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}>
+                    <IconPencil size={14} />
+                  </Box>
+                </Link>
               );
             })}
           </Stack>

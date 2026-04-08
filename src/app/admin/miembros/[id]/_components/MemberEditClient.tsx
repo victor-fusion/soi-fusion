@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Box, SimpleGrid, Text } from "@mantine/core";
-import { IconLoader2 } from "@tabler/icons-react";
+import { Box, SimpleGrid, Text, Avatar } from "@mantine/core";
+import { IconLoader2, IconCamera } from "@tabler/icons-react";
 import type { Profile } from "@/types";
+import { createClient } from "@/lib/supabase/client";
 import { updateMiembro, deleteMiembro } from "../../actions";
 
 interface Startup {
@@ -48,12 +49,36 @@ const labelStyle: React.CSSProperties = {
 
 export function MemberEditClient({ member, startups }: MemberEditClientProps) {
   const [isPending, startTransition] = useTransition();
+  const [isUploading, setIsUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(member.avatar_url ?? "");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  const initials = member.full_name
+    .split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const supabase = createClient();
+    const ext = file.name.split(".").pop();
+    const path = `${member.id}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+    if (!error && data) {
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(data.path);
+      setAvatarUrl(urlData.publicUrl);
+    }
+    setIsUploading(false);
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set("office_schedule", JSON.stringify(member.office_schedule ?? {}));
+    fd.set("avatar_url", avatarUrl);
     startTransition(async () => {
       await updateMiembro(fd);
     });
@@ -71,6 +96,48 @@ export function MemberEditClient({ member, startups }: MemberEditClientProps) {
     <form onSubmit={handleSubmit}>
       <Box style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <input type="hidden" name="member_id" value={member.id} />
+
+        {/* Foto de perfil */}
+        <Box style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Box style={{ position: "relative", flexShrink: 0 }}>
+            <Avatar
+              src={avatarUrl || undefined}
+              size={72} radius="xl"
+              style={{ backgroundColor: "#f3f4f6", fontSize: 20, fontWeight: 700 }}
+            >
+              {!avatarUrl && initials}
+            </Avatar>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              style={{
+                position: "absolute", bottom: 0, right: 0,
+                width: 24, height: 24, borderRadius: "50%",
+                border: "2px solid #fff",
+                backgroundColor: "#111827", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: isUploading ? "wait" : "pointer",
+                padding: 0,
+              }}
+            >
+              <IconCamera size={12} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarChange}
+              style={{ display: "none" }}
+            />
+          </Box>
+          <Box>
+            <Text style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Foto de perfil</Text>
+            <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>
+              {isUploading ? "Subiendo imagen…" : "JPG, PNG o WebP · máx. 5 MB"}
+            </Text>
+          </Box>
+        </Box>
 
         <SimpleGrid cols={2} spacing={16}>
           <Box>
@@ -135,8 +202,8 @@ export function MemberEditClient({ member, startups }: MemberEditClientProps) {
           </button>
           <button
             type="submit"
-            disabled={isPending}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: isPending ? "wait" : "pointer" }}
+            disabled={isPending || isUploading}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: (isPending || isUploading) ? "wait" : "pointer" }}
           >
             {isPending && <IconLoader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
             Guardar cambios
