@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AREA_MAP } from "@/constants/areas";
+import { getAreaMap } from "@/lib/data/areas";
 import type { Card, Entregable } from "@/types";
 import Link from "next/link";
 import {
@@ -52,6 +52,7 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
   const { area: areaId } = await params;
   const { section: sectionId } = await searchParams;
 
+  const AREA_MAP = await getAreaMap();
   const area = AREA_MAP[areaId];
   if (!area) notFound();
 

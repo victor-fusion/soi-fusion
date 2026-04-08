@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconLayoutGrid } from "@tabler/icons-react";
-import type { Card } from "@/types";
-import { AREAS } from "@/constants/areas";
+import type { Card, Area } from "@/types";
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
 import { RecursoForm } from "./RecursoForm";
 import { RecursoToggle } from "./RecursoToggle";
@@ -36,9 +35,10 @@ type CardWithArea = Card & { area_id: string };
 
 interface RecursosClientProps {
   cards: CardWithArea[];
+  areas: Area[];
 }
 
-export function RecursosClient({ cards }: RecursosClientProps) {
+export function RecursosClient({ cards, areas }: RecursosClientProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<CardWithArea | null>(null);
   const [filterArea, setFilterArea]       = useState("");
@@ -50,8 +50,8 @@ export function RecursosClient({ cards }: RecursosClientProps) {
   const close = () => { setDrawerOpen(false); setEditing(null); };
 
   const availableSections = filterArea
-    ? (AREAS.find((a) => a.id === filterArea)?.sections ?? [])
-    : AREAS.flatMap((a) => a.sections);
+    ? (areas.find((a) => a.id === filterArea)?.sections ?? [])
+    : areas.flatMap((a) => a.sections);
 
   const filtered = cards.filter((c) => {
     if (filterArea    && c.area_id   !== filterArea)    return false;
@@ -64,7 +64,7 @@ export function RecursosClient({ cards }: RecursosClientProps) {
   const clearFilters = () => { setFilterArea(""); setFilterSection(""); setFilterType(""); };
 
   // Agrupar por área
-  const byArea = AREAS.map((a) => ({
+  const byArea = areas.map((a) => ({
     area: a,
     items: filtered.filter((c) => c.area_id === a.id),
   })).filter((g) => g.items.length > 0);
@@ -112,7 +112,7 @@ export function RecursosClient({ cards }: RecursosClientProps) {
         <Group gap={10} mb={24}>
           <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
             <option value="">Todas las áreas</option>
-            {AREAS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} style={selectStyle}>
             <option value="">Todas las secciones</option>
@@ -169,7 +169,7 @@ export function RecursosClient({ cards }: RecursosClientProps) {
                   </Box>
 
                   {items.map((c, i) => {
-                    const areaData = AREAS.find((a) => a.id === c.area_id);
+                    const areaData = areas.find((a) => a.id === c.area_id);
                     const sectionData = areaData?.sections.find((s) => s.id === c.section_id);
                     const typeColor = TYPE_COLORS[c.type] ?? "#9ca3af";
                     const isLast = i === items.length - 1;
@@ -230,7 +230,7 @@ export function RecursosClient({ cards }: RecursosClientProps) {
         subtitle={editing ? editing.title : undefined}
       >
         {drawerOpen && (
-          <RecursoForm card={editing ?? undefined} onClose={close} />
+          <RecursoForm card={editing ?? undefined} onClose={close} areas={areas} />
         )}
       </SlideDrawer>
     </>

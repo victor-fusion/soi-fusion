@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AREAS } from "@/constants/areas";
 import { IconLoader2 } from "@tabler/icons-react";
-import type { Card } from "@/types";
+import type { Card, Area } from "@/types";
 import { createRecurso, updateRecurso } from "../actions";
 
 const CARD_TYPES = [
@@ -19,19 +18,20 @@ const CARD_TYPES = [
 interface RecursoFormProps {
   card?: Card & { area_id?: string };
   onClose: () => void;
+  areas: Area[];
 }
 
-export function RecursoForm({ card, onClose }: RecursoFormProps) {
+export function RecursoForm({ card, onClose, areas }: RecursoFormProps) {
   const isEdit = !!card;
   const [isPending, startTransition] = useTransition();
 
   // Determinar área actual desde section_id
-  const initialArea = card?.area_id ?? AREAS[0].id;
+  const initialArea = card?.area_id ?? (areas[0]?.id ?? "");
   const [selectedArea, setSelectedArea] = useState(initialArea);
   const [selectedSection, setSelectedSection] = useState(card?.section_id ?? "");
   const [cardType, setCardType] = useState<string>(card?.type ?? "resource");
 
-  const area = AREAS.find((a) => a.id === selectedArea);
+  const area = areas.find((a) => a.id === selectedArea);
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "9px 12px", fontSize: 13, color: "#374151",
@@ -92,7 +92,7 @@ export function RecursoForm({ card, onClose }: RecursoFormProps) {
             onChange={(e) => { setSelectedArea(e.target.value); setSelectedSection(""); }}
             style={{ ...inputStyle, cursor: "pointer" }}
           >
-            {AREAS.map((a) => (
+            {areas.map((a) => (
               <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AREAS, PHASES } from "@/constants/areas";
+import { getAreas } from "@/lib/data/areas";
+import { getPhases } from "@/lib/data/phases";
 import type { Entregable } from "@/types";
 import {
   Box, Text, Title, Group, Stack, Progress,
@@ -53,6 +54,8 @@ export default async function DashboardPage() {
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");
+
+  const [AREAS, PHASES] = await Promise.all([getAreas(), getPhases()]);
 
   const { data: profile } = await supabase
     .from("profiles")

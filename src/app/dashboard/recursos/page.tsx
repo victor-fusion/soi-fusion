@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { AREAS } from "@/constants/areas";
+import { getAreas } from "@/lib/data/areas";
 import { Box, Text, Title, SimpleGrid } from "@mantine/core";
 import { IconArrowRight } from "@tabler/icons-react";
 
-export default function ArsenalPage() {
+export default async function ArsenalPage() {
+  const AREAS = await getAreas();
   return (
     <Box p={40} maw={900} mx="auto">
 

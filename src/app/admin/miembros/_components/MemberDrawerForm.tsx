@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Box, Text, SimpleGrid } from "@mantine/core";
-import { IconLoader2 } from "@tabler/icons-react";
+import { IconLoader2, IconCircleCheck } from "@tabler/icons-react";
 import type { Profile, OfficeSchedule } from "@/types";
 import { inviteMiembro, updateMiembro } from "../actions";
 
@@ -52,11 +52,51 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
   const [mode, setMode] = useState<"invitar" | "crear">("invitar");
   const [isPending, startTransition] = useTransition();
   const [schedule] = useState<OfficeSchedule>(member?.office_schedule ?? {});
+  const [invitedCount, setInvitedCount] = useState(0);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set("office_schedule", JSON.stringify(schedule));
+
+    if (!isEdit && mode === "invitar") {
+      // Multi-email invite: send one invitation per line
+      const emailsRaw = fd.get("emails") as string;
+      const emails = emailsRaw
+        .split(/[\n,;]/)
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => e.includes("@"));
+
+      if (emails.length === 0) return;
+
+      setInviteError(null);
+      startTransition(async () => {
+        let count = 0;
+        for (const email of emails) {
+          const singleFd = new FormData();
+          singleFd.set("email", email);
+          singleFd.set("full_name", email.split("@")[0]); // placeholder
+          singleFd.set("startup_id", fd.get("startup_id") as string);
+          singleFd.set("member_type", "cofundador");
+          singleFd.set("dedication", "full-time");
+          singleFd.set("office_schedule", "{}");
+          try {
+            await inviteMiembro(singleFd);
+            count++;
+          } catch (err) {
+            setInviteError(`Error al invitar a ${email}: ${err instanceof Error ? err.message : String(err)}`);
+            break;
+          }
+        }
+        setInvitedCount(count);
+        if (count === emails.length) {
+          setTimeout(onClose, 1500);
+        }
+      });
+      return;
+    }
+
     startTransition(async () => {
       if (isEdit) await updateMiembro(fd);
       else await inviteMiembro(fd);
@@ -91,106 +131,167 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
                 </button>
               ))}
             </Box>
-            <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>
-              {mode === "invitar"
-                ? "Se enviará un email de invitación para que el miembro complete su registro."
-                : "Se crea el perfil directamente sin que el miembro reciba ningún email."}
-            </Text>
           </Box>
         )}
 
-        {/* Email — siempre visible en invitar, en edición no */}
-        {!isEdit && (
-          <Box>
-            <label style={labelStyle}>Email *</label>
-            <input
-              type="email"
-              name="email"
-              required
-              placeholder="nombre@ejemplo.com"
-              style={inputStyle}
-            />
-          </Box>
+        {/* MODO INVITAR — forma simplificada */}
+        {!isEdit && mode === "invitar" && (
+          <>
+            <Box>
+              <label style={labelStyle}>Emails *</label>
+              <textarea
+                name="emails"
+                required
+                rows={4}
+                placeholder={"maria@startup.com\npedro@empresa.io\nana@acme.co"}
+                style={{ ...inputStyle, resize: "vertical" }}
+              />
+              <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 5 }}>
+                Uno por línea. Se enviará un email de invitación a cada dirección.
+              </Text>
+            </Box>
+
+            <Box>
+              <label style={labelStyle}>Startup (opcional)</label>
+              <select
+                name="startup_id"
+                defaultValue={defaultStartupId ?? ""}
+                style={{ ...inputStyle, cursor: "pointer" }}
+              >
+                <option value="">Sin startup asignada</option>
+                {startups.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} (Ciclo {s.batch})</option>
+                ))}
+              </select>
+            </Box>
+
+            {invitedCount > 0 && (
+              <Box style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                <IconCircleCheck size={16} color="#16a34a" />
+                <Text style={{ fontSize: 13, color: "#16a34a", fontWeight: 500 }}>
+                  {invitedCount} {invitedCount === 1 ? "invitación enviada" : "invitaciones enviadas"}
+                </Text>
+              </Box>
+            )}
+
+            {inviteError && (
+              <Box style={{ padding: "10px 14px", borderRadius: 8, backgroundColor: "#fef2f2", border: "1px solid #fecaca" }}>
+                <Text style={{ fontSize: 12, color: "#ef4444" }}>{inviteError}</Text>
+              </Box>
+            )}
+          </>
         )}
 
-        {/* Nombre + Cargo */}
-        <SimpleGrid cols={2} spacing={16}>
-          <Box>
-            <label style={labelStyle}>Nombre completo {!isEdit && mode === "crear" ? "*" : ""}</label>
-            <input
-              name="full_name"
-              required={!isEdit && mode === "crear"}
-              defaultValue={member?.full_name ?? ""}
-              placeholder="María García"
-              style={inputStyle}
-            />
-          </Box>
-          <Box>
-            <label style={labelStyle}>Cargo</label>
-            <input
-              name="role_title"
-              defaultValue={member?.role_title ?? ""}
-              placeholder="CTO, Head of Sales…"
-              style={inputStyle}
-            />
-          </Box>
-        </SimpleGrid>
-
-        {/* Startup */}
-        <Box>
-          <label style={labelStyle}>Startup</label>
-          <select
-            name="startup_id"
-            defaultValue={member?.startup_id ?? defaultStartupId ?? ""}
-            style={{ ...inputStyle, cursor: "pointer" }}
-          >
-            <option value="">Sin startup asignada</option>
-            {startups.map((s) => (
-              <option key={s.id} value={s.id}>{s.name} (Ciclo {s.batch})</option>
-            ))}
-          </select>
-        </Box>
-
-        {/* Tipo + Dedicación */}
-        <SimpleGrid cols={2} spacing={16}>
-          <Box>
-            <label style={labelStyle}>Tipo</label>
-            <select name="member_type" defaultValue={member?.member_type ?? "cofundador"} style={{ ...inputStyle, cursor: "pointer" }}>
-              <option value="">Sin tipo</option>
-              {MEMBER_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
-          </Box>
-          <Box>
-            <label style={labelStyle}>Dedicación</label>
-            <select name="dedication" defaultValue={member?.dedication ?? "full-time"} style={{ ...inputStyle, cursor: "pointer" }}>
-              {DEDICATIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-            </select>
-          </Box>
-        </SimpleGrid>
-
-        {/* Contacto */}
-        <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16 }}>
-          <Text style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 16 }}>
-            Contacto
-          </Text>
-          <SimpleGrid cols={2} spacing={16}>
+        {/* MODO CREAR — formulario completo */}
+        {!isEdit && mode === "crear" && (
+          <>
             <Box>
-              <label style={labelStyle}>Teléfono</label>
-              <input type="tel" name="phone" defaultValue={member?.phone ?? ""} placeholder="+34 600 000 000" style={inputStyle} />
+              <label style={labelStyle}>Email *</label>
+              <input type="email" name="email" required placeholder="nombre@ejemplo.com" style={inputStyle} />
             </Box>
+            <SimpleGrid cols={2} spacing={16}>
+              <Box>
+                <label style={labelStyle}>Nombre completo *</label>
+                <input name="full_name" required placeholder="María García" style={inputStyle} />
+              </Box>
+              <Box>
+                <label style={labelStyle}>Cargo</label>
+                <input name="role_title" placeholder="CTO, Head of Sales…" style={inputStyle} />
+              </Box>
+            </SimpleGrid>
             <Box>
-              <label style={labelStyle}>LinkedIn</label>
-              <input type="url" name="linkedin_url" defaultValue={member?.linkedin_url ?? ""} placeholder="https://linkedin.com/in/..." style={inputStyle} />
+              <label style={labelStyle}>Startup</label>
+              <select name="startup_id" defaultValue={defaultStartupId ?? ""} style={{ ...inputStyle, cursor: "pointer" }}>
+                <option value="">Sin startup asignada</option>
+                {startups.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} (Ciclo {s.batch})</option>
+                ))}
+              </select>
             </Box>
-          </SimpleGrid>
-        </Box>
+            <SimpleGrid cols={2} spacing={16}>
+              <Box>
+                <label style={labelStyle}>Tipo</label>
+                <select name="member_type" defaultValue="cofundador" style={{ ...inputStyle, cursor: "pointer" }}>
+                  <option value="">Sin tipo</option>
+                  {MEMBER_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </Box>
+              <Box>
+                <label style={labelStyle}>Dedicación</label>
+                <select name="dedication" defaultValue="full-time" style={{ ...inputStyle, cursor: "pointer" }}>
+                  {DEDICATIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+                </select>
+              </Box>
+            </SimpleGrid>
+          </>
+        )}
+
+        {/* MODO EDICIÓN — formulario completo */}
+        {isEdit && (
+          <>
+            <SimpleGrid cols={2} spacing={16}>
+              <Box>
+                <label style={labelStyle}>Nombre completo</label>
+                <input name="full_name" defaultValue={member.full_name ?? ""} placeholder="María García" style={inputStyle} />
+              </Box>
+              <Box>
+                <label style={labelStyle}>Cargo</label>
+                <input name="role_title" defaultValue={member.role_title ?? ""} placeholder="CTO, Head of Sales…" style={inputStyle} />
+              </Box>
+            </SimpleGrid>
+
+            <Box>
+              <label style={labelStyle}>Startup</label>
+              <select name="startup_id" defaultValue={member.startup_id ?? ""} style={{ ...inputStyle, cursor: "pointer" }}>
+                <option value="">Sin startup asignada</option>
+                {startups.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} (Ciclo {s.batch})</option>
+                ))}
+              </select>
+            </Box>
+
+            <SimpleGrid cols={2} spacing={16}>
+              <Box>
+                <label style={labelStyle}>Tipo</label>
+                <select name="member_type" defaultValue={member.member_type ?? ""} style={{ ...inputStyle, cursor: "pointer" }}>
+                  <option value="">Sin tipo</option>
+                  {MEMBER_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </Box>
+              <Box>
+                <label style={labelStyle}>Dedicación</label>
+                <select name="dedication" defaultValue={member.dedication ?? "full-time"} style={{ ...inputStyle, cursor: "pointer" }}>
+                  {DEDICATIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+                </select>
+              </Box>
+            </SimpleGrid>
+
+            <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16 }}>
+              <Text style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>
+                Contacto
+              </Text>
+              <SimpleGrid cols={2} spacing={16}>
+                <Box>
+                  <label style={labelStyle}>Teléfono</label>
+                  <input type="tel" name="phone" defaultValue={member.phone ?? ""} placeholder="+34 600 000 000" style={inputStyle} />
+                </Box>
+                <Box>
+                  <label style={labelStyle}>LinkedIn</label>
+                  <input type="url" name="linkedin_url" defaultValue={member.linkedin_url ?? ""} placeholder="https://linkedin.com/in/..." style={inputStyle} />
+                </Box>
+              </SimpleGrid>
+            </Box>
+          </>
+        )}
 
         {/* Botones */}
         <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 20, display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button type="button" onClick={onClose} style={{ padding: "9px 18px", borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff", color: "#6b7280", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+          <button type="button" onClick={onClose}
+            style={{ padding: "9px 18px", borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff", color: "#6b7280", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
             Cancelar
           </button>
-          <button type="submit" disabled={isPending} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: isPending ? "wait" : "pointer" }}>
+          <button type="submit" disabled={isPending}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: isPending ? "wait" : "pointer" }}>
             {isPending && <IconLoader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
             {isEdit ? "Guardar cambios" : mode === "invitar" ? "Enviar invitación" : "Crear miembro"}
           </button>

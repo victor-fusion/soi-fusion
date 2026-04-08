@@ -10,17 +10,18 @@ import {
 import {
   IconLayoutDashboard, IconLogout, IconChevronRight,
   IconUsers, IconRobot, IconSettings, IconUsersGroup,
-  IconCheckbox, IconLayoutGrid, IconCalendar,
+  IconCheckbox, IconMap, IconFolder, IconCalendar, IconLayoutGrid,
 } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
-  { href: "/admin",            label: "Centro de Control", icon: IconLayoutDashboard, exact: true },
-  { href: "/admin/areas",      label: "Áreas",             icon: IconLayoutGrid },
-  { href: "/admin/recursos",   label: "Recursos",          icon: IconLayoutGrid },
-  { href: "/admin/fases",      label: "Fases",             icon: IconCalendar },
-  { href: "/admin/entregables",label: "Entregables",       icon: IconCheckbox },
-  { href: "/admin/startups",   label: "Startups",          icon: IconUsers },
-  { href: "/admin/miembros",   label: "Miembros",          icon: IconUsersGroup },
+  { href: "/admin",             label: "Centro de Control", icon: IconLayoutDashboard, exact: true },
+  { href: "/admin/areas",       label: "Áreas",             icon: IconMap },
+  { href: "/admin/secciones",   label: "Secciones",         icon: IconFolder },
+  { href: "/admin/recursos",    label: "Recursos",          icon: IconLayoutGrid },
+  { href: "/admin/fases",       label: "Fases",             icon: IconCalendar },
+  { href: "/admin/entregables", label: "Entregables",       icon: IconCheckbox },
+  { href: "/admin/startups",    label: "Startups",          icon: IconUsers },
+  { href: "/admin/miembros",    label: "Miembros",          icon: IconUsersGroup },
 ];
 
 const NAV_AI: { href: string; label: string; icon: typeof IconRobot; badge?: string }[] = [

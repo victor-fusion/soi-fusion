@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AREAS, PHASES } from "@/constants/areas";
 import { IconX, IconLoader2 } from "@tabler/icons-react";
-import type { EntregableTemplate } from "@/types";
+import type { EntregableTemplate, Area } from "@/types";
 import { createTemplate, updateTemplate } from "../actions";
+
+type Phase = { number: number; name: string; color: string };
 
 const TIPOS = [
   { value: "externo",    label: "Externo" },
@@ -17,18 +18,20 @@ const TIPOS = [
 interface TemplateFormProps {
   template?: EntregableTemplate;
   onClose: () => void;
+  areas: Area[];
+  phases: Phase[];
 }
 
-export function TemplateForm({ template, onClose }: TemplateFormProps) {
+export function TemplateForm({ template, onClose, areas, phases: PHASES }: TemplateFormProps) {
   const isEdit = !!template;
   const [isPending, startTransition] = useTransition();
-  const [selectedArea, setSelectedArea] = useState(template?.area ?? "estrategia");
+  const [selectedArea, setSelectedArea] = useState(template?.area ?? (areas[0]?.id ?? "estrategia"));
   const [tipo, setTipo] = useState<string>(template?.tipo ?? "externo");
   const [fileSlots, setFileSlots] = useState<string[]>(
     template?.file_slots?.map((s) => s.label) ?? [""]
   );
 
-  const area = AREAS.find((a) => a.id === selectedArea);
+  const area = areas.find((a) => a.id === selectedArea);
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "9px 12px", fontSize: 13, color: "#374151",
@@ -98,7 +101,7 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
             onChange={(e) => setSelectedArea(e.target.value)}
             style={{ ...inputStyle, cursor: "pointer" }}
           >
-            {AREAS.map((a) => (
+            {areas.map((a) => (
               <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>

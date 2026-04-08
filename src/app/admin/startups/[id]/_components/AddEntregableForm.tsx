@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { AREAS } from "@/constants/areas";
+import type { Area } from "@/types";
 import { addEntregable } from "../actions";
 import { IconX } from "@tabler/icons-react";
 
@@ -16,9 +16,10 @@ const TIPOS = [
 interface AddEntregableFormProps {
   startupId: string;
   currentPhase: number;
+  areas: Area[];
 }
 
-export function AddEntregableForm({ startupId, currentPhase }: AddEntregableFormProps) {
+export function AddEntregableForm({ startupId, currentPhase, areas }: AddEntregableFormProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [tipo, setTipo] = useState("externo");
@@ -97,7 +98,7 @@ export function AddEntregableForm({ startupId, currentPhase }: AddEntregableForm
           style={{ ...inputStyle, cursor: "pointer" }}
         >
           <option value="">Área…</option>
-          {AREAS.map((area) => (
+          {areas.map((area) => (
             <option key={area.id} value={area.id}>{area.name}</option>
           ))}
         </select>

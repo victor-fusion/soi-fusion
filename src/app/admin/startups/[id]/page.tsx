@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AREAS, PHASES } from "@/constants/areas";
+import { getAreas } from "@/lib/data/areas";
+import { getPhases } from "@/lib/data/phases";
 import type { Entregable, Profile } from "@/types";
 import Link from "next/link";
 import {
@@ -87,6 +88,8 @@ export default async function StartupDetailPage({
 
   // Conteos para modal de eliminación
   const relatedCounts = await getStartupRelatedCounts(id);
+
+  const [AREAS, PHASES] = await Promise.all([getAreas(), getPhases()]);
 
   const currentPhase = PHASES.find((p) => p.number === startup.current_phase) ?? PHASES[0];
   const totalDone = entregables.filter((e) => e.status === "completado").length;
@@ -339,7 +342,7 @@ export default async function StartupDetailPage({
             })
           )}
 
-          <AddEntregableForm startupId={id} currentPhase={startup.current_phase} />
+          <AddEntregableForm startupId={id} currentPhase={startup.current_phase} areas={AREAS} />
         </Stack>
       </Box>
 

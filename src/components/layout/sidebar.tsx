@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, Startup } from "@/types";
-import { AREAS } from "@/constants/areas";
+import type { Profile, Startup, Area } from "@/types";
 import {
   Text, Box, Avatar, UnstyledButton, ScrollArea, Tooltip, Group,
 } from "@mantine/core";
@@ -37,7 +36,7 @@ interface AreasAccordionProps {
   setExpandedArea: (id: string | null) => void;
   pathname: string;
   isSearching: boolean;
-  visibleAreas: typeof AREAS;
+  visibleAreas: Area[];
 }
 
 function AreasAccordion({
@@ -142,9 +141,10 @@ function AreasAccordion({
 interface SidebarProps {
   profile: Profile;
   startup: Startup | null;
+  areas: Area[];
 }
 
-export function Sidebar({ profile, startup }: SidebarProps) {
+export function Sidebar({ profile, startup, areas }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -170,7 +170,7 @@ export function Sidebar({ profile, startup }: SidebarProps) {
   const searchTerm = search.trim().toLowerCase();
 
   const visibleAreas = searchTerm
-    ? AREAS.map((area) => ({
+    ? areas.map((area) => ({
         ...area,
         sections: area.sections.filter(
           (s) =>
@@ -178,7 +178,7 @@ export function Sidebar({ profile, startup }: SidebarProps) {
             area.name.toLowerCase().includes(searchTerm)
         ),
       })).filter((a) => a.sections.length > 0)
-    : AREAS;
+    : areas;
 
   const isSearching = searchTerm.length > 0;
 

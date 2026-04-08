@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PHASES } from "@/constants/areas";
+import { getPhases } from "@/lib/data/phases";
 import type { Startup } from "@/types";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -38,6 +38,7 @@ export default async function AdminPage({
 }) {
   const { batch: batchParam } = await searchParams;
   const supabase = await createClient();
+  const PHASES = await getPhases();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");

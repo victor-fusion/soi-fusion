@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AREA_MAP } from "@/constants/areas";
+import { getAreaMap } from "@/lib/data/areas";
 import type { Card } from "@/types";
 import Link from "next/link";
 import {
@@ -30,6 +30,7 @@ interface PageProps {
 export default async function CardPage({ params }: PageProps) {
   const { area: areaId, cardId } = await params;
 
+  const AREA_MAP = await getAreaMap();
   const area = AREA_MAP[areaId];
   if (!area) notFound();
 

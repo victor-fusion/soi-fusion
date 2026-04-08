@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PHASES } from "@/constants/areas";
+import { getPhases } from "@/lib/data/phases";
 import type { Startup } from "@/types";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -10,6 +10,9 @@ import {
 import { IconArrowRight } from "@tabler/icons-react";
 import { BatchFilter } from "../_components/BatchFilter";
 import { NewStartupButton } from "./_components/NewStartupButton";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PER_PAGE = 15;
 
 const TYPE_LABELS: Record<string, string> = {
   b2b_saas:        "B2B SaaS",
@@ -30,13 +33,17 @@ const STATUS_COLOR: Record<string, string> = {
 export default async function StartupsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string }>;
+  searchParams: Promise<{ batch?: string; page?: string }>;
 }) {
-  const { batch: batchParam } = await searchParams;
+  const { batch: batchParam, page: pageParam } = await searchParams;
   const supabase = await createClient();
+  const PHASES = await getPhases();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");
+
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10));
+  const offset = (page - 1) * PER_PAGE;
 
   // Ciclos disponibles
   const { data: batchRows } = await supabase
@@ -49,11 +56,17 @@ export default async function StartupsPage({
   const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : 0;
   const showAll = selectedBatch === 0;
 
-  let query = supabase.from("startups").select("*").order("name");
+  // Total count for pagination
+  let countQuery = supabase.from("startups").select("*", { count: "exact", head: true });
+  if (!showAll) countQuery = countQuery.eq("batch", selectedBatch);
+  const { count: totalCount } = await countQuery;
+
+  let query = supabase.from("startups").select("*").order("name").range(offset, offset + PER_PAGE - 1);
   if (!showAll) query = query.eq("batch", selectedBatch);
 
   const { data: startups } = await query;
   const allStartups = (startups ?? []) as Startup[];
+  const total = totalCount ?? 0;
 
   const startupIds = allStartups.map((s) => s.id);
   const { data: entregables } = startupIds.length > 0
@@ -85,7 +98,7 @@ export default async function StartupsPage({
           <Box>
             <Text style={{ fontSize: "2rem", fontWeight: 700, color: "#111827" }}>Startups</Text>
             <Text style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
-              {allStartups.length} startup{allStartups.length !== 1 ? "s" : ""}
+              {total} startup{total !== 1 ? "s" : ""}
             </Text>
           </Box>
           <NewStartupButton />
@@ -106,7 +119,7 @@ export default async function StartupsPage({
           </Link>
         )}
         <Text style={{ fontSize: 12, color: "#9ca3af", marginLeft: "auto" }}>
-          {allStartups.length} resultados
+          {total} resultados
         </Text>
       </Group>
 
@@ -231,6 +244,8 @@ export default async function StartupsPage({
           </Stack>
         )}
       </Paper>
+
+      <Pagination total={total} page={page} perPage={PER_PAGE} />
     </Box>
   );
 }

@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AREA_MAP, PHASES } from "@/constants/areas";
+import { getAreaMap } from "@/lib/data/areas";
+import { getPhases } from "@/lib/data/phases";
 import type { Entregable, EntregableComment } from "@/types";
 import Link from "next/link";
 import { Box, Text, Title, Group, Badge, Paper } from "@mantine/core";
@@ -80,6 +81,7 @@ export default async function EntregablePage({
     replies: allReplies.filter((r) => r.parent_id === c.id),
   }));
 
+  const [AREA_MAP, PHASES] = await Promise.all([getAreaMap(), getPhases()]);
   const area = AREA_MAP[entregable.area];
   const section = area?.sections.find((s) => s.id === entregable.section);
   const phase = PHASES.find((p) => p.number === entregable.phase);

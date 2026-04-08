@@ -41,10 +41,11 @@ export async function updateStartup(formData: FormData) {
 
 export async function changePhase(startupId: string, phase: number) {
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("startups")
     .update({ current_phase: phase })
     .eq("id", startupId);
+  if (error) throw new Error(error.message);
   revalidatePath(`/admin/startups/${startupId}`);
   revalidatePath("/admin");
 }
@@ -58,10 +59,11 @@ export async function changeEntregableStatus(
   const supabase = await createClient();
   const update: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
   if (reviewerNotes !== undefined) update.reviewer_notes = reviewerNotes;
-  await supabase
+  const { error } = await supabase
     .from("entregables")
     .update(update)
     .eq("id", entregableId);
+  if (error) throw new Error(error.message);
   revalidatePath(`/admin/startups/${startupId}`);
   revalidatePath(`/dashboard/entregables/${entregableId}`);
   revalidatePath("/dashboard");
@@ -81,7 +83,7 @@ export async function addEntregable(formData: FormData) {
   let fileSlots: unknown[] = [];
   try { fileSlots = JSON.parse(fileSlotsRaw); } catch { /* empty */ }
 
-  await supabase.from("entregables").insert({
+  const { error } = await supabase.from("entregables").insert({
     startup_id: startupId,
     title: title.trim(),
     area,
@@ -92,11 +94,13 @@ export async function addEntregable(formData: FormData) {
     file_slots: fileSlots,
   });
 
+  if (error) throw new Error(error.message);
   revalidatePath(`/admin/startups/${startupId}`);
 }
 
 export async function deleteEntregable(entregableId: string, startupId: string) {
   const supabase = await createClient();
-  await supabase.from("entregables").delete().eq("id", entregableId);
+  const { error } = await supabase.from("entregables").delete().eq("id", entregableId);
+  if (error) throw new Error(error.message);
   revalidatePath(`/admin/startups/${startupId}`);
 }

@@ -9,6 +9,9 @@ import { IconArrowRight, IconMail, IconBrandLinkedin, IconPhone } from "@tabler/
 import { BatchFilter } from "../_components/BatchFilter";
 import { StartupFilter, TypeFilter } from "./_components/MiembrosFilters";
 import { NewMemberButton } from "./_components/NewMemberButton";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PER_PAGE = 15;
 
 const TYPE_LABELS: Record<string, string> = {
   cofundador:  "Cofundador",
@@ -35,9 +38,11 @@ const DEDICATION_LABELS: Record<string, string> = {
 export default async function MiembrosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string; startup?: string; type?: string }>;
+  searchParams: Promise<{ batch?: string; startup?: string; type?: string; page?: string }>;
 }) {
-  const { batch: batchParam, startup: startupParam, type: typeParam } = await searchParams;
+  const { batch: batchParam, startup: startupParam, type: typeParam, page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10));
+  const offset = (page - 1) * PER_PAGE;
   const supabase = await createClient();
 
   const { data: { session } } = await supabase.auth.getSession();
@@ -78,10 +83,24 @@ export default async function MiembrosPage({
     startups: { id: string; name: string; batch: number } | { id: string; name: string; batch: number }[] | null;
   };
 
+  // Total count
+  let countQuery = supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true });
+  if (startupParam) {
+    countQuery = countQuery.eq("startup_id", startupParam);
+  } else if (!showAllBatches && batchStartupIds.length > 0) {
+    countQuery = countQuery.in("startup_id", batchStartupIds);
+  }
+  if (typeParam) countQuery = countQuery.eq("member_type", typeParam);
+  const { count: totalCount } = await countQuery;
+  const total = totalCount ?? 0;
+
   let query = supabase
     .from("profiles")
     .select("id, startup_id, full_name, email, role, role_title, member_type, dedication, phone, linkedin_url, startups(id, name, batch)")
-    .order("full_name");
+    .order("full_name")
+    .range(offset, offset + PER_PAGE - 1);
 
   // Filtro por startup específica
   if (startupParam) {
@@ -110,7 +129,7 @@ export default async function MiembrosPage({
           <Box>
             <Title order={1} style={{ fontSize: "2rem", color: "#111827" }}>Miembros</Title>
             <Text style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
-              {membersData.length} miembro{membersData.length !== 1 ? "s" : ""}
+              {total} miembro{total !== 1 ? "s" : ""}
             </Text>
           </Box>
           <NewMemberButton startups={allStartups} />
@@ -146,7 +165,7 @@ export default async function MiembrosPage({
           </Link>
         )}
         <Text style={{ fontSize: 12, color: "#9ca3af", marginLeft: "auto" }}>
-          {membersData.length} resultados
+          {total} resultados
         </Text>
       </Group>
 
@@ -279,6 +298,7 @@ export default async function MiembrosPage({
         )}
       </Paper>
 
+      <Pagination total={total} page={page} perPage={PER_PAGE} />
     </Box>
   );
 }

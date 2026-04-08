@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconFileDescription } from "@tabler/icons-react";
-import type { EntregableTemplate } from "@/types";
-import { AREAS, PHASES } from "@/constants/areas";
+import type { EntregableTemplate, Area } from "@/types";
+
+type Phase = { number: number; name: string; color: string };
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
 import { TemplateForm } from "./TemplateForm";
 import { TemplateToggle } from "./TemplateToggle";
@@ -27,9 +28,11 @@ const TIPO_COLORS: Record<string, string> = {
 
 interface EntregablesClientProps {
   templates: EntregableTemplate[];
+  areas: Area[];
+  phases: Phase[];
 }
 
-export function EntregablesClient({ templates }: EntregablesClientProps) {
+export function EntregablesClient({ templates, areas, phases: PHASES }: EntregablesClientProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<EntregableTemplate | null>(null);
   const [filterArea, setFilterArea]       = useState("");
@@ -46,8 +49,8 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
 
   // Secciones disponibles según el área seleccionada
   const availableSections = filterArea
-    ? (AREAS.find((a) => a.id === filterArea)?.sections ?? [])
-    : AREAS.flatMap((a) => a.sections);
+    ? (areas.find((a) => a.id === filterArea)?.sections ?? [])
+    : areas.flatMap((a) => a.sections);
 
   const filtered = templates.filter((t) => {
     if (filterArea    && t.area    !== filterArea)    return false;
@@ -58,7 +61,7 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
   });
 
   // Agrupar por área
-  const byArea = AREAS.map((a) => ({
+  const byArea = areas.map((a) => ({
     area: a,
     items: filtered.filter((t) => t.area === a.id),
   })).filter((g) => g.items.length > 0);
@@ -104,7 +107,7 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
         <Group gap={10} mb={24}>
           <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
             <option value="">Todas las áreas</option>
-            {AREAS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <select value={filterPhase} onChange={(e) => setFilterPhase(parseInt(e.target.value, 10))} style={selectStyle}>
             <option value={0}>Todas las fases</option>
@@ -176,7 +179,7 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
                   </Box>
 
                   {items.map((t, i) => {
-                    const areaData = AREAS.find((a) => a.id === t.area);
+                    const areaData = areas.find((a) => a.id === t.area);
                     const sectionData = areaData?.sections.find((s) => s.id === t.section);
                     const tipoColor = TIPO_COLORS[t.tipo] ?? "#9ca3af";
                     const isLast = i === items.length - 1;
@@ -247,7 +250,7 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
         subtitle={editing ? editing.title : "Se asignará automáticamente a nuevas startups"}
       >
         {drawerOpen && (
-          <TemplateForm template={editing ?? undefined} onClose={close} />
+          <TemplateForm template={editing ?? undefined} onClose={close} areas={areas} phases={PHASES} />
         )}
       </SlideDrawer>
     </>

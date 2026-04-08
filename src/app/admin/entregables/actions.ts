@@ -9,7 +9,7 @@ export async function createTemplate(formData: FormData) {
   let fileSlots: unknown[] = [];
   try { fileSlots = JSON.parse(fileSlotsRaw); } catch { /* empty */ }
 
-  await supabase.from("entregable_templates").insert({
+  const { error } = await supabase.from("entregable_templates").insert({
     title:       formData.get("title") as string,
     description: (formData.get("description") as string) || null,
     area:        formData.get("area") as string,
@@ -21,6 +21,7 @@ export async function createTemplate(formData: FormData) {
     is_active:   true,
   });
 
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/entregables");
 }
 
@@ -31,7 +32,7 @@ export async function updateTemplate(formData: FormData) {
   let fileSlots: unknown[] = [];
   try { fileSlots = JSON.parse(fileSlotsRaw); } catch { /* empty */ }
 
-  await supabase.from("entregable_templates").update({
+  const { error } = await supabase.from("entregable_templates").update({
     title:       formData.get("title") as string,
     description: (formData.get("description") as string) || null,
     area:        formData.get("area") as string,
@@ -42,11 +43,13 @@ export async function updateTemplate(formData: FormData) {
     file_slots:  fileSlots,
   }).eq("id", id);
 
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/entregables");
 }
 
 export async function toggleTemplateActive(id: string, is_active: boolean) {
   const supabase = await createClient();
-  await supabase.from("entregable_templates").update({ is_active }).eq("id", id);
+  const { error } = await supabase.from("entregable_templates").update({ is_active }).eq("id", id);
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/entregables");
 }

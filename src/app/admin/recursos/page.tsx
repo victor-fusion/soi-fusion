@@ -1,19 +1,20 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Card } from "@/types";
-import { AREAS } from "@/constants/areas";
+import { getAreas } from "@/lib/data/areas";
 import { RecursosClient } from "./_components/RecursosClient";
-
-// Mapa section_id → area_id derivado de areas.ts
-const SECTION_TO_AREA: Record<string, string> = {};
-for (const area of AREAS) {
-  for (const section of area.sections) {
-    SECTION_TO_AREA[section.id] = area.id;
-  }
-}
 
 export default async function RecursosAdminPage() {
   const supabase = await createClient();
+  const areas = await getAreas();
+
+  // Mapa section_id → area_id
+  const SECTION_TO_AREA: Record<string, string> = {};
+  for (const area of areas) {
+    for (const section of area.sections) {
+      SECTION_TO_AREA[section.id] = area.id;
+    }
+  }
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");
@@ -30,5 +31,5 @@ export default async function RecursosAdminPage() {
     area_id: SECTION_TO_AREA[c.section_id] ?? "",
   }));
 
-  return <RecursosClient cards={cards} />;
+  return <RecursosClient cards={cards} areas={areas} />;
 }

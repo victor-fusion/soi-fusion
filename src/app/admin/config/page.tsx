@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { PHASES } from "@/constants/areas";
+import { getPhases } from "@/lib/data/phases";
 import {
   Box, Text, Title, Group, Stack, Paper, Badge, ThemeIcon,
 } from "@mantine/core";
@@ -11,6 +11,8 @@ export default async function ConfigPage() {
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");
+
+  const PHASES = await getPhases();
 
   const { count: startupCount } = await supabase
     .from("startups")

@@ -24,7 +24,7 @@ export async function createRecurso(formData: FormData) {
 
   const nextOrder = maxRow ? (maxRow.order as number) + 1 : 0;
 
-  await supabase.from("cards").insert({
+  const { error } = await supabase.from("cards").insert({
     section_id:       sectionId,
     title:            formData.get("title") as string,
     description:      (formData.get("description") as string) || null,
@@ -36,6 +36,7 @@ export async function createRecurso(formData: FormData) {
     is_active:        true,
   });
 
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/recursos");
 }
 
@@ -47,7 +48,7 @@ export async function updateRecurso(formData: FormData) {
   let templateFields: unknown[] = [];
   try { templateFields = JSON.parse(templateFieldsRaw); } catch { /* empty */ }
 
-  await supabase.from("cards").update({
+  const { error } = await supabase.from("cards").update({
     section_id:      formData.get("section_id") as string,
     title:           formData.get("title") as string,
     description:     (formData.get("description") as string) || null,
@@ -57,11 +58,13 @@ export async function updateRecurso(formData: FormData) {
     template_fields: templateFields,
   }).eq("id", id);
 
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/recursos");
 }
 
 export async function toggleRecursoActive(id: string, is_active: boolean) {
   const supabase = await createClient();
-  await supabase.from("cards").update({ is_active }).eq("id", id);
+  const { error } = await supabase.from("cards").update({ is_active }).eq("id", id);
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/recursos");
 }
