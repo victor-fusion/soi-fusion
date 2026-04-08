@@ -5,26 +5,26 @@ import type { Startup } from "@/types";
 import Link from "next/link";
 import { Suspense } from "react";
 import {
-  Box, Text, Title, Group, Stack, Badge, Paper, Progress, ThemeIcon,
+  Box, Text, Group, Stack, Badge, Paper, Progress,
 } from "@mantine/core";
-import { IconArrowRight, IconUsers } from "@tabler/icons-react";
-import { CreateStartupForm } from "./_components/CreateStartupForm";
+import { IconArrowRight } from "@tabler/icons-react";
 import { BatchFilter } from "../_components/BatchFilter";
+import { NewStartupButton } from "./_components/NewStartupButton";
 
 const TYPE_LABELS: Record<string, string> = {
-  b2b_saas: "B2B SaaS",
-  b2c_app: "B2C App",
-  marketplace: "Marketplace",
+  b2b_saas:        "B2B SaaS",
+  b2c_app:         "B2C App",
+  marketplace:     "Marketplace",
   producto_fisico: "Producto físico",
-  servicios: "Servicios",
+  servicios:       "Servicios",
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  activa: "#16a34a",
-  en_pausa: "#d97706",
+  activa:      "#16a34a",
+  en_pausa:    "#d97706",
   en_revision: "#2563eb",
-  inactiva: "#9ca3af",
-  cerrada: "#ef4444",
+  inactiva:    "#9ca3af",
+  cerrada:     "#ef4444",
 };
 
 export default async function StartupsPage({
@@ -45,8 +45,8 @@ export default async function StartupsPage({
     .order("batch");
   const availableBatches = [...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch))].sort() as number[];
 
-  const latestBatch = availableBatches.at(-1) ?? 5;
-  const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : latestBatch;
+  // Default: todos los ciclos (0)
+  const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : 0;
   const showAll = selectedBatch === 0;
 
   let query = supabase.from("startups").select("*").order("name");
@@ -78,33 +78,51 @@ export default async function StartupsPage({
   return (
     <Box p={40} maw={1100} mx="auto">
 
+      {/* Header */}
       <Box mb={32}>
         <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500 }}>Admin</Text>
         <Group justify="space-between" align="center" mt={4}>
-          <Title order={1} style={{ fontSize: "2rem", color: "#111827" }}>
-            Startups
-          </Title>
-          <Group gap={12}>
-            <Suspense fallback={null}>
-              <BatchFilter batches={availableBatches} activeBatch={selectedBatch} basePath="/admin/startups" />
-            </Suspense>
-            <CreateStartupForm />
-          </Group>
+          <Box>
+            <Text style={{ fontSize: "2rem", fontWeight: 700, color: "#111827" }}>Startups</Text>
+            <Text style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+              {allStartups.length} startup{allStartups.length !== 1 ? "s" : ""}
+            </Text>
+          </Box>
+          <NewStartupButton />
         </Group>
       </Box>
 
+      {/* Filtros */}
+      <Group gap={10} mb={24}>
+        <Suspense fallback={null}>
+          <BatchFilter batches={availableBatches} activeBatch={selectedBatch} basePath="/admin/startups" />
+        </Suspense>
+        {selectedBatch !== 0 && (
+          <Link
+            href="/admin/startups"
+            style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}
+          >
+            Limpiar filtros
+          </Link>
+        )}
+        <Text style={{ fontSize: 12, color: "#9ca3af", marginLeft: "auto" }}>
+          {allStartups.length} resultados
+        </Text>
+      </Group>
+
+      {/* Tabla */}
       <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
         <Box
           px={24} py={14}
           style={{
             borderBottom: "1px solid #f3f4f6",
             display: "grid",
-            gridTemplateColumns: "1fr 100px 140px 180px 80px 32px",
+            gridTemplateColumns: "1fr 80px 80px 140px 180px 80px 32px",
             gap: 16, alignItems: "center",
             backgroundColor: "#fafafa",
           }}
         >
-          {["Startup", "Tipo", "Fase actual", "Progreso de fase", "Estado", ""].map((h) => (
+          {["Startup", "Ciclo", "Tipo", "Fase actual", "Progreso de fase", "Estado", ""].map((h) => (
             <Text key={h} style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               {h}
             </Text>
@@ -113,13 +131,7 @@ export default async function StartupsPage({
 
         {allStartups.length === 0 ? (
           <Box py={48} style={{ textAlign: "center" }}>
-            <ThemeIcon size={48} radius="xl" color="gray" variant="light" mx="auto" mb="md">
-              <IconUsers size={22} />
-            </ThemeIcon>
-            <Text style={{ color: "#6b7280" }}>No hay startups todavía</Text>
-            <Text style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>
-              Crea la primera con el botón de arriba
-            </Text>
+            <Text style={{ color: "#6b7280" }}>No hay startups con los filtros seleccionados.</Text>
           </Box>
         ) : (
           <Stack gap={0}>
@@ -134,7 +146,7 @@ export default async function StartupsPage({
                   px={24} py={16}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 100px 140px 180px 80px 32px",
+                    gridTemplateColumns: "1fr 80px 80px 140px 180px 80px 32px",
                     gap: 16, alignItems: "center",
                     borderBottom: isLast ? "none" : "1px solid #f9fafb",
                   }}
@@ -149,6 +161,10 @@ export default async function StartupsPage({
                       </Text>
                     )}
                   </Box>
+
+                  <Text style={{ fontSize: 12, color: "#6b7280" }}>
+                    Ciclo {startup.batch}
+                  </Text>
 
                   <Text style={{ fontSize: 12, color: "#6b7280" }}>
                     {TYPE_LABELS[startup.type] ?? startup.type}

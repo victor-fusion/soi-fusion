@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types";
-import { PHASES } from "@/constants/areas";
 import {
   Text, Box, Avatar, UnstyledButton, ScrollArea, Tooltip, Group,
 } from "@mantine/core";
@@ -169,29 +168,6 @@ export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
           })}
         </Box>
 
-        {/* Fases del ciclo */}
-        <Box pt={8} style={{ borderTop: "1px solid #f3f4f6" }}>
-          <Text px={10} mb={6} style={{ fontSize: "11px", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            Fases del ciclo
-          </Text>
-          {PHASES.map((m) => (
-            <Box key={m.number} px={10} py={5} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Box
-                style={{
-                  width: 20, height: 20, borderRadius: 5, display: "flex",
-                  alignItems: "center", justifyContent: "center",
-                  fontSize: 10, fontWeight: 700, flexShrink: 0,
-                  backgroundColor: m.color, color: "white",
-                }}
-              >
-                {m.number}
-              </Box>
-              <Text style={{ fontSize: "12px", color: "#9ca3af" }} lineClamp={1}>
-                {m.name}
-              </Text>
-            </Box>
-          ))}
-        </Box>
       </ScrollArea>
 
       {/* User */}

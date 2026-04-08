@@ -50,7 +50,6 @@ export default async function MiembrosPage({
   const availableBatches = [
     ...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch)),
   ].sort() as number[];
-  const latestBatch = availableBatches.at(-1) ?? 5;
   const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : 0;
   const showAllBatches = selectedBatch === 0;
 
@@ -107,55 +106,47 @@ export default async function MiembrosPage({
       <Box mb={32}>
         <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500 }}>Admin</Text>
         <Group justify="space-between" align="center" mt={4}>
-          <Title order={1} style={{ fontSize: "2rem", color: "#111827" }}>
-            Miembros
-          </Title>
-          <Group gap={10}>
-            <Suspense fallback={null}>
-              <BatchFilter
-                batches={availableBatches}
-                activeBatch={selectedBatch}
-                basePath="/admin/miembros"
-              />
-            </Suspense>
-            <StartupFilter
-              startups={allStartups}
-              activeStartup={startupParam ?? ""}
-              activeBatch={selectedBatch}
-              activeType={typeParam ?? ""}
-            />
-            <TypeFilter
-              activeType={typeParam ?? ""}
-              activeBatch={selectedBatch}
-              activeStartup={startupParam ?? ""}
-            />
-          </Group>
+          <Box>
+            <Title order={1} style={{ fontSize: "2rem", color: "#111827" }}>Miembros</Title>
+            <Text style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+              {membersData.length} miembro{membersData.length !== 1 ? "s" : ""}
+            </Text>
+          </Box>
         </Group>
-
-        {/* Tags de filtros activos */}
-        {(selectedStartupName || typeParam) && (
-          <Group gap={8} mt={12}>
-            {selectedStartupName && (
-              <Box style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", backgroundColor: "#eff6ff", borderRadius: 6 }}>
-                <Text style={{ fontSize: 12, color: "#2563eb" }}>Startup: {selectedStartupName}</Text>
-                <Link
-                  href={`/admin/miembros?batch=${batchParam ?? latestBatch}${typeParam ? `&type=${typeParam}` : ""}`}
-                  style={{ color: "#93c5fd", fontSize: 14, textDecoration: "none", lineHeight: 1 }}
-                >×</Link>
-              </Box>
-            )}
-            {typeParam && (
-              <Box style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", backgroundColor: "#f0fdf4", borderRadius: 6 }}>
-                <Text style={{ fontSize: 12, color: "#16a34a" }}>Tipo: {TYPE_LABELS[typeParam] ?? typeParam}</Text>
-                <Link
-                  href={`/admin/miembros?batch=${batchParam ?? latestBatch}${startupParam ? `&startup=${startupParam}` : ""}`}
-                  style={{ color: "#86efac", fontSize: 14, textDecoration: "none", lineHeight: 1 }}
-                >×</Link>
-              </Box>
-            )}
-          </Group>
-        )}
       </Box>
+
+      {/* Filtros */}
+      <Group gap={10} mb={24}>
+        <Suspense fallback={null}>
+          <BatchFilter
+            batches={availableBatches}
+            activeBatch={selectedBatch}
+            basePath="/admin/miembros"
+          />
+        </Suspense>
+        <StartupFilter
+          startups={allStartups}
+          activeStartup={startupParam ?? ""}
+          activeBatch={selectedBatch}
+          activeType={typeParam ?? ""}
+        />
+        <TypeFilter
+          activeType={typeParam ?? ""}
+          activeBatch={selectedBatch}
+          activeStartup={startupParam ?? ""}
+        />
+        {(selectedBatch !== 0 || startupParam || typeParam) && (
+          <Link
+            href="/admin/miembros"
+            style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}
+          >
+            Limpiar filtros
+          </Link>
+        )}
+        <Text style={{ fontSize: 12, color: "#9ca3af", marginLeft: "auto" }}>
+          {membersData.length} resultados
+        </Text>
+      </Group>
 
       <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
         {/* Cabecera */}
@@ -288,9 +279,6 @@ export default async function MiembrosPage({
         )}
       </Paper>
 
-      <Text style={{ fontSize: 12, color: "#d1d5db", marginTop: 16, textAlign: "right" }}>
-        {membersData.length} miembro{membersData.length !== 1 ? "s" : ""}
-      </Text>
     </Box>
   );
 }

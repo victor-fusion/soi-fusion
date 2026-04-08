@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconFileDescription } from "@tabler/icons-react";
 import type { EntregableTemplate } from "@/types";
-import { AREAS, PHASES } from "@/constants/areas";
+import { AREAS } from "@/constants/areas";
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
 import { TemplateForm } from "./TemplateForm";
 import { TemplateToggle } from "./TemplateToggle";
@@ -33,7 +33,6 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<EntregableTemplate | null>(null);
   const [filterArea, setFilterArea] = useState("");
-  const [filterPhase, setFilterPhase] = useState(0);
 
   const openNew = () => { setEditing(null); setDrawerOpen(true); };
   const openEdit = (t: EntregableTemplate) => { setEditing(t); setDrawerOpen(true); };
@@ -41,14 +40,13 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
 
   const filtered = templates.filter((t) => {
     if (filterArea && t.area !== filterArea) return false;
-    if (filterPhase && t.phase !== filterPhase) return false;
     return true;
   });
 
-  // Agrupar por fase
-  const byPhase = PHASES.map((p) => ({
-    phase: p,
-    items: filtered.filter((t) => t.phase === p.number),
+  // Agrupar por área
+  const byArea = AREAS.map((a) => ({
+    area: a,
+    items: filtered.filter((t) => t.area === a.id),
   })).filter((g) => g.items.length > 0);
 
   const selectStyle: React.CSSProperties = {
@@ -100,19 +98,9 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
               <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>
-          <select
-            value={filterPhase}
-            onChange={(e) => setFilterPhase(parseInt(e.target.value, 10))}
-            style={selectStyle}
-          >
-            <option value={0}>Todas las fases</option>
-            {PHASES.map((p) => (
-              <option key={p.number} value={p.number}>Fase {p.number} · {p.name}</option>
-            ))}
-          </select>
-          {(filterArea || filterPhase > 0) && (
+          {filterArea && (
             <button
-              onClick={() => { setFilterArea(""); setFilterPhase(0); }}
+              onClick={() => { setFilterArea(""); }}
               style={{
                 fontSize: 12, color: "#9ca3af", background: "none",
                 border: "none", cursor: "pointer", padding: "0 4px",
@@ -127,29 +115,26 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
         </Group>
 
         {/* Lista agrupada por fase */}
-        {byPhase.length === 0 ? (
+        {byArea.length === 0 ? (
           <Paper p={40} radius="lg" withBorder style={{ borderColor: "#f3f4f6", textAlign: "center" }}>
             <IconFileDescription size={32} color="#d1d5db" style={{ marginBottom: 12 }} />
             <Text style={{ color: "#9ca3af" }}>No hay entregables con los filtros seleccionados.</Text>
           </Paper>
         ) : (
           <Stack gap={20}>
-            {byPhase.map(({ phase, items }) => (
-              <Box key={phase.number}>
-                {/* Cabecera de fase */}
+            {byArea.map(({ area, items }) => (
+              <Box key={area.id}>
+                {/* Cabecera de área */}
                 <Group gap={10} mb={10} align="center">
                   <Box
                     style={{
-                      width: 24, height: 24, borderRadius: 6,
-                      backgroundColor: phase.color,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0,
+                      width: 10, height: 10, borderRadius: "50%",
+                      backgroundColor: area.color,
+                      flexShrink: 0,
                     }}
-                  >
-                    {phase.number}
-                  </Box>
+                  />
                   <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
-                    {phase.name}
+                    {area.name}
                   </Text>
                   <Text style={{ fontSize: 12, color: "#9ca3af" }}>
                     {items.length} entregables
