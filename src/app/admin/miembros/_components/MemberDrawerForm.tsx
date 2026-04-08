@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Box, Text, Group, SimpleGrid } from "@mantine/core";
+import { Box, Text, SimpleGrid } from "@mantine/core";
 import { IconLoader2 } from "@tabler/icons-react";
 import type { Profile, OfficeSchedule } from "@/types";
-import { ScheduleEditor } from "./ScheduleEditor";
-import { inviteMember, updateMember, removeMemberFromStartup } from "../member-actions";
+import { inviteMiembro, updateMiembro } from "../actions";
+
+interface Startup {
+  id: string;
+  name: string;
+  batch: number;
+}
+
+interface MemberDrawerFormProps {
+  member?: Profile;
+  startups: Startup[];
+  defaultStartupId?: string;
+  onClose: () => void;
+}
 
 const MEMBER_TYPES = [
   { value: "cofundador",  label: "Cofundador" },
@@ -21,12 +33,6 @@ const DEDICATIONS = [
   { value: "puntual",   label: "Puntual" },
 ];
 
-interface MemberFormProps {
-  startupId: string;
-  member?: Profile;
-  onClose: () => void;
-}
-
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "9px 12px",
   fontSize: 14, color: "#374151",
@@ -41,28 +47,19 @@ const labelStyle: React.CSSProperties = {
   color: "#6b7280", marginBottom: 6, display: "block",
 };
 
-export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
+export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }: MemberDrawerFormProps) {
   const isEdit = !!member;
   const [mode, setMode] = useState<"invitar" | "crear">("invitar");
   const [isPending, startTransition] = useTransition();
-  const [schedule, setSchedule] = useState<OfficeSchedule>(member?.office_schedule ?? {});
+  const [schedule] = useState<OfficeSchedule>(member?.office_schedule ?? {});
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set("office_schedule", JSON.stringify(schedule));
     startTransition(async () => {
-      if (isEdit) await updateMember(fd);
-      else await inviteMember(fd);
-      onClose();
-    });
-  };
-
-  const handleRemove = () => {
-    if (!member) return;
-    if (!confirm(`¿Desvincular a ${member.full_name} de esta startup?`)) return;
-    startTransition(async () => {
-      await removeMemberFromStartup(member.id, startupId);
+      if (isEdit) await updateMiembro(fd);
+      else await inviteMiembro(fd);
       onClose();
     });
   };
@@ -70,11 +67,9 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       <Box style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
-        <input type="hidden" name="startup_id" value={startupId} />
         {isEdit && <input type="hidden" name="member_id" value={member.id} />}
 
-        {/* Selector modo (solo en creación) */}
+        {/* Selector de modo (solo en creación) */}
         {!isEdit && (
           <Box>
             <Box style={{ display: "flex", gap: 0, borderRadius: 8, border: "1px solid #e5e7eb", overflow: "hidden" }}>
@@ -98,13 +93,13 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
             </Box>
             <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>
               {mode === "invitar"
-                ? "Se enviará un email de invitación para completar el registro."
-                : "Se crea el perfil directamente sin enviar ningún email."}
+                ? "Se enviará un email de invitación para que el miembro complete su registro."
+                : "Se crea el perfil directamente sin que el miembro reciba ningún email."}
             </Text>
           </Box>
         )}
 
-        {/* Email */}
+        {/* Email — siempre visible en invitar, en edición no */}
         {!isEdit && (
           <Box>
             <label style={labelStyle}>Email *</label>
@@ -121,17 +116,17 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
         {/* Nombre + Cargo */}
         <SimpleGrid cols={2} spacing={16}>
           <Box>
-            <label style={labelStyle}>Nombre completo *</label>
+            <label style={labelStyle}>Nombre completo {!isEdit && mode === "crear" ? "*" : ""}</label>
             <input
               name="full_name"
-              required
+              required={!isEdit && mode === "crear"}
               defaultValue={member?.full_name ?? ""}
               placeholder="María García"
               style={inputStyle}
             />
           </Box>
           <Box>
-            <label style={labelStyle}>Rol en la startup</label>
+            <label style={labelStyle}>Cargo</label>
             <input
               name="role_title"
               defaultValue={member?.role_title ?? ""}
@@ -141,11 +136,27 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
           </Box>
         </SimpleGrid>
 
+        {/* Startup */}
+        <Box>
+          <label style={labelStyle}>Startup</label>
+          <select
+            name="startup_id"
+            defaultValue={member?.startup_id ?? defaultStartupId ?? ""}
+            style={{ ...inputStyle, cursor: "pointer" }}
+          >
+            <option value="">Sin startup asignada</option>
+            {startups.map((s) => (
+              <option key={s.id} value={s.id}>{s.name} (Ciclo {s.batch})</option>
+            ))}
+          </select>
+        </Box>
+
         {/* Tipo + Dedicación */}
         <SimpleGrid cols={2} spacing={16}>
           <Box>
             <label style={labelStyle}>Tipo</label>
             <select name="member_type" defaultValue={member?.member_type ?? "cofundador"} style={{ ...inputStyle, cursor: "pointer" }}>
+              <option value="">Sin tipo</option>
               {MEMBER_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </Box>
@@ -157,27 +168,12 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
           </Box>
         </SimpleGrid>
 
-        {/* Fecha de incorporación */}
-        <Box>
-          <label style={labelStyle}>Fecha de incorporación</label>
-          <input type="date" name="joined_at" defaultValue={member?.joined_at ?? ""} style={{ ...inputStyle, width: "auto" }} />
-        </Box>
-
-        {/* Horario */}
-        <Box>
-          <label style={labelStyle}>Horario habitual en oficinas Fusión</label>
-          <Text style={{ fontSize: 12, color: "#9ca3af", marginBottom: 10 }}>
-            Activa los días y ajusta las franjas horarias. Máximo 3 franjas por día.
-          </Text>
-          <ScheduleEditor value={schedule} onChange={setSchedule} />
-        </Box>
-
         {/* Contacto */}
         <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16 }}>
-          <Text style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>
-            Datos de contacto
+          <Text style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 16 }}>
+            Contacto
           </Text>
-          <SimpleGrid cols={2} spacing={16} mb={16}>
+          <SimpleGrid cols={2} spacing={16}>
             <Box>
               <label style={labelStyle}>Teléfono</label>
               <input type="tel" name="phone" defaultValue={member?.phone ?? ""} placeholder="+34 600 000 000" style={inputStyle} />
@@ -187,32 +183,18 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
               <input type="url" name="linkedin_url" defaultValue={member?.linkedin_url ?? ""} placeholder="https://linkedin.com/in/..." style={inputStyle} />
             </Box>
           </SimpleGrid>
-          <Box>
-            <label style={labelStyle}>Enlace de calendario</label>
-            <input type="url" name="calendar_url" defaultValue={member?.calendar_url ?? ""} placeholder="https://cal.com/..." style={{ ...inputStyle, maxWidth: 280 }} />
-          </Box>
         </Box>
 
-        {/* Footer */}
-        <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 20 }}>
-          <Group justify={isEdit ? "space-between" : "flex-end"} align="center">
-            {isEdit && (
-              <button type="button" onClick={handleRemove} disabled={isPending} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: 13, fontWeight: 500 }}>
-                Desvincular de startup
-              </button>
-            )}
-            <Group gap={8}>
-              <button type="button" onClick={onClose} style={{ padding: "9px 18px", borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff", color: "#6b7280", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
-                Cancelar
-              </button>
-              <button type="submit" disabled={isPending} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: isPending ? "wait" : "pointer" }}>
-                {isPending && <IconLoader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
-                {isEdit ? "Guardar cambios" : mode === "invitar" ? "Enviar invitación" : "Crear miembro"}
-              </button>
-            </Group>
-          </Group>
+        {/* Botones */}
+        <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 20, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} style={{ padding: "9px 18px", borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff", color: "#6b7280", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+            Cancelar
+          </button>
+          <button type="submit" disabled={isPending} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 20px", borderRadius: 8, border: "none", backgroundColor: "#111827", color: "#fff", fontSize: 13, fontWeight: 600, cursor: isPending ? "wait" : "pointer" }}>
+            {isPending && <IconLoader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
+            {isEdit ? "Guardar cambios" : mode === "invitar" ? "Enviar invitación" : "Crear miembro"}
+          </button>
         </Box>
-
       </Box>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </form>

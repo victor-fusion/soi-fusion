@@ -8,6 +8,7 @@ import {
 import { IconArrowRight, IconMail, IconBrandLinkedin, IconPhone } from "@tabler/icons-react";
 import { BatchFilter } from "../_components/BatchFilter";
 import { StartupFilter, TypeFilter } from "./_components/MiembrosFilters";
+import { NewMemberButton } from "./_components/NewMemberButton";
 
 const TYPE_LABELS: Record<string, string> = {
   cofundador:  "Cofundador",
@@ -112,6 +113,7 @@ export default async function MiembrosPage({
               {membersData.length} miembro{membersData.length !== 1 ? "s" : ""}
             </Text>
           </Box>
+          <NewMemberButton startups={allStartups} />
         </Group>
       </Box>
 
@@ -266,11 +268,9 @@ export default async function MiembrosPage({
                         <IconPhone size={14} />
                       </a>
                     )}
-                    {startup && (
-                      <Link href={`/admin/startups/${startup.id}`} style={{ color: "#d1d5db", display: "flex" }}>
-                        <IconArrowRight size={14} />
-                      </Link>
-                    )}
+                    <Link href={`/admin/miembros/${member.id}`} style={{ color: "#d1d5db", display: "flex" }}>
+                      <IconArrowRight size={14} />
+                    </Link>
                   </Group>
                 </Box>
               );

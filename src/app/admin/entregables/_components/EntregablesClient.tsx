@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconFileDescription } from "@tabler/icons-react";
 import type { EntregableTemplate } from "@/types";
-import { AREAS } from "@/constants/areas";
+import { AREAS, PHASES } from "@/constants/areas";
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
 import { TemplateForm } from "./TemplateForm";
 import { TemplateToggle } from "./TemplateToggle";
@@ -32,14 +32,28 @@ interface EntregablesClientProps {
 export function EntregablesClient({ templates }: EntregablesClientProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<EntregableTemplate | null>(null);
-  const [filterArea, setFilterArea] = useState("");
+  const [filterArea, setFilterArea]       = useState("");
+  const [filterPhase, setFilterPhase]     = useState(0);
+  const [filterSection, setFilterSection] = useState("");
+  const [filterTipo, setFilterTipo]       = useState("");
 
   const openNew = () => { setEditing(null); setDrawerOpen(true); };
   const openEdit = (t: EntregableTemplate) => { setEditing(t); setDrawerOpen(true); };
   const close = () => { setDrawerOpen(false); setEditing(null); };
 
+  const clearFilters = () => { setFilterArea(""); setFilterPhase(0); setFilterSection(""); setFilterTipo(""); };
+  const hasFilters = filterArea || filterPhase > 0 || filterSection || filterTipo;
+
+  // Secciones disponibles según el área seleccionada
+  const availableSections = filterArea
+    ? (AREAS.find((a) => a.id === filterArea)?.sections ?? [])
+    : AREAS.flatMap((a) => a.sections);
+
   const filtered = templates.filter((t) => {
-    if (filterArea && t.area !== filterArea) return false;
+    if (filterArea    && t.area    !== filterArea)    return false;
+    if (filterPhase   && t.phase   !== filterPhase)   return false;
+    if (filterSection && t.section !== filterSection)  return false;
+    if (filterTipo    && t.tipo    !== filterTipo)     return false;
     return true;
   });
 
@@ -88,24 +102,24 @@ export function EntregablesClient({ templates }: EntregablesClientProps) {
 
         {/* Filtros */}
         <Group gap={10} mb={24}>
-          <select
-            value={filterArea}
-            onChange={(e) => setFilterArea(e.target.value)}
-            style={selectStyle}
-          >
+          <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
             <option value="">Todas las áreas</option>
-            {AREAS.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
+            {AREAS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          {filterArea && (
-            <button
-              onClick={() => { setFilterArea(""); }}
-              style={{
-                fontSize: 12, color: "#9ca3af", background: "none",
-                border: "none", cursor: "pointer", padding: "0 4px",
-              }}
-            >
+          <select value={filterPhase} onChange={(e) => setFilterPhase(parseInt(e.target.value, 10))} style={selectStyle}>
+            <option value={0}>Todas las fases</option>
+            {PHASES.map((p) => <option key={p.number} value={p.number}>Fase {p.number} · {p.name}</option>)}
+          </select>
+          <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} style={selectStyle}>
+            <option value="">Todas las secciones</option>
+            {availableSections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)} style={selectStyle}>
+            <option value="">Todos los tipos</option>
+            {Object.entries(TIPO_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+          {hasFilters && (
+            <button onClick={clearFilters} style={{ fontSize: 12, color: "#9ca3af", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}>
               Limpiar filtros
             </button>
           )}

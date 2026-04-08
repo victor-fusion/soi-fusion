@@ -8,6 +8,7 @@ import {
 } from "@tabler/icons-react";
 import type { Profile, OfficeSchedule } from "@/types";
 import { MemberForm } from "./MemberForm";
+import { SlideDrawer } from "@/components/ui/SlideDrawer";
 
 const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   cofundador:  { label: "Cofundador",  color: "#2563eb" },
@@ -231,13 +232,20 @@ export function TeamSection({ startupId, members }: TeamSectionProps) {
         )}
       </Box>
 
-      {showForm && (
-        <MemberForm
-          startupId={startupId}
-          member={editing ?? undefined}
-          onClose={close}
-        />
-      )}
+      <SlideDrawer
+        open={showForm}
+        onClose={close}
+        title={editing ? "Editar miembro" : "Añadir miembro"}
+        subtitle={editing ? editing.full_name : "Invitar o crear un miembro del equipo"}
+      >
+        {showForm && (
+          <MemberForm
+            startupId={startupId}
+            member={editing ?? undefined}
+            onClose={close}
+          />
+        )}
+      </SlideDrawer>
     </>
   );
 }

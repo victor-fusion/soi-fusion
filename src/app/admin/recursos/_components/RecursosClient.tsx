@@ -41,18 +41,27 @@ interface RecursosClientProps {
 export function RecursosClient({ cards }: RecursosClientProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<CardWithArea | null>(null);
-  const [filterArea, setFilterArea] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [filterArea, setFilterArea]       = useState("");
+  const [filterSection, setFilterSection] = useState("");
+  const [filterType, setFilterType]       = useState("");
 
   const openNew = () => { setEditing(null); setDrawerOpen(true); };
   const openEdit = (c: CardWithArea) => { setEditing(c); setDrawerOpen(true); };
   const close = () => { setDrawerOpen(false); setEditing(null); };
 
+  const availableSections = filterArea
+    ? (AREAS.find((a) => a.id === filterArea)?.sections ?? [])
+    : AREAS.flatMap((a) => a.sections);
+
   const filtered = cards.filter((c) => {
-    if (filterArea && c.area_id !== filterArea) return false;
-    if (filterType && c.type !== filterType) return false;
+    if (filterArea    && c.area_id   !== filterArea)    return false;
+    if (filterSection && c.section_id !== filterSection) return false;
+    if (filterType    && c.type      !== filterType)     return false;
     return true;
   });
+
+  const hasFilters = filterArea || filterSection || filterType;
+  const clearFilters = () => { setFilterArea(""); setFilterSection(""); setFilterType(""); };
 
   // Agrupar por área
   const byArea = AREAS.map((a) => ({
@@ -101,23 +110,20 @@ export function RecursosClient({ cards }: RecursosClientProps) {
 
         {/* Filtros */}
         <Group gap={10} mb={24}>
-          <select value={filterArea} onChange={(e) => setFilterArea(e.target.value)} style={selectStyle}>
+          <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
             <option value="">Todas las áreas</option>
-            {AREAS.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
+            {AREAS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+          <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} style={selectStyle}>
+            <option value="">Todas las secciones</option>
+            {availableSections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={selectStyle}>
             <option value="">Todos los tipos</option>
-            {allTypes.map((t) => (
-              <option key={t} value={t}>{TYPE_LABELS[t] ?? t}</option>
-            ))}
+            {allTypes.map((t) => <option key={t} value={t}>{TYPE_LABELS[t] ?? t}</option>)}
           </select>
-          {(filterArea || filterType) && (
-            <button
-              onClick={() => { setFilterArea(""); setFilterType(""); }}
-              style={{ fontSize: 12, color: "#9ca3af", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}
-            >
+          {hasFilters && (
+            <button onClick={clearFilters} style={{ fontSize: 12, color: "#9ca3af", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}>
               Limpiar filtros
             </button>
           )}
