@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Text, Group, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconGripVertical } from "@tabler/icons-react";
@@ -75,6 +75,8 @@ export function FasesClient({ phases: initialPhases }: FasesClientProps) {
   const router = useRouter();
   const [phases, setPhases] = useState(initialPhases);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => { setPhases(initialPhases); }, [initialPhases]);
   const [editing, setEditing] = useState<Phase | null>(null);
   const [, startTransition] = useTransition();
 
@@ -89,7 +91,7 @@ export function FasesClient({ phases: initialPhases }: FasesClientProps) {
     if (!over || active.id === over.id) return;
     const oldIndex = phases.findIndex((p) => p.id === active.id);
     const newIndex = phases.findIndex((p) => p.id === over.id);
-    const reordered = arrayMove(phases, oldIndex, newIndex);
+    const reordered = arrayMove(phases, oldIndex, newIndex).map((p, i) => ({ ...p, number: i + 1 }));
     setPhases(reordered);
     startTransition(() => reorderFases(reordered.map((p) => p.id)));
   };
