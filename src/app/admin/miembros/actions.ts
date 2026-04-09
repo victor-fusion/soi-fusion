@@ -28,7 +28,15 @@ export async function inviteMiembro(formData: FormData) {
     }
   );
 
-  if (inviteError) throw new Error(inviteError.message);
+  if (inviteError) {
+    if (inviteError.message.includes("rate limit") || inviteError.status === 429) {
+      throw new Error("Demasiados intentos de invitación. Espera unos minutos antes de volver a intentarlo.");
+    }
+    if (inviteError.message.includes("already been invited") || inviteError.message.includes("already registered")) {
+      throw new Error("Este email ya tiene una invitación pendiente o ya está registrado.");
+    }
+    throw new Error(inviteError.message);
+  }
 
   const avatarUrl = (formData.get("avatar_url") as string) || null;
 
