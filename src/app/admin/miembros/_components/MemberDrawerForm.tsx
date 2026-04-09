@@ -121,9 +121,13 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
 
     if (avatarUrl) fd.set("avatar_url", avatarUrl);
     startTransition(async () => {
-      if (isEdit) await updateMiembro(fd);
-      else await inviteMiembro(fd);
-      onClose();
+      try {
+        if (isEdit) await updateMiembro(fd);
+        else await inviteMiembro(fd);
+        onClose();
+      } catch (err) {
+        setInviteError(err instanceof Error ? err.message : String(err));
+      }
     });
   };
 
