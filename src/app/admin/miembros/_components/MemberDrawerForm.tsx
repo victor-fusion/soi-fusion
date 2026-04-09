@@ -103,13 +103,12 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
           singleFd.set("member_type", "cofundador");
           singleFd.set("dedication", "full-time");
           singleFd.set("office_schedule", "{}");
-          try {
-            await inviteMiembro(singleFd);
-            count++;
-          } catch (err) {
-            setInviteError(`Error al invitar a ${email}: ${err instanceof Error ? err.message : String(err)}`);
+          const result = await inviteMiembro(singleFd);
+          if (result?.error) {
+            setInviteError(`Error al invitar a ${email}: ${result.error}`);
             break;
           }
+          count++;
         }
         setInvitedCount(count);
         if (count === emails.length) {
@@ -121,12 +120,16 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
 
     if (avatarUrl) fd.set("avatar_url", avatarUrl);
     startTransition(async () => {
-      try {
-        if (isEdit) await updateMiembro(fd);
-        else await inviteMiembro(fd);
+      if (isEdit) {
+        await updateMiembro(fd);
         onClose();
-      } catch (err) {
-        setInviteError(err instanceof Error ? err.message : String(err));
+      } else {
+        const result = await inviteMiembro(fd);
+        if (result?.error) {
+          setInviteError(result.error);
+        } else {
+          onClose();
+        }
       }
     });
   };

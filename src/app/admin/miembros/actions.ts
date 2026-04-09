@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { OfficeSchedule } from "@/types";
 
 /** Invita por email y vincula a una startup opcional */
-export async function inviteMiembro(formData: FormData) {
+export async function inviteMiembro(formData: FormData): Promise<{ error?: string }> {
   const adminSupabase = createAdminClient();
   const supabase = await createClient();
 
@@ -30,12 +30,12 @@ export async function inviteMiembro(formData: FormData) {
 
   if (inviteError) {
     if (inviteError.message.includes("rate limit") || inviteError.status === 429) {
-      throw new Error("Demasiados intentos de invitación. Espera unos minutos antes de volver a intentarlo.");
+      return { error: "Demasiados intentos de invitación. Espera unos minutos antes de volver a intentarlo." };
     }
     if (inviteError.message.includes("already been invited") || inviteError.message.includes("already registered")) {
-      throw new Error("Este email ya tiene una invitación pendiente o ya está registrado.");
+      return { error: "Este email ya tiene una invitación pendiente o ya está registrado." };
     }
-    throw new Error(inviteError.message);
+    return { error: inviteError.message };
   }
 
   const avatarUrl = (formData.get("avatar_url") as string) || null;
@@ -57,8 +57,9 @@ export async function inviteMiembro(formData: FormData) {
     })
     .eq("id", inviteData.user.id);
 
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
   revalidatePath("/admin/miembros");
+  return {};
 }
 
 /** Actualiza datos de un perfil existente */
