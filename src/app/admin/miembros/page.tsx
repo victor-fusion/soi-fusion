@@ -15,6 +15,7 @@ type MemberRow = {
   dedication: string | null;
   phone?: string;
   linkedin_url?: string;
+  avatar_url?: string;
   startups: { id: string; name: string; batch: number } | { id: string; name: string; batch: number }[] | null;
 };
 
@@ -56,7 +57,7 @@ export default async function MiembrosPage({
 
   let query = supabase
     .from("profiles")
-    .select("id, startup_id, full_name, email, role, role_title, member_type, dedication, phone, linkedin_url, startups(id, name, batch)")
+    .select("id, startup_id, full_name, email, role, role_title, member_type, dedication, phone, linkedin_url, avatar_url, startups(id, name, batch)")
     .order("full_name")
     .range(offset, offset + PER_PAGE - 1);
 

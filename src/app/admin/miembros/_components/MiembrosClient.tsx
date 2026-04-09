@@ -42,6 +42,7 @@ type MemberRow = {
   dedication: string | null;
   phone?: string;
   linkedin_url?: string;
+  avatar_url?: string;
   startups: { id: string; name: string; batch: number } | { id: string; name: string; batch: number }[] | null;
 };
 
@@ -141,6 +142,7 @@ export function MiembrosClient({
                 >
                   <Group gap={10}>
                     <Avatar
+                      src={member.avatar_url ?? null}
                       size={32} radius="xl"
                       style={{ backgroundColor: `${typeColor}18`, color: typeColor, fontSize: 12, fontWeight: 700, flexShrink: 0 }}
                     >
