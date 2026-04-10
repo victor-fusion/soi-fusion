@@ -140,7 +140,8 @@ export default function OnboardingPage() {
 
       // 2. Actualizar perfil con los datos del formulario
       const updates: Record<string, unknown> = {
-        full_name:    fd.get("full_name") as string,
+        first_name:   (fd.get("first_name") as string) || null,
+        last_name:    (fd.get("last_name") as string) || null,
         role_title:   (fd.get("role_title") as string) || null,
         phone:        (fd.get("phone") as string) || null,
         linkedin_url: (fd.get("linkedin_url") as string) || null,
@@ -194,7 +195,7 @@ export default function OnboardingPage() {
             Fusión Startups
           </Text>
           <Title order={2} style={{ color: "#fff", fontWeight: 700, fontSize: 24 }}>
-            Bienvenido/a al SOI
+            Bienvenido/a a SOI Fusión
           </Title>
           <Text style={{ color: "#dcfce7", fontSize: 14, marginTop: 8 }}>
             Completa tu perfil para empezar
@@ -226,14 +227,19 @@ export default function OnboardingPage() {
             {/* Datos personales */}
             <SimpleGrid cols={2} spacing={16}>
               <Box>
-                <label style={labelStyle}>Nombre completo *</label>
-                <input name="full_name" required placeholder="María García" style={inputStyle} />
+                <label style={labelStyle}>Nombre *</label>
+                <input name="first_name" required placeholder="María" style={inputStyle} />
               </Box>
               <Box>
-                <label style={labelStyle}>Cargo en la startup</label>
-                <input name="role_title" placeholder="CTO, Head of Sales…" style={inputStyle} />
+                <label style={labelStyle}>Apellidos</label>
+                <input name="last_name" placeholder="García López" style={inputStyle} />
               </Box>
             </SimpleGrid>
+
+            <Box>
+              <label style={labelStyle}>Cargo en la startup</label>
+              <input name="role_title" placeholder="CTO, Head of Sales…" style={inputStyle} />
+            </Box>
 
             <SimpleGrid cols={2} spacing={16}>
               <Box>

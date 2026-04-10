@@ -93,7 +93,7 @@ export default async function DashboardPage() {
     items: currentEntregables.filter((e) => e.area === area.id),
   })).filter((g) => g.items.length > 0);
 
-  const firstName = profile.full_name.split(" ")[0];
+  const firstName = profile.first_name ?? "—";
 
   return (
     <Box p={40} maw={1100} mx="auto">

@@ -60,7 +60,8 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
 
   const handleRemove = () => {
     if (!member) return;
-    if (!confirm(`¿Desvincular a ${member.full_name} de esta startup?`)) return;
+    const name = [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
+    if (!confirm(`¿Desvincular a ${name} de esta startup?`)) return;
     startTransition(async () => {
       await removeMemberFromStartup(member.id, startupId);
       onClose();
@@ -121,12 +122,12 @@ export function MemberForm({ startupId, member, onClose }: MemberFormProps) {
         {/* Nombre + Cargo */}
         <SimpleGrid cols={2} spacing={16}>
           <Box>
-            <label style={labelStyle}>Nombre completo *</label>
+            <label style={labelStyle}>Nombre *</label>
             <input
-              name="full_name"
+              name="first_name"
               required
-              defaultValue={member?.full_name ?? ""}
-              placeholder="María García"
+              defaultValue={member?.first_name ?? ""}
+              placeholder="María"
               style={inputStyle}
             />
           </Box>

@@ -34,7 +34,8 @@ const DEDICATION_LABELS: Record<string, string> = {
 type MemberRow = {
   id: string;
   startup_id: string | null;
-  full_name: string;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
   role: string;
   role_title?: string;
@@ -102,12 +103,12 @@ export function MiembrosClient({
           style={{
             borderBottom: "1px solid #f3f4f6",
             display: "grid",
-            gridTemplateColumns: "1fr 140px 110px 110px 60px",
+            gridTemplateColumns: "1fr 140px 80px 110px 110px 60px",
             gap: 16, alignItems: "center",
             backgroundColor: "#fafafa",
           }}
         >
-          {["Miembro", "Startup", "Tipo", "Dedicación", "Contacto"].map((h) => (
+          {["Miembro", "Startup", "Rol", "Tipo", "Dedicación", "Contacto"].map((h) => (
             <Text key={h} style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               {h}
             </Text>
@@ -124,7 +125,8 @@ export function MiembrosClient({
               const startup = Array.isArray(member.startups) ? member.startups[0] ?? null : member.startups;
               const isLast = i === members.length - 1;
               const typeColor = member.member_type ? (TYPE_COLORS[member.member_type] ?? "#9ca3af") : "#9ca3af";
-              const initials = member.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+              const fullName = [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
+              const initials = [member.first_name, member.last_name].filter(Boolean).map((w) => w![0]).join("").toUpperCase() || "?";
 
               return (
                 <Link
@@ -132,7 +134,7 @@ export function MiembrosClient({
                   href={`/admin/miembros/${member.id}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 140px 110px 110px 60px",
+                    gridTemplateColumns: "1fr 140px 80px 110px 110px 60px",
                     gap: 16, alignItems: "center", padding: "14px 24px",
                     borderBottom: isLast ? "none" : "1px solid #f9fafb",
                     textDecoration: "none", color: "inherit", cursor: "pointer",
@@ -149,7 +151,7 @@ export function MiembrosClient({
                       {initials}
                     </Avatar>
                     <Box style={{ minWidth: 0 }}>
-                      <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>{member.full_name}</Text>
+                      <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>{fullName}</Text>
                       {member.role_title && <Text style={{ fontSize: 12, color: "#9ca3af" }} truncate>{member.role_title}</Text>}
                     </Box>
                   </Group>
@@ -165,14 +167,16 @@ export function MiembrosClient({
                     <Text style={{ fontSize: 12, color: "#d1d5db" }}>—</Text>
                   )}
 
+                  <Badge size="sm" variant="light" styles={{ root: member.role === "admin" ? { backgroundColor: "#f0fdf4", color: "#16a34a" } : { backgroundColor: "#f3f4f6", color: "#6b7280" } }}>
+                    {member.role === "admin" ? "Admin" : "Miembro"}
+                  </Badge>
+
                   {member.member_type ? (
                     <Badge size="sm" variant="light" styles={{ root: { backgroundColor: `${typeColor}15`, color: typeColor } }}>
                       {TYPE_LABELS[member.member_type] ?? member.member_type}
                     </Badge>
                   ) : (
-                    <Badge size="sm" variant="light" color="gray">
-                      {member.role === "admin" ? "Admin Fusión" : "Sin asignar"}
-                    </Badge>
+                    <Badge size="sm" variant="light" color="gray">Sin asignar</Badge>
                   )}
 
                   <Text style={{ fontSize: 12, color: "#6b7280" }}>

@@ -53,12 +53,8 @@ export default async function MiembroDetailPage({
   const startups = (startupsData ?? []) as { id: string; name: string; batch: number }[];
 
   const typeColor = member.member_type ? (TYPE_COLORS[member.member_type] ?? "#9ca3af") : "#9ca3af";
-  const initials = member.full_name
-    .split(" ")
-    .slice(0, 2)
-    .map((w: string) => w[0])
-    .join("")
-    .toUpperCase();
+  const fullName = [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
+  const initials = [member.first_name, member.last_name].filter(Boolean).map((w) => (w as string)[0]).join("").toUpperCase() || "?";
 
   return (
     <Box p={40} maw={800} mx="auto">
@@ -80,7 +76,7 @@ export default async function MiembroDetailPage({
           {initials}
         </Avatar>
         <Box>
-          <Text style={{ fontSize: "1.75rem", fontWeight: 700, color: "#111827" }}>{member.full_name}</Text>
+          <Text style={{ fontSize: "1.75rem", fontWeight: 700, color: "#111827" }}>{fullName}</Text>
           <Group gap={8} mt={4}>
             {member.member_type && (
               <Badge size="sm" variant="light" styles={{ root: { backgroundColor: `${typeColor}15`, color: typeColor } }}>

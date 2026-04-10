@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SOI — Fusión Startups",
+  title: "SOI Fusión",
   description: "Sistema Operativo Inteligente para emprendedores de Fusión Startups",
 };
 

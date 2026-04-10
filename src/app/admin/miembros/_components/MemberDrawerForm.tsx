@@ -98,11 +98,7 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
         for (const email of emails) {
           const singleFd = new FormData();
           singleFd.set("email", email);
-          singleFd.set("full_name", email.split("@")[0]); // placeholder
           singleFd.set("startup_id", fd.get("startup_id") as string);
-          singleFd.set("member_type", "cofundador");
-          singleFd.set("dedication", "full-time");
-          singleFd.set("office_schedule", "{}");
           const result = await inviteMiembro(singleFd);
           if (result?.error) {
             setInviteError(`Error al invitar a ${email}: ${result.error}`);
@@ -242,14 +238,19 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
             </Box>
             <SimpleGrid cols={2} spacing={16}>
               <Box>
-                <label style={labelStyle}>Nombre completo *</label>
-                <input name="full_name" required placeholder="María García" style={inputStyle} />
+                <label style={labelStyle}>Nombre *</label>
+                <input name="first_name" required placeholder="María" style={inputStyle} />
               </Box>
               <Box>
-                <label style={labelStyle}>Cargo</label>
-                <input name="role_title" placeholder="CTO, Head of Sales…" style={inputStyle} />
+                <label style={labelStyle}>Apellidos</label>
+                <input name="last_name" placeholder="García López" style={inputStyle} />
               </Box>
             </SimpleGrid>
+
+            <Box>
+              <label style={labelStyle}>Cargo</label>
+              <input name="role_title" placeholder="CTO, Head of Sales…" style={inputStyle} />
+            </Box>
             <Box>
               <label style={labelStyle}>Startup</label>
               <select name="startup_id" defaultValue={defaultStartupId ?? ""} style={{ ...inputStyle, cursor: "pointer" }}>
@@ -282,14 +283,19 @@ export function MemberDrawerForm({ member, startups, defaultStartupId, onClose }
           <>
             <SimpleGrid cols={2} spacing={16}>
               <Box>
-                <label style={labelStyle}>Nombre completo</label>
-                <input name="full_name" defaultValue={member.full_name ?? ""} placeholder="María García" style={inputStyle} />
+                <label style={labelStyle}>Nombre</label>
+                <input name="first_name" defaultValue={member.first_name ?? ""} placeholder="María" style={inputStyle} />
               </Box>
               <Box>
-                <label style={labelStyle}>Cargo</label>
-                <input name="role_title" defaultValue={member.role_title ?? ""} placeholder="CTO, Head of Sales…" style={inputStyle} />
+                <label style={labelStyle}>Apellidos</label>
+                <input name="last_name" defaultValue={member.last_name ?? ""} placeholder="García López" style={inputStyle} />
               </Box>
             </SimpleGrid>
+
+            <Box>
+              <label style={labelStyle}>Cargo</label>
+              <input name="role_title" defaultValue={member.role_title ?? ""} placeholder="CTO, Head of Sales…" style={inputStyle} />
+            </Box>
 
             <Box>
               <label style={labelStyle}>Startup</label>

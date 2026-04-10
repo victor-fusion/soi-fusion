@@ -3,10 +3,10 @@
 import { useTransition, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Box, SimpleGrid, Text, Avatar } from "@mantine/core";
-import { IconLoader2, IconCamera } from "@tabler/icons-react";
+import { IconLoader2, IconCamera, IconMail } from "@tabler/icons-react";
 import type { Profile } from "@/types";
 import { createClient } from "@/lib/supabase/client";
-import { updateMiembro, deleteMiembro } from "../../actions";
+import { updateMiembro, deleteMiembro, sendPasswordReset } from "../../actions";
 
 interface Startup {
   id: string;
@@ -50,12 +50,13 @@ const labelStyle: React.CSSProperties = {
 export function MemberEditClient({ member, startups }: MemberEditClientProps) {
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(member.avatar_url ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const initials = member.full_name
-    .split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const initials = [member.first_name, member.last_name].filter(Boolean).map((w) => w![0]).join("").toUpperCase() || "?";
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -84,8 +85,18 @@ export function MemberEditClient({ member, startups }: MemberEditClientProps) {
     });
   };
 
+  const handleSendReset = () => {
+    setIsSendingReset(true);
+    startTransition(async () => {
+      await sendPasswordReset(member.id);
+      setResetSent(true);
+      setIsSendingReset(false);
+    });
+  };
+
   const handleDelete = () => {
-    if (!confirm(`¿Eliminar completamente a ${member.full_name}? Esta acción no se puede deshacer.`)) return;
+    const name = [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
+    if (!confirm(`¿Eliminar completamente a ${name}? Esta acción no se puede deshacer.`)) return;
     startTransition(async () => {
       await deleteMiembro(member.id);
       router.push("/admin/miembros");
@@ -141,14 +152,19 @@ export function MemberEditClient({ member, startups }: MemberEditClientProps) {
 
         <SimpleGrid cols={2} spacing={16}>
           <Box>
-            <label style={labelStyle}>Nombre completo *</label>
-            <input name="full_name" required defaultValue={member.full_name} style={inputStyle} />
+            <label style={labelStyle}>Nombre *</label>
+            <input name="first_name" required defaultValue={member.first_name ?? ""} placeholder="María" style={inputStyle} />
           </Box>
           <Box>
-            <label style={labelStyle}>Cargo</label>
-            <input name="role_title" defaultValue={member.role_title ?? ""} placeholder="CTO, Head of Sales…" style={inputStyle} />
+            <label style={labelStyle}>Apellidos</label>
+            <input name="last_name" defaultValue={member.last_name ?? ""} placeholder="García López" style={inputStyle} />
           </Box>
         </SimpleGrid>
+
+        <Box>
+          <label style={labelStyle}>Cargo</label>
+          <input name="role_title" defaultValue={member.role_title ?? ""} placeholder="CTO, Head of Sales…" style={inputStyle} />
+        </Box>
 
         <Box>
           <label style={labelStyle}>Startup</label>
@@ -189,6 +205,21 @@ export function MemberEditClient({ member, startups }: MemberEditClientProps) {
               <input type="url" name="linkedin_url" defaultValue={member.linkedin_url ?? ""} placeholder="https://linkedin.com/in/..." style={inputStyle} />
             </Box>
           </SimpleGrid>
+        </Box>
+
+        {/* Enviar reset de contraseña */}
+        <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 16 }}>
+          <button
+            type="button"
+            onClick={handleSendReset}
+            disabled={isSendingReset || resetSent}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid #e5e7eb", borderRadius: 8, padding: "8px 14px", cursor: (isSendingReset || resetSent) ? "default" : "pointer", color: resetSent ? "#16a34a" : "#6b7280", fontSize: 13 }}
+          >
+            {isSendingReset
+              ? <IconLoader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+              : <IconMail size={14} />}
+            {resetSent ? "Enlace enviado" : "Enviar enlace de recuperación de contraseña"}
+          </button>
         </Box>
 
         <Box style={{ borderTop: "1px solid #f3f4f6", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>

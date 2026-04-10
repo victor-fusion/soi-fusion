@@ -120,12 +120,7 @@ export function TeamSection({ startupId, members }: TeamSectionProps) {
           <Box style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {members.map((member) => {
               const typeCfg = TYPE_CONFIG[member.member_type ?? "empleado"] ?? TYPE_CONFIG.empleado;
-              const initials = member.full_name
-                .split(" ")
-                .slice(0, 2)
-                .map((w) => w[0])
-                .join("")
-                .toUpperCase();
+              const initials = [member.first_name, member.last_name].filter(Boolean).map((w) => w![0]).join("").toUpperCase() || "?";
 
               return (
                 <Box
@@ -152,7 +147,7 @@ export function TeamSection({ startupId, members }: TeamSectionProps) {
                   <Box style={{ flex: 1, minWidth: 0 }}>
                     <Group gap={8} mb={4} align="center">
                       <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
-                        {member.full_name}
+                        {[member.first_name, member.last_name].filter(Boolean).join(" ") || member.email}
                       </Text>
                       {member.role_title && (
                         <Text style={{ fontSize: 13, color: "#6b7280" }}>
@@ -236,7 +231,7 @@ export function TeamSection({ startupId, members }: TeamSectionProps) {
         open={showForm}
         onClose={close}
         title={editing ? "Editar miembro" : "Añadir miembro"}
-        subtitle={editing ? editing.full_name : "Invitar o crear un miembro del equipo"}
+        subtitle={editing ? ([editing.first_name, editing.last_name].filter(Boolean).join(" ") || editing.email) : "Invitar o crear un miembro del equipo"}
       >
         {showForm && (
           <MemberForm

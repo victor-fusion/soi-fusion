@@ -182,12 +182,11 @@ export function Sidebar({ profile, startup, areas }: SidebarProps) {
 
   const isSearching = searchTerm.length > 0;
 
-  const initials = profile.full_name
-    .split(" ")
-    .map((n) => n[0])
+  const initials = [profile.first_name, profile.last_name]
+    .filter(Boolean)
+    .map((n) => n![0])
     .join("")
-    .slice(0, 2)
-    .toUpperCase();
+    .toUpperCase() || "?";
 
   return (
     <Box
@@ -340,7 +339,7 @@ export function Sidebar({ profile, startup, areas }: SidebarProps) {
             </Avatar>
             <Box>
               <Text style={{ fontSize: "13px", fontWeight: 600, color: "#111827" }} truncate maw={130}>
-                {profile.full_name}
+                {[profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—"}
               </Text>
               <Text style={{ fontSize: "11px", color: "#9ca3af" }} truncate maw={130}>
                 {startup?.name ?? (profile.role === "admin" ? "Admin" : "Fusión")}

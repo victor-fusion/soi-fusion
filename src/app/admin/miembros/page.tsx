@@ -7,7 +7,8 @@ const PER_PAGE = 15;
 type MemberRow = {
   id: string;
   startup_id: string | null;
-  full_name: string;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
   role: string;
   role_title?: string;
@@ -57,8 +58,8 @@ export default async function MiembrosPage({
 
   let query = supabase
     .from("profiles")
-    .select("id, startup_id, full_name, email, role, role_title, member_type, dedication, phone, linkedin_url, avatar_url, startups(id, name, batch)")
-    .order("full_name")
+    .select("id, startup_id, first_name, last_name, email, role, role_title, member_type, dedication, phone, linkedin_url, avatar_url, startups(id, name, batch)")
+    .order("first_name")
     .range(offset, offset + PER_PAGE - 1);
 
   if (startupParam) {

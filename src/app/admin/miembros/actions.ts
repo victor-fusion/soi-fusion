@@ -10,20 +10,13 @@ export async function inviteMiembro(formData: FormData): Promise<{ error?: strin
   const supabase = await createClient();
   const adminSupabase = createAdminClient();
 
-  const email      = formData.get("email") as string;
-  const fullName   = formData.get("full_name") as string;
-  const startupId  = (formData.get("startup_id") as string) || null;
-  const memberType = formData.get("member_type") as string;
-  const dedication = formData.get("dedication") as string;
-
-  const scheduleRaw = formData.get("office_schedule") as string;
-  let office_schedule: OfficeSchedule = {};
-  try { office_schedule = JSON.parse(scheduleRaw || "{}"); } catch { /* empty */ }
+  const email     = formData.get("email") as string;
+  const startupId = (formData.get("startup_id") as string) || null;
 
   // Invocamos la Edge Function que usa generateLink internamente.
   // Esto NO dispara el Auth Hook de Supabase, evitando los rate limits.
   const { data: fnData, error: fnError } = await supabase.functions.invoke("invite-member", {
-    body: { email, full_name: fullName },
+    body: { email },
   });
 
   if (fnError) {
@@ -37,26 +30,15 @@ export async function inviteMiembro(formData: FormData): Promise<{ error?: strin
   const userId = (fnData as { user_id?: string })?.user_id;
   if (!userId) return { error: "No se pudo obtener el ID del usuario invitado." };
 
-  const avatarUrl = (formData.get("avatar_url") as string) || null;
+  // Solo asignamos startup — el miembro rellena el resto en el onboarding
+  if (startupId) {
+    const { error } = await adminSupabase
+      .from("profiles")
+      .update({ startup_id: startupId })
+      .eq("id", userId);
+    if (error) return { error: error.message };
+  }
 
-  const { error } = await adminSupabase
-    .from("profiles")
-    .update({
-      full_name:      fullName,
-      startup_id:     startupId,
-      role_title:     (formData.get("role_title") as string) || null,
-      member_type:    memberType || null,
-      dedication:     dedication || null,
-      office_schedule,
-      joined_at:      (formData.get("joined_at") as string) || null,
-      phone:          (formData.get("phone") as string) || null,
-      linkedin_url:   (formData.get("linkedin_url") as string) || null,
-      calendar_url:   (formData.get("calendar_url") as string) || null,
-      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-    })
-    .eq("id", userId);
-
-  if (error) return { error: error.message };
   revalidatePath("/admin/miembros");
   return {};
 }
@@ -74,7 +56,8 @@ export async function updateMiembro(formData: FormData) {
   const avatarUrl = (formData.get("avatar_url") as string) || null;
 
   const updateData: Record<string, unknown> = {
-    full_name:      formData.get("full_name") as string,
+    first_name:     (formData.get("first_name") as string) || null,
+    last_name:      (formData.get("last_name") as string) || null,
     startup_id:     startupId,
     role_title:     (formData.get("role_title") as string) || null,
     member_type:    (formData.get("member_type") as string) || null,
@@ -106,4 +89,21 @@ export async function deleteMiembro(memberId: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/miembros");
+}
+
+/** Envía enlace de recuperación de contraseña al miembro */
+export async function sendPasswordReset(memberId: string): Promise<void> {
+  const supabase = await createClient();
+  const adminSupabase = createAdminClient();
+
+  // Obtener email del usuario
+  const { data: userData, error: userError } = await adminSupabase.auth.admin.getUserById(memberId);
+  if (userError || !userData.user?.email) throw new Error("No se pudo obtener el email del usuario.");
+
+  // resetPasswordForEmail dispara el hook send-auth-email → Resend
+  const { error } = await supabase.auth.resetPasswordForEmail(userData.user.email, {
+    redirectTo: "https://soi.fusionstartups.com/reset-password",
+  });
+
+  if (error) throw new Error(error.message);
 }

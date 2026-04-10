@@ -45,7 +45,7 @@ export default function LoginPage() {
             Fusión Startups
           </Text>
           <Title order={1} style={{ fontSize: "2rem", fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>
-            Bienvenido al SOI
+            Bienvenido/a a SOI Fusión
           </Title>
           <Text mt="xs" style={{ color: "#6b7280", fontSize: "1rem" }}>
             Tu sistema operativo inteligente
@@ -112,12 +112,17 @@ export default function LoginPage() {
           </Stack>
         </form>
 
-        <Text
-          mt={32}
-          style={{ fontSize: "13px", color: "#9ca3af", textAlign: "center" }}
-        >
-          ¿Problemas para acceder? Contacta con el equipo de Fusión.
-        </Text>
+        <Box mt={32} style={{ textAlign: "center" }}>
+          <a
+            href="/login/recuperar"
+            style={{ fontSize: "13px", color: "#16a34a", textDecoration: "none" }}
+          >
+            ¿Olvidaste tu contraseña?
+          </a>
+          <Text mt={8} style={{ fontSize: "13px", color: "#9ca3af" }}>
+            ¿Problemas para acceder? Contacta con el equipo de Fusión.
+          </Text>
+        </Box>
       </Box>
     </Box>
   );

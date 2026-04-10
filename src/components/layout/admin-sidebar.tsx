@@ -230,11 +230,11 @@ export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
         >
           <Group gap={10}>
             <Avatar color="green" radius="xl" size={28} style={{ fontSize: "12px" }}>
-              {profile.full_name.charAt(0).toUpperCase()}
+              {(profile.first_name ?? "?").charAt(0).toUpperCase()}
             </Avatar>
             <Box>
               <Text style={{ fontSize: "13px", fontWeight: 500, color: "#111827" }} truncate maw={130}>
-                {profile.full_name}
+                {[profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—"}
               </Text>
               <Text style={{ fontSize: "11px", color: "#9ca3af" }}>Admin</Text>
             </Box>

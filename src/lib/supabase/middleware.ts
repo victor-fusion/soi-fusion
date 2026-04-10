@@ -31,9 +31,8 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // /onboarding maneja su propia auth: el token de invitación llega en el hash
-  // y el cliente Supabase lo procesa. No redirigir aquí.
-  if (pathname.startsWith("/onboarding")) {
+  // Estas rutas manejan su propia auth vía hash token — no redirigir.
+  if (pathname.startsWith("/onboarding") || pathname.startsWith("/reset-password")) {
     return supabaseResponse;
   }
 
