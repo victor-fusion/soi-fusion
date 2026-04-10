@@ -5,10 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { OfficeSchedule } from "@/types";
 
-/** Invita por email y vincula a una startup opcional */
+/** Invita por email vía Edge Function (generateLink → Resend, sin Auth Hook) */
 export async function inviteMiembro(formData: FormData): Promise<{ error?: string }> {
-  const adminSupabase = createAdminClient();
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
 
   const email      = formData.get("email") as string;
   const fullName   = formData.get("full_name") as string;
@@ -20,27 +20,26 @@ export async function inviteMiembro(formData: FormData): Promise<{ error?: strin
   let office_schedule: OfficeSchedule = {};
   try { office_schedule = JSON.parse(scheduleRaw || "{}"); } catch { /* empty */ }
 
-  const { data: inviteData, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(
-    email,
-    {
-      data: { full_name: fullName, role: "founder" },
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`,
-    }
-  );
+  // Invocamos la Edge Function que usa generateLink internamente.
+  // Esto NO dispara el Auth Hook de Supabase, evitando los rate limits.
+  const { data: fnData, error: fnError } = await supabase.functions.invoke("invite-member", {
+    body: { email, full_name: fullName },
+  });
 
-  if (inviteError) {
-    if (inviteError.message.includes("rate limit") || inviteError.status === 429) {
-      return { error: "Demasiados intentos de invitación. Espera unos minutos antes de volver a intentarlo." };
-    }
-    if (inviteError.message.includes("already been invited") || inviteError.message.includes("already registered")) {
+  if (fnError) {
+    const msg = fnError.message ?? String(fnError);
+    if (msg.includes("already been invited") || msg.includes("already registered")) {
       return { error: "Este email ya tiene una invitación pendiente o ya está registrado." };
     }
-    return { error: inviteError.message };
+    return { error: msg };
   }
+
+  const userId = (fnData as { user_id?: string })?.user_id;
+  if (!userId) return { error: "No se pudo obtener el ID del usuario invitado." };
 
   const avatarUrl = (formData.get("avatar_url") as string) || null;
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from("profiles")
     .update({
       full_name:      fullName,
@@ -55,7 +54,7 @@ export async function inviteMiembro(formData: FormData): Promise<{ error?: strin
       calendar_url:   (formData.get("calendar_url") as string) || null,
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
     })
-    .eq("id", inviteData.user.id);
+    .eq("id", userId);
 
   if (error) return { error: error.message };
   revalidatePath("/admin/miembros");
