@@ -29,22 +29,36 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    const hash = window.location.hash.slice(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get("access_token");
-    const refreshToken = params.get("refresh_token");
-    const type = params.get("type");
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
 
-    if (accessToken && refreshToken && type === "recovery") {
-      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+    if (code) {
+      // Flujo PKCE: intercambiar código por sesión
+      supabase.auth.exchangeCodeForSession(code)
         .then(({ error }) => {
           if (error) { setError("El enlace de recuperación es inválido o ha expirado."); }
           else { setSessionReady(true); }
           setLoading(false);
         });
     } else {
-      setError("Enlace inválido. Solicita uno nuevo desde la página de inicio de sesión.");
-      setLoading(false);
+      // Fallback: flujo implícito (tokens en hash)
+      const hash = window.location.hash.slice(1);
+      const hashParams = new URLSearchParams(hash);
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      const type = hashParams.get("type");
+
+      if (accessToken && refreshToken && type === "recovery") {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+          .then(({ error }) => {
+            if (error) { setError("El enlace de recuperación es inválido o ha expirado."); }
+            else { setSessionReady(true); }
+            setLoading(false);
+          });
+      } else {
+        setError("Enlace inválido. Solicita uno nuevo desde la página de inicio de sesión.");
+        setLoading(false);
+      }
     }
   }, []);
 
