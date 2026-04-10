@@ -12,6 +12,7 @@ import {
   IconLayoutDashboard, IconLogout, IconChevronRight,
   IconChevronDown, IconSearch, IconTarget, IconBox,
   IconTrendingUp, IconCoin, IconScale, IconSettings, IconUsers,
+  IconCheckbox, IconMessage, IconCalendar,
 } from "@tabler/icons-react";
 
 const AREA_ICONS: Record<string, typeof IconTarget> = {
@@ -278,6 +279,59 @@ export function Sidebar({ profile, startup, areas }: SidebarProps) {
               boxSizing: "border-box",
             }}
           />
+        </Box>
+
+        {/* Gestión */}
+        <Box mb={16}>
+          <Text
+            px={10}
+            mb={6}
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "#9ca3af",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            Gestión
+          </Text>
+          {[
+            { href: "/dashboard/tareas", label: "Tareas", icon: IconCheckbox },
+            { href: "/dashboard/mensajeria", label: "Mensajería", icon: IconMessage },
+            { href: "/dashboard/reuniones", label: "Reuniones", icon: IconCalendar },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+            return (
+              <UnstyledButton
+                key={item.href}
+                component={Link}
+                href={item.href}
+                w="100%"
+                px={10}
+                py={8}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  borderRadius: 8,
+                  backgroundColor: active ? "#fff" : "transparent",
+                  boxShadow: active ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+                  border: active ? "1px solid #f3f4f6" : "1px solid transparent",
+                  transition: "all 0.15s",
+                  textDecoration: "none",
+                  color: active ? "#111827" : "#6b7280",
+                }}
+              >
+                <Icon size={16} color={active ? "#16a34a" : "#9ca3af"} />
+                <Text style={{ fontSize: "14px", fontWeight: active ? 600 : 500, flex: 1, color: "inherit" }}>
+                  {item.label}
+                </Text>
+                {active && <IconChevronRight size={12} color="#16a34a" />}
+              </UnstyledButton>
+            );
+          })}
         </Box>
 
         {/* Áreas */}

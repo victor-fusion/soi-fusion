@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import {
   IconCircleCheck, IconCircle, IconClock,
-  IconLock, IconCalendar,
+  IconLock, IconCalendar, IconCheckbox, IconPlus, IconVideo,
 } from "@tabler/icons-react";
 
 function formatDeadline(dateStr: string) {
@@ -223,76 +223,161 @@ export default async function DashboardPage() {
             </Box>
           </Box>
 
-          {/* Entregables por área — ancho completo */}
-          {byArea.length === 0 ? (
-            <Paper p={24} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
-              <Text style={{ fontSize: 14, color: "#9ca3af", textAlign: "center" }}>
-                No hay entregables cargados para esta fase todavía.
-              </Text>
+          {/* Tres columnas: Tareas · Reuniones · (próximamente) */}
+          <Box style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+
+            {/* Tareas */}
+            <Paper p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
+              <Group justify="space-between" mb={16}>
+                <Group gap={8}>
+                  <IconCheckbox size={15} color="#16a34a" />
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Tareas</Text>
+                </Group>
+                <Box
+                  component={Link}
+                  href="/dashboard/tareas"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    fontSize: 12, color: "#16a34a", fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  <IconPlus size={12} />
+                  Nueva
+                </Box>
+              </Group>
+              <Box style={{ textAlign: "center", padding: "24px 0" }}>
+                <IconCheckbox size={32} color="#e5e7eb" />
+                <Text style={{ fontSize: 13, color: "#9ca3af", marginTop: 8 }}>No tienes tareas aún</Text>
+                <Box
+                  component={Link}
+                  href="/dashboard/tareas"
+                  style={{
+                    display: "inline-block", marginTop: 12,
+                    fontSize: 12, color: "#16a34a", fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  Crear primera tarea →
+                </Box>
+              </Box>
             </Paper>
-          ) : (
-            <Stack gap={12}>
-              {byArea.map(({ area, items }) => {
-                const done = items.filter((i) => i.status === "completado").length;
-                return (
-                  <Paper key={area.id} p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
-                    <Group justify="space-between" mb={12}>
-                      <Group gap={8}>
-                        <Box style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: area.color }} />
-                        <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{area.name}</Text>
+
+            {/* Reuniones */}
+            <Paper p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
+              <Group justify="space-between" mb={16}>
+                <Group gap={8}>
+                  <IconVideo size={15} color="#2563eb" />
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Próximas reuniones</Text>
+                </Group>
+                <Box
+                  component={Link}
+                  href="/dashboard/reuniones"
+                  style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}
+                >
+                  Ver todas
+                </Box>
+              </Group>
+              <Stack gap={8}>
+                {[
+                  { type: "PM Weekly",        title: "Seguimiento del proyecto",    date: "14/04/2026", time: "10:00" },
+                  { type: "Demo",              title: "Demo Fase 1 con inversores",  date: "16/04/2026", time: "16:00" },
+                  { type: "Mentor Session",    title: "Revisión de estrategia GTM",  date: "18/04/2026", time: "11:30" },
+                  { type: "PM Weekly",         title: "Seguimiento del proyecto",    date: "21/04/2026", time: "10:00" },
+                  { type: "Workshop",          title: "Taller de pricing",           date: "24/04/2026", time: "09:00" },
+                ].map((r, i) => (
+                  <Box
+                    key={i}
+                    style={{
+                      display: "flex", alignItems: "flex-start", gap: 10,
+                      padding: "10px 12px", borderRadius: 8,
+                      backgroundColor: "#f9fafb", border: "1px solid #f3f4f6",
+                    }}
+                  >
+                    <Box
+                      style={{
+                        flexShrink: 0, width: 36, textAlign: "center",
+                        backgroundColor: "#eff6ff", borderRadius: 6, padding: "4px 0",
+                      }}
+                    >
+                      <Text style={{ fontSize: 10, fontWeight: 700, color: "#2563eb", lineHeight: 1.2 }}>
+                        {r.date.split("/")[0]}
+                      </Text>
+                      <Text style={{ fontSize: 9, color: "#93c5fd", lineHeight: 1.2 }}>
+                        {["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][parseInt(r.date.split("/")[1]) - 1]}
+                      </Text>
+                    </Box>
+                    <Box style={{ flex: 1, minWidth: 0 }}>
+                      <Badge size="xs" variant="light" color="blue" mb={2}>{r.type}</Badge>
+                      <Text style={{ fontSize: 12, fontWeight: 500, color: "#111827" }} lineClamp={1}>{r.title}</Text>
+                      <Group gap={4} mt={2}>
+                        <IconCalendar size={10} color="#9ca3af" />
+                        <Text style={{ fontSize: 11, color: "#9ca3af" }}>{r.date} · {r.time}</Text>
                       </Group>
-                      <Text style={{ fontSize: 12, color: "#9ca3af" }}>{done}/{items.length}</Text>
-                    </Group>
-                    <Stack gap={6}>
-                      {items.map((item) => {
-                        const s = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.pending;
-                        const Icon = s.icon;
-                        const dl = item.deadline ? formatDeadline(item.deadline) : null;
-                        return (
-                          <Link
-                            key={item.id}
-                            href={`/dashboard/entregables/${item.id}`}
-                            style={{ textDecoration: "none" }}
-                          >
-                            <Box
-                              style={{
-                                display: "flex", alignItems: "flex-start", gap: 10,
-                                padding: "12px 12px", borderRadius: 8,
-                                backgroundColor: s.bg, cursor: "pointer",
-                              }}
-                            >
-                              <Icon size={14} color={s.color} style={{ marginTop: 3, flexShrink: 0 }} />
-                              <Box style={{ flex: 1, minWidth: 0 }}>
-                                <Group justify="space-between" align="flex-start" gap={8}>
-                                  <Text style={{ fontSize: 13, fontWeight: 500, color: "#111827" }} lineClamp={1}>
-                                    {item.title}
-                                  </Text>
-                                  <Badge size="xs" variant="light" style={{ backgroundColor: `${s.color}18`, color: s.color, flexShrink: 0 }}>
-                                    {s.label}
-                                  </Badge>
-                                </Group>
-                                {item.description && (
-                                  <Text style={{ fontSize: 12, color: "#6b7280", marginTop: 3, lineHeight: 1.5 }} lineClamp={2}>
-                                    {item.description}
-                                  </Text>
-                                )}
-                                {dl && (
-                                  <Box style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, padding: "2px 7px", borderRadius: 5, backgroundColor: dl.bg }}>
-                                    <IconCalendar size={10} color={dl.color} />
-                                    <Text style={{ fontSize: 10, fontWeight: 600, color: dl.color }}>{dl.label}</Text>
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+
+            {/* Entregables */}
+            <Paper p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
+              <Group justify="space-between" mb={16}>
+                <Group gap={8}>
+                  <IconCircle size={15} color="#7c3aed" />
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Entregables</Text>
+                </Group>
+                <Text style={{ fontSize: 12, color: "#9ca3af" }}>{totalDone}/{totalEntregables}</Text>
+              </Group>
+              {byArea.length === 0 ? (
+                <Text style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", padding: "24px 0" }}>
+                  No hay entregables para esta fase todavía.
+                </Text>
+              ) : (
+                <Stack gap={12}>
+                  {byArea.map(({ area, items }) => {
+                    const done = items.filter((i) => i.status === "completado").length;
+                    return (
+                      <Box key={area.id}>
+                        <Group justify="space-between" mb={6}>
+                          <Group gap={6}>
+                            <Box style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: area.color }} />
+                            <Text style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>{area.name}</Text>
+                          </Group>
+                          <Text style={{ fontSize: 11, color: "#9ca3af" }}>{done}/{items.length}</Text>
+                        </Group>
+                        <Stack gap={4}>
+                          {items.map((item) => {
+                            const s = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.pendiente;
+                            const Icon = s.icon;
+                            const dl = item.deadline ? formatDeadline(item.deadline) : null;
+                            return (
+                              <Link key={item.id} href={`/dashboard/entregables/${item.id}`} style={{ textDecoration: "none" }}>
+                                <Box style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 10px", borderRadius: 8, backgroundColor: s.bg, cursor: "pointer" }}>
+                                  <Icon size={13} color={s.color} style={{ marginTop: 2, flexShrink: 0 }} />
+                                  <Box style={{ flex: 1, minWidth: 0 }}>
+                                    <Text style={{ fontSize: 12, fontWeight: 500, color: "#111827" }} lineClamp={1}>{item.title}</Text>
+                                    {dl && (
+                                      <Box style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 3, padding: "1px 6px", borderRadius: 4, backgroundColor: dl.bg }}>
+                                        <IconCalendar size={9} color={dl.color} />
+                                        <Text style={{ fontSize: 10, fontWeight: 600, color: dl.color }}>{dl.label}</Text>
+                                      </Box>
+                                    )}
                                   </Box>
-                                )}
-                              </Box>
-                            </Box>
-                          </Link>
-                        );
-                      })}
-                    </Stack>
-                  </Paper>
-                );
-              })}
-            </Stack>
-          )}
+                                  <Badge size="xs" variant="light" style={{ backgroundColor: `${s.color}18`, color: s.color, flexShrink: 0 }}>{s.label}</Badge>
+                                </Box>
+                              </Link>
+                            );
+                          })}
+                        </Stack>
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              )}
+            </Paper>
+
+          </Box>
 
           {/* Próximas fases */}
           {currentPhaseNum < 6 && (
