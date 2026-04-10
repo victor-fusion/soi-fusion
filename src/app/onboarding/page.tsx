@@ -57,18 +57,38 @@ export default function OnboardingPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Comprueba que el usuario llegó autenticado (tras clic en el link de invitación)
+  // Procesa el token de invitación que Supabase pone en el hash de la URL
+  // (ej: /onboarding#access_token=...&type=invite)
+  // Hay que hacerlo antes de getUser() para que la sesión del invitado
+  // reemplace cualquier sesión previa (ej: el admin que está probando).
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.replace("/login");
-        return;
-      }
-      setUserId(data.user.id);
-      setLoading(false);
-    });
-    // router es estable en Next.js App Router — no necesita incluirse
+
+    const hash = window.location.hash;
+    if (hash && hash.includes("access_token")) {
+      // onAuthStateChange se dispara cuando el cliente procesa el hash
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session) {
+            setUserId(session.user.id);
+            setLoading(false);
+            subscription.unsubscribe();
+          }
+        }
+      );
+      // Forzar que el cliente procese el hash actual
+      supabase.auth.getSession();
+    } else {
+      // Acceso directo sin hash — verificar sesión normal
+      supabase.auth.getUser().then(({ data }) => {
+        if (!data.user) {
+          router.replace("/login");
+          return;
+        }
+        setUserId(data.user.id);
+        setLoading(false);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
