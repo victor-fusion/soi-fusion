@@ -59,25 +59,28 @@ export default function OnboardingPage() {
 
   // Procesa el token de invitación que Supabase pone en el hash de la URL
   // (ej: /onboarding#access_token=...&type=invite)
-  // Hay que hacerlo antes de getUser() para que la sesión del invitado
-  // reemplace cualquier sesión previa (ej: el admin que está probando).
+  // Usamos setSession() directamente con el token del hash para garantizar
+  // que la sesión del invitado reemplaza cualquier sesión previa (ej: admin).
   useEffect(() => {
     const supabase = createClient();
 
-    const hash = window.location.hash;
-    if (hash && hash.includes("access_token")) {
-      // onAuthStateChange se dispara cuando el cliente procesa el hash
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session) {
-            setUserId(session.user.id);
+    const hash = window.location.hash.slice(1); // quita el "#"
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+
+    if (accessToken && refreshToken) {
+      // Forzar la sesión del invitado, ignorando cualquier sesión previa
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ data, error }) => {
+          if (error || !data.session) {
+            setError(error?.message ?? "Token de invitación inválido o expirado.");
             setLoading(false);
-            subscription.unsubscribe();
+            return;
           }
-        }
-      );
-      // Forzar que el cliente procese el hash actual
-      supabase.auth.getSession();
+          setUserId(data.session.user.id);
+          setLoading(false);
+        });
     } else {
       // Acceso directo sin hash — verificar sesión normal
       supabase.auth.getUser().then(({ data }) => {
