@@ -10,6 +10,7 @@ interface Phase {
   number: number;
   name: string;
   color: string;
+  description?: string;
 }
 
 interface FaseFormProps {
@@ -76,6 +77,17 @@ export function FaseForm({ fase, onClose }: FaseFormProps) {
             defaultValue={fase?.name ?? ""}
             placeholder="Ej: Descubrir"
             style={inputStyle}
+          />
+        </Box>
+
+        <Box>
+          <label style={labelStyle}>Descripción</label>
+          <textarea
+            name="description"
+            defaultValue={fase?.description ?? ""}
+            placeholder="Objetivo principal de esta fase, qué debe conseguir la startup…"
+            rows={3}
+            style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
           />
         </Box>
 

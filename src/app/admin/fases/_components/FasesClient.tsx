@@ -22,6 +22,7 @@ interface Phase {
   number: number;
   name: string;
   color: string;
+  description?: string;
 }
 
 function SortablePhaseRow({ phase, isLast, onClick }: { phase: Phase; isLast: boolean; onClick: () => void }) {
@@ -30,7 +31,7 @@ function SortablePhaseRow({ phase, isLast, onClick }: { phase: Phase; isLast: bo
     transform: CSS.Transform.toString(transform),
     transition,
     display: "grid",
-    gridTemplateColumns: "28px 60px 1fr 100px",
+    gridTemplateColumns: "28px 60px 1fr 2fr 100px",
     gap: 16, alignItems: "center",
     padding: "16px 24px",
     borderBottom: isLast ? "none" : "1px solid #f9fafb",
@@ -59,6 +60,7 @@ function SortablePhaseRow({ phase, isLast, onClick }: { phase: Phase; isLast: bo
         {phase.number}
       </Box>
       <Text style={{ fontSize: 14, fontWeight: 500, color: "#111827" }}>{phase.name}</Text>
+      <Text style={{ fontSize: 12, color: "#6b7280" }} lineClamp={2}>{phase.description ?? <span style={{ color: "#d1d5db" }}>Sin descripción</span>}</Text>
       <Box style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <Box style={{ width: 16, height: 16, borderRadius: 4, backgroundColor: phase.color }} />
         <Text style={{ fontSize: 12, color: "#9ca3af" }}>{phase.color}</Text>
@@ -117,9 +119,9 @@ export function FasesClient({ phases: initialPhases }: FasesClientProps) {
         </Box>
 
         <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
-          <Box px={24} py={14} style={{ borderBottom: "1px solid #f3f4f6", display: "grid", gridTemplateColumns: "28px 60px 1fr 100px", gap: 16, alignItems: "center", backgroundColor: "#fafafa" }}>
+          <Box px={24} py={14} style={{ borderBottom: "1px solid #f3f4f6", display: "grid", gridTemplateColumns: "28px 60px 1fr 2fr 100px", gap: 16, alignItems: "center", backgroundColor: "#fafafa" }}>
             <Text style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}></Text>
-            {["Nº", "Nombre", "Color"].map((h) => (
+            {["Nº", "Nombre", "Descripción", "Color"].map((h) => (
               <Text key={h} style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</Text>
             ))}
           </Box>
