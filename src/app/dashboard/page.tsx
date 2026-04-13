@@ -50,6 +50,7 @@ const PHASE_QUESTION: Record<number, string> = {
 };
 
 export default async function DashboardPage() {
+  try {
   const supabase = await createClient();
 
   const { data: { session } } = await supabase.auth.getSession();
@@ -428,4 +429,8 @@ export default async function DashboardPage() {
       )}
     </Box>
   );
+  } catch (err) {
+    console.error("[DashboardPage] ERROR:", err);
+    throw err;
+  }
 }
