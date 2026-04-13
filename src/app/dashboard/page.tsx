@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import {
   IconCircleCheck, IconCircle, IconClock,
-  IconLock, IconCalendar, IconCheckbox, IconPlus, IconVideo,
+  IconLock, IconCalendar, IconCheckbox, IconPlus, IconCalendarEvent,
 } from "@tabler/icons-react";
 
 function formatDeadline(dateStr: string) {
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
             <Paper p={20} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
               <Group justify="space-between" mb={16}>
                 <Group gap={8}>
-                  <IconVideo size={15} color="#2563eb" />
+                  <IconCalendarEvent size={15} color="#2563eb" />
                   <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Próximas reuniones</Text>
                 </Group>
                 <Box
