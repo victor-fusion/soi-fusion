@@ -50,7 +50,6 @@ const PHASE_QUESTION: Record<number, string> = {
 };
 
 export default async function DashboardPage() {
-  try {
   const supabase = await createClient();
 
   const { data: { session } } = await supabase.auth.getSession();
@@ -234,8 +233,7 @@ export default async function DashboardPage() {
                   <IconCheckbox size={15} color="#16a34a" />
                   <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Tareas</Text>
                 </Group>
-                <Box
-                  component={Link}
+                <Link
                   href="/dashboard/tareas"
                   style={{
                     display: "flex", alignItems: "center", gap: 4,
@@ -245,13 +243,12 @@ export default async function DashboardPage() {
                 >
                   <IconPlus size={12} />
                   Nueva
-                </Box>
+                </Link>
               </Group>
               <Box style={{ textAlign: "center", padding: "24px 0" }}>
                 <IconCheckbox size={32} color="#e5e7eb" />
                 <Text style={{ fontSize: 13, color: "#9ca3af", marginTop: 8 }}>No tienes tareas aún</Text>
-                <Box
-                  component={Link}
+                <Link
                   href="/dashboard/tareas"
                   style={{
                     display: "inline-block", marginTop: 12,
@@ -260,7 +257,7 @@ export default async function DashboardPage() {
                   }}
                 >
                   Crear primera tarea →
-                </Box>
+                </Link>
               </Box>
             </Paper>
 
@@ -429,8 +426,4 @@ export default async function DashboardPage() {
       )}
     </Box>
   );
-  } catch (err) {
-    console.error("[DashboardPage] ERROR:", err);
-    throw err;
-  }
 }
