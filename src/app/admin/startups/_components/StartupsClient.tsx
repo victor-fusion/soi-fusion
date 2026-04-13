@@ -328,8 +328,8 @@ export function StartupsClient({
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
                 >
                   {/* Startup name + favicon */}
-                  <Group gap={10} style={{ minWidth: 0 }}>
-                    <Box style={{
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, overflow: "hidden" }}>
+                    <div style={{
                       width: 30, height: 30, borderRadius: 7, flexShrink: 0,
                       border: "1px solid #f3f4f6", backgroundColor: "#f9fafb",
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -342,18 +342,18 @@ export function StartupsClient({
                           style={{ width: 26, height: 26, objectFit: "contain" }}
                         />
                       ) : (
-                        <Text style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af" }}>
                           {startup.name.slice(0, 2).toUpperCase()}
-                        </Text>
+                        </span>
                       )}
-                    </Box>
-                    <Box style={{ minWidth: 0 }}>
+                    </div>
+                    <div style={{ minWidth: 0, overflow: "hidden" }}>
                       <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>{startup.name}</Text>
                       {startup.tagline && (
                         <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }} truncate>{startup.tagline}</Text>
                       )}
-                    </Box>
-                  </Group>
+                    </div>
+                  </div>
 
                   <Text style={{ fontSize: 12, color: "#6b7280" }}>Ciclo {startup.batch}</Text>
 
