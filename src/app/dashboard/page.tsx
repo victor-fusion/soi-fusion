@@ -268,13 +268,12 @@ export default async function DashboardPage() {
                   <IconCalendarEvent size={15} color="#2563eb" />
                   <Text style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Próximas reuniones</Text>
                 </Group>
-                <Box
-                  component={Link}
+                <Link
                   href="/dashboard/reuniones"
                   style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}
                 >
                   Ver todas
-                </Box>
+                </Link>
               </Group>
               <Stack gap={8}>
                 {[
