@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Box, Text, Group, Stack, Badge, Paper, Progress } from "@mantine/core";
-import { IconPencil } from "@tabler/icons-react";
+import { IconPencil, IconSearch } from "@tabler/icons-react";
 import type { Startup } from "@/types";
 import { BatchFilter } from "../../_components/BatchFilter";
 import { NewStartupButton } from "./NewStartupButton";
@@ -52,6 +53,10 @@ export function StartupsClient({
   total,
   page,
 }: StartupsClientProps) {
+  const [search, setSearch] = useState("");
+  const term = search.trim().toLowerCase();
+  const filtered = term ? startups.filter((s) => s.name.toLowerCase().includes(term)) : startups;
+
   return (
     <Box p={40} maw={1100} mx="auto">
       <Box mb={32}>
@@ -76,7 +81,16 @@ export function StartupsClient({
             Limpiar filtros
           </Link>
         )}
-        <Text style={{ fontSize: 12, color: "#9ca3af", marginLeft: "auto" }}>{total} resultados</Text>
+        <Box style={{ position: "relative", marginLeft: "auto" }}>
+          <IconSearch size={13} color="#9ca3af" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar startup..."
+            style={{ padding: "6px 10px 6px 30px", fontSize: 13, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fafafa", color: "#374151", outline: "none", width: 200 }}
+          />
+        </Box>
+        <Text style={{ fontSize: 12, color: "#9ca3af" }}>{filtered.length} resultados</Text>
       </Group>
 
       <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
@@ -97,16 +111,16 @@ export function StartupsClient({
           ))}
         </Box>
 
-        {startups.length === 0 ? (
+        {filtered.length === 0 ? (
           <Box py={48} style={{ textAlign: "center" }}>
             <Text style={{ color: "#6b7280" }}>No hay startups con los filtros seleccionados.</Text>
           </Box>
         ) : (
           <Stack gap={0}>
-            {startups.map((startup, i) => {
+            {filtered.map((startup, i) => {
               const prog = progressMap[startup.id] ?? { done: 0, total: 0, pct: 0 };
               const phase = phases.find((p) => p.number === startup.current_phase) ?? phases[0];
-              const isLast = i === startups.length - 1;
+              const isLast = i === filtered.length - 1;
 
               return (
                 <Link

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Box, Text, Title, Group, Stack, Badge, Paper, Avatar } from "@mantine/core";
-import { IconPencil, IconBrandLinkedin, IconPhone } from "@tabler/icons-react";
+import { IconPencil, IconBrandLinkedin, IconPhone, IconSearch } from "@tabler/icons-react";
 import { BatchFilter } from "../../_components/BatchFilter";
 import { StartupFilter, TypeFilter } from "./MiembrosFilters";
 import { NewMemberButton } from "./NewMemberButton";
@@ -68,6 +69,15 @@ export function MiembrosClient({
   total,
   page,
 }: MiembrosClientProps) {
+  const [search, setSearch] = useState("");
+  const term = search.trim().toLowerCase();
+  const filtered = term
+    ? members.filter((m) => {
+        const name = [m.first_name, m.last_name].filter(Boolean).join(" ").toLowerCase();
+        return name.includes(term) || m.email.toLowerCase().includes(term);
+      })
+    : members;
+
   return (
     <Box p={40} maw={1100} mx="auto">
       <Box mb={32}>
@@ -94,7 +104,16 @@ export function MiembrosClient({
             Limpiar filtros
           </Link>
         )}
-        <Text style={{ fontSize: 12, color: "#9ca3af", marginLeft: "auto" }}>{total} resultados</Text>
+        <Box style={{ position: "relative", marginLeft: "auto" }}>
+          <IconSearch size={13} color="#9ca3af" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar miembro..."
+            style={{ padding: "6px 10px 6px 30px", fontSize: 13, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fafafa", color: "#374151", outline: "none", width: 200 }}
+          />
+        </Box>
+        <Text style={{ fontSize: 12, color: "#9ca3af" }}>{filtered.length} resultados</Text>
       </Group>
 
       <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
@@ -115,15 +134,15 @@ export function MiembrosClient({
           ))}
         </Box>
 
-        {members.length === 0 ? (
+        {filtered.length === 0 ? (
           <Box py={48} style={{ textAlign: "center" }}>
             <Text style={{ color: "#6b7280" }}>No hay miembros con los filtros seleccionados</Text>
           </Box>
         ) : (
           <Stack gap={0}>
-            {members.map((member, i) => {
+            {filtered.map((member, i) => {
               const startup = Array.isArray(member.startups) ? member.startups[0] ?? null : member.startups;
-              const isLast = i === members.length - 1;
+              const isLast = i === filtered.length - 1;
               const typeColor = member.member_type ? (TYPE_COLORS[member.member_type] ?? "#9ca3af") : "#9ca3af";
               const fullName = [member.first_name, member.last_name].filter(Boolean).join(" ") || member.email;
               const initials = [member.first_name, member.last_name].filter(Boolean).map((w) => w![0]).join("").toUpperCase() || "?";

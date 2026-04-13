@@ -11,6 +11,7 @@ export async function updateStartup(formData: FormData) {
   const { error } = await supabase.from("startups").update({
     name:             formData.get("name") as string,
     logo_url:         (formData.get("logo_url") as string) || null,
+    web_url:          (formData.get("web_url") as string) || null,
     tagline:          (formData.get("tagline") as string) || null,
     sector:           (formData.get("sector") as string) || null,
     type:             formData.get("type") as string,

@@ -9,6 +9,7 @@ export interface Startup {
   id: string;
   name: string;
   logo_url?: string;
+  web_url?: string;
   tagline?: string;
   sector?: string;
   type: StartupType;

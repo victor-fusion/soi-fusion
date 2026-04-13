@@ -29,7 +29,19 @@ interface StartupEditFormProps {
 export function StartupEditForm({ startup }: StartupEditFormProps) {
   const [open, setOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState(startup.logo_url ?? "");
+  const [webUrl, setWebUrl] = useState(startup.web_url ?? "");
   const [isPending, startTransition] = useTransition();
+
+  const fetchFavicon = (url: string) => {
+    if (!url || logoPreview) return; // no sobreescribir si ya hay logo
+    try {
+      const domain = new URL(url.startsWith("http") ? url : `https://${url}`).hostname;
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+      setLogoPreview(faviconUrl);
+    } catch {
+      // URL inválida, ignorar
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -127,16 +139,33 @@ export function StartupEditForm({ startup }: StartupEditFormProps) {
                       <input
                         type="url"
                         name="logo_url"
-                        defaultValue={startup.logo_url ?? ""}
+                        value={logoPreview}
+                        onChange={(e) => setLogoPreview(e.target.value)}
                         placeholder="https://ejemplo.com/logo.png"
                         style={inputStyle}
-                        onChange={(e) => setLogoPreview(e.target.value)}
                       />
                       <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 5 }}>
-                        Pega la URL de la imagen. Formatos recomendados: PNG o SVG con fondo transparente.
+                        Pega una URL o se rellenará automáticamente con el favicon del sitio web.
                       </Text>
                     </Box>
                   </Group>
+                </Box>
+
+                {/* Web */}
+                <Box mb={16}>
+                  <label style={labelStyle}>Sitio web</label>
+                  <input
+                    type="url"
+                    name="web_url"
+                    value={webUrl}
+                    onChange={(e) => setWebUrl(e.target.value)}
+                    onBlur={(e) => fetchFavicon(e.target.value)}
+                    placeholder="https://startup.com"
+                    style={inputStyle}
+                  />
+                  <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 5 }}>
+                    Al salir del campo se buscará el favicon automáticamente si no hay logo.
+                  </Text>
                 </Box>
 
                 {/* Nombre */}

@@ -9,7 +9,7 @@ import {
   Badge, Paper,
 } from "@mantine/core";
 import {
-  IconCircleCheck, IconCircle, IconClock,
+  IconCircleCheck, IconCircle, IconClock, IconLock,
   IconCalendar, IconCheckbox, IconPlus, IconCalendarEvent,
 } from "@tabler/icons-react";
 
