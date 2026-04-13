@@ -10,7 +10,7 @@ import { BatchFilter } from "../../_components/BatchFilter";
 import { NewStartupButton } from "./NewStartupButton";
 import { Pagination } from "@/components/ui/Pagination";
 import { Suspense } from "react";
-import { updateStartup } from "../actions";
+import { updateStartup } from "../[id]/actions";
 
 type Phase = { number: number; name: string; color: string };
 
@@ -83,7 +83,7 @@ function EditDrawer({ startup, onClose }: { startup: Startup; onClose: () => voi
     } catch { /* URL inválida */ }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     startTransition(async () => {
