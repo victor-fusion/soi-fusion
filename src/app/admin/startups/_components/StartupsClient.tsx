@@ -136,12 +136,27 @@ export function StartupsClient({
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
                 >
-                  <Box style={{ minWidth: 0 }}>
-                    <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>{startup.name}</Text>
-                    {startup.tagline && (
-                      <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }} truncate>{startup.tagline}</Text>
-                    )}
-                  </Box>
+                  <Group gap={10} style={{ minWidth: 0 }}>
+                    <Box style={{
+                      width: 28, height: 28, borderRadius: 6, flexShrink: 0, overflow: "hidden",
+                      border: "1px solid #f3f4f6", backgroundColor: "#f9fafb",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {startup.logo_url ? (
+                        <img src={startup.logo_url} alt={startup.name} style={{ width: 28, height: 28, objectFit: "contain" }} />
+                      ) : (
+                        <Text style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af" }}>
+                          {startup.name.slice(0, 2).toUpperCase()}
+                        </Text>
+                      )}
+                    </Box>
+                    <Box style={{ minWidth: 0 }}>
+                      <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }} truncate>{startup.name}</Text>
+                      {startup.tagline && (
+                        <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }} truncate>{startup.tagline}</Text>
+                      )}
+                    </Box>
+                  </Group>
 
                   <Text style={{ fontSize: 12, color: "#6b7280" }}>Ciclo {startup.batch}</Text>
 
