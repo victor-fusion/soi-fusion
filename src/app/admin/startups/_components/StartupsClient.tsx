@@ -1,24 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Box, Text, Group, Stack, Badge, Paper, Progress } from "@mantine/core";
-import { IconPencil, IconSearch } from "@tabler/icons-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Box, Text, Group, Stack, Badge, Paper, Progress, Avatar, SimpleGrid } from "@mantine/core";
+import { IconPencil, IconSearch, IconLoader2, IconX } from "@tabler/icons-react";
 import type { Startup } from "@/types";
 import { BatchFilter } from "../../_components/BatchFilter";
 import { NewStartupButton } from "./NewStartupButton";
 import { Pagination } from "@/components/ui/Pagination";
 import { Suspense } from "react";
+import { updateStartup } from "../actions";
 
 type Phase = { number: number; name: string; color: string };
-
-const TYPE_LABELS: Record<string, string> = {
-  b2b_saas:        "B2B SaaS",
-  b2c_app:         "B2C App",
-  marketplace:     "Marketplace",
-  producto_fisico: "Producto físico",
-  servicios:       "Servicios",
-};
 
 const STATUS_COLOR: Record<string, string> = {
   activa:      "#16a34a",
@@ -27,6 +21,22 @@ const STATUS_COLOR: Record<string, string> = {
   inactiva:    "#9ca3af",
   cerrada:     "#ef4444",
 };
+
+const TYPES = [
+  { value: "b2b_saas",        label: "B2B SaaS" },
+  { value: "b2c_app",         label: "B2C App" },
+  { value: "marketplace",     label: "Marketplace" },
+  { value: "producto_fisico", label: "Producto físico" },
+  { value: "servicios",       label: "Servicios" },
+];
+
+const STATUSES = [
+  { value: "activa",      label: "Activa" },
+  { value: "en_pausa",    label: "En pausa" },
+  { value: "en_revision", label: "En revisión" },
+  { value: "inactiva",    label: "Inactiva" },
+  { value: "cerrada",     label: "Cerrada" },
+];
 
 interface ProgressData {
   done: number;
@@ -44,6 +54,184 @@ interface StartupsClientProps {
   page: number;
 }
 
+// ─── Edit Drawer ─────────────────────────────────────────────────────────────
+
+function EditDrawer({ startup, onClose }: { startup: Startup; onClose: () => void }) {
+  const router = useRouter();
+  const [logoPreview, setLogoPreview] = useState(startup.logo_url ?? "");
+  const [webUrl, setWebUrl] = useState(startup.web_url ?? "");
+  const [isPending, startTransition] = useTransition();
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "9px 12px",
+    fontSize: 14, color: "#374151",
+    backgroundColor: "#fafafa",
+    border: "1px solid #e5e7eb",
+    borderRadius: 8, outline: "none",
+    fontFamily: "inherit", boxSizing: "border-box",
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600,
+    color: "#6b7280", marginBottom: 6, display: "block",
+  };
+
+  const fetchFavicon = (url: string) => {
+    if (!url || logoPreview) return;
+    try {
+      const domain = new URL(url.startsWith("http") ? url : `https://${url}`).hostname;
+      setLogoPreview(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
+    } catch { /* URL inválida */ }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(async () => {
+      await updateStartup(fd);
+      router.refresh();
+      onClose();
+    });
+  };
+
+  return (
+    <Box
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.3)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 24,
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <Box
+        style={{
+          backgroundColor: "#fff", borderRadius: 16,
+          width: "100%", maxWidth: 640,
+          maxHeight: "90vh", overflowY: "auto",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+        }}
+      >
+        <Box style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 24px", borderBottom: "1px solid #f3f4f6",
+        }}>
+          <Text style={{ fontSize: 16, fontWeight: 700, color: "#111827" }}>Editar startup</Text>
+          <button type="button" onClick={onClose}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", padding: 4, display: "flex" }}>
+            <IconX size={18} />
+          </button>
+        </Box>
+
+        <form onSubmit={handleSubmit}>
+          <Box style={{ padding: 24 }}>
+            <input type="hidden" name="startup_id" value={startup.id} />
+
+            <Box mb={20}>
+              <label style={labelStyle}>Logo</label>
+              <Group gap={16} align="flex-start">
+                <Avatar src={logoPreview || undefined} radius="lg" size={64}
+                  style={{ backgroundColor: "#f3f4f6", color: "#9ca3af", flexShrink: 0, fontSize: 22, fontWeight: 700 }}>
+                  {startup.name.charAt(0).toUpperCase()}
+                </Avatar>
+                <Box style={{ flex: 1 }}>
+                  <input type="url" name="logo_url" value={logoPreview}
+                    onChange={(e) => setLogoPreview(e.target.value)}
+                    placeholder="https://ejemplo.com/logo.png" style={inputStyle} />
+                  <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 5 }}>
+                    Pega una URL o se rellenará automáticamente con el favicon del sitio web.
+                  </Text>
+                </Box>
+              </Group>
+            </Box>
+
+            <Box mb={16}>
+              <label style={labelStyle}>Sitio web</label>
+              <input type="url" name="web_url" value={webUrl}
+                onChange={(e) => setWebUrl(e.target.value)}
+                onBlur={(e) => fetchFavicon(e.target.value)}
+                placeholder="https://startup.com" style={inputStyle} />
+              <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 5 }}>
+                Al salir del campo se buscará el favicon automáticamente si no hay logo.
+              </Text>
+            </Box>
+
+            <Box mb={16}>
+              <label style={labelStyle}>Nombre *</label>
+              <input name="name" required defaultValue={startup.name}
+                placeholder="Nombre de la startup" style={inputStyle} />
+            </Box>
+
+            <Box mb={16}>
+              <label style={labelStyle}>Tagline</label>
+              <input name="tagline" defaultValue={startup.tagline ?? ""}
+                placeholder="Ej: La herramienta de ventas para equipos B2B en crecimiento"
+                style={inputStyle} maxLength={120} />
+            </Box>
+
+            <Box mb={16}>
+              <label style={labelStyle}>Sector</label>
+              <input name="sector" defaultValue={startup.sector ?? ""}
+                placeholder="Ej: SaaS, Retail, Salud, Educación…" style={inputStyle} />
+            </Box>
+
+            <SimpleGrid cols={3} spacing={16} mb={16}>
+              <Box>
+                <label style={labelStyle}>Tipo de startup</label>
+                <select name="type" defaultValue={startup.type} style={{ ...inputStyle, cursor: "pointer" }}>
+                  {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </Box>
+              <Box>
+                <label style={labelStyle}>Estado</label>
+                <select name="status" defaultValue={startup.status} style={{ ...inputStyle, cursor: "pointer" }}>
+                  {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              </Box>
+              <Box>
+                <label style={labelStyle}>Ciclo</label>
+                <select name="batch" defaultValue={startup.batch} style={{ ...inputStyle, cursor: "pointer" }}>
+                  {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Ciclo {n}</option>)}
+                </select>
+              </Box>
+            </SimpleGrid>
+
+            <Box mb={24}>
+              <label style={labelStyle}>Fecha de inicio del ciclo</label>
+              <input type="date" name="cycle_start_date"
+                defaultValue={startup.cycle_start_date ?? ""} style={inputStyle} />
+            </Box>
+
+            <Group justify="flex-end" gap={8} mt={8}>
+              <button type="button" onClick={onClose}
+                style={{
+                  padding: "9px 18px", borderRadius: 8,
+                  border: "1px solid #e5e7eb", backgroundColor: "#fff",
+                  color: "#6b7280", fontSize: 13, fontWeight: 500, cursor: "pointer",
+                }}>
+                Cancelar
+              </button>
+              <button type="submit" disabled={isPending}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "9px 20px", borderRadius: 8,
+                  border: "none", backgroundColor: "#111827",
+                  color: "#fff", fontSize: 13, fontWeight: 600,
+                  cursor: isPending ? "wait" : "pointer",
+                }}>
+                {isPending && <IconLoader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
+                Guardar cambios
+              </button>
+            </Group>
+          </Box>
+        </form>
+      </Box>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+    </Box>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export function StartupsClient({
   startups,
   phases,
@@ -53,7 +241,10 @@ export function StartupsClient({
   total,
   page,
 }: StartupsClientProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
+  const [editingStartup, setEditingStartup] = useState<Startup | null>(null);
+
   const term = search.trim().toLowerCase();
   const filtered = term ? startups.filter((s) => s.name.toLowerCase().includes(term)) : startups;
 
@@ -99,12 +290,12 @@ export function StartupsClient({
           style={{
             borderBottom: "1px solid #f3f4f6",
             display: "grid",
-            gridTemplateColumns: "1fr 80px 80px 140px 180px 80px 32px",
+            gridTemplateColumns: "1fr 80px 100px 140px 180px 80px 32px",
             gap: 16, alignItems: "center",
             backgroundColor: "#fafafa",
           }}
         >
-          {["Startup", "Ciclo", "Tipo", "Fase actual", "Progreso de fase", "Estado", ""].map((h) => (
+          {["Startup", "Ciclo", "Sector", "Fase actual", "Progreso de fase", "Estado", ""].map((h) => (
             <Text key={h} style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               {h}
             </Text>
@@ -123,27 +314,33 @@ export function StartupsClient({
               const isLast = i === filtered.length - 1;
 
               return (
-                <Link
+                <Box
                   key={startup.id}
-                  href={`/admin/startups/${startup.id}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 80px 80px 140px 180px 80px 32px",
+                    gridTemplateColumns: "1fr 80px 100px 140px 180px 80px 32px",
                     gap: 16, alignItems: "center", padding: "16px 24px",
                     borderBottom: isLast ? "none" : "1px solid #f9fafb",
-                    textDecoration: "none", color: "inherit", cursor: "pointer",
+                    cursor: "pointer",
                   }}
+                  onClick={() => router.push(`/admin/startups/${startup.id}`)}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
                 >
+                  {/* Startup name + favicon */}
                   <Group gap={10} style={{ minWidth: 0 }}>
                     <Box style={{
-                      width: 28, height: 28, borderRadius: 6, flexShrink: 0, overflow: "hidden",
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
                       border: "1px solid #f3f4f6", backgroundColor: "#f9fafb",
                       display: "flex", alignItems: "center", justifyContent: "center",
+                      overflow: "hidden",
                     }}>
                       {startup.logo_url ? (
-                        <img src={startup.logo_url} alt={startup.name} style={{ width: 28, height: 28, objectFit: "contain" }} />
+                        <img
+                          src={startup.logo_url}
+                          alt={startup.name}
+                          style={{ width: 26, height: 26, objectFit: "contain" }}
+                        />
                       ) : (
                         <Text style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af" }}>
                           {startup.name.slice(0, 2).toUpperCase()}
@@ -160,7 +357,7 @@ export function StartupsClient({
 
                   <Text style={{ fontSize: 12, color: "#6b7280" }}>Ciclo {startup.batch}</Text>
 
-                  <Text style={{ fontSize: 12, color: "#6b7280" }}>{TYPE_LABELS[startup.type] ?? startup.type}</Text>
+                  <Text style={{ fontSize: 12, color: "#6b7280" }} truncate>{startup.sector ?? "—"}</Text>
 
                   <Group gap={8}>
                     <Box style={{
@@ -203,10 +400,28 @@ export function StartupsClient({
                     {startup.status === "activa" ? "Activa" : startup.status === "en_pausa" ? "En pausa" : startup.status}
                   </Badge>
 
-                  <Box style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}>
-                    <IconPencil size={14} />
+                  {/* Pencil: opens edit drawer, does NOT navigate */}
+                  <Box
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingStartup(startup);
+                    }}
+                  >
+                    <Box style={{
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      width: 28, height: 28, borderRadius: 7,
+                      border: "1px solid #e5e7eb", backgroundColor: "#fff",
+                      color: "#9ca3af", cursor: "pointer",
+                      transition: "color 0.15s, border-color 0.15s",
+                    }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "#374151"; e.currentTarget.style.borderColor = "#d1d5db"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.borderColor = "#e5e7eb"; }}
+                    >
+                      <IconPencil size={13} />
+                    </Box>
                   </Box>
-                </Link>
+                </Box>
               );
             })}
           </Stack>
@@ -214,6 +429,13 @@ export function StartupsClient({
       </Paper>
 
       <Pagination total={total} page={page} perPage={15} />
+
+      {editingStartup && (
+        <EditDrawer
+          startup={editingStartup}
+          onClose={() => setEditingStartup(null)}
+        />
+      )}
     </Box>
   );
 }
