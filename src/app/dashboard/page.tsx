@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import {
   IconCircleCheck, IconCircle, IconClock,
-  IconLock, IconCalendar, IconCheckbox, IconPlus, IconCalendarEvent,
+  IconCalendar, IconCheckbox, IconPlus, IconCalendarEvent,
 } from "@tabler/icons-react";
 
 function formatDeadline(dateStr: string) {
@@ -377,49 +377,6 @@ export default async function DashboardPage() {
           </Box>
 
           {/* Próximas fases */}
-          {currentPhaseNum < 6 && (
-            <Box>
-              <Text style={{ fontSize: 13, color: "#9ca3af", fontWeight: 500, marginBottom: 12 }}>
-                Próximas fases
-              </Text>
-              <Stack gap={8}>
-                {PHASES.filter((p) => p.number > currentPhaseNum).map((phase) => (
-                  <Box
-                    key={phase.number}
-                    px={20}
-                    py={14}
-                    style={{
-                      borderRadius: 12,
-                      border: "1px solid #f3f4f6",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 14,
-                      opacity: 0.5,
-                    }}
-                  >
-                    <Box
-                      style={{
-                        width: 24, height: 24, borderRadius: "50%",
-                        backgroundColor: "#f3f4f6",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <IconLock size={11} color="#d1d5db" />
-                    </Box>
-                    <Box style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 13, fontWeight: 600, color: "#6b7280" }}>
-                        Fase {phase.number} — {phase.name}
-                      </Text>
-                      <Text style={{ fontSize: 12, color: "#9ca3af" }}>
-                        {PHASE_QUESTION[phase.number]}
-                      </Text>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-          )}
 
         </Stack>
       )}
