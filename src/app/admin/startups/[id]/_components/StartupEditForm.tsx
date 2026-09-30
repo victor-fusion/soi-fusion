@@ -24,9 +24,10 @@ const STATUSES = [
 
 interface StartupEditFormProps {
   startup: Startup;
+  owners: { id: string; name: string }[];
 }
 
-export function StartupEditForm({ startup }: StartupEditFormProps) {
+export function StartupEditForm({ startup, owners }: StartupEditFormProps) {
   const [open, setOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState(startup.logo_url ?? "");
   const [webUrl, setWebUrl] = useState(startup.web_url ?? "");
@@ -233,6 +234,17 @@ export function StartupEditForm({ startup }: StartupEditFormProps) {
                     </select>
                   </Box>
                 </SimpleGrid>
+
+                {/* Responsable de Fusión */}
+                <Box mb={16}>
+                  <label style={labelStyle}>Responsable de Fusión</label>
+                  <select name="fusion_owner_id" defaultValue={startup.fusion_owner_id ?? ""} style={{ ...inputStyle, cursor: "pointer" }}>
+                    <option value="">Sin asignar</option>
+                    {owners.map((o) => (
+                      <option key={o.id} value={o.id}>{o.name}</option>
+                    ))}
+                  </select>
+                </Box>
 
                 {/* Fecha de inicio del ciclo */}
                 <Box mb={24}>

@@ -67,6 +67,7 @@ Roadmap 2.0 y FOS (ventas outbound) documentados en Notion de Fusión. Acceso v�
 - Rutas: `src/app/login/`, `src/app/dashboard/`, `src/app/admin/`
 - Tipos en `src/types/index.ts`, constantes en `src/constants/areas.ts`
 - Mutaciones siempre vía Server Actions en `[ruta]/actions.ts` — no hay API routes. Los formularios usan el hook `useActionState()` de React 19 con `FormData`.
+- Única excepción: `src/app/api/mcp/route.ts`, el servidor MCP de SOI (herramientas en `src/lib/mcp/`). Autentica con el servidor OAuth 2.1 de Supabase (consentimiento en `/oauth/consent`) y consulta como el usuario del token, así que RLS aplica igual que en la web.
 
 ## Clientes Supabase
 - `src/lib/supabase/client.ts` — browser (SSR)

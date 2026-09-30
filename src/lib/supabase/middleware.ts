@@ -31,21 +31,33 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Estas rutas manejan su propia auth vía hash token — no redirigir.
-  if (pathname.startsWith("/onboarding") || pathname.startsWith("/reset-password")) {
+  // Estas rutas manejan su propia auth (hash token o bearer OAuth del MCP) — no redirigir.
+  if (
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/api/mcp") ||
+    pathname.startsWith("/.well-known")
+  ) {
     return supabaseResponse;
   }
 
   if (pathname.startsWith("/login")) {
     if (user) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL(safeNext(request.nextUrl.searchParams.get("next")) ?? "/dashboard", request.url));
     }
     return supabaseResponse;
   }
 
   if (!user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    if (pathname !== "/") loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
+    return NextResponse.redirect(loginUrl);
   }
 
   return supabaseResponse;
+}
+
+/** Solo rutas internas: evita redirecciones abiertas a otros dominios. */
+export function safeNext(next: string | null | undefined): string | null {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
 }

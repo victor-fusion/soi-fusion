@@ -18,6 +18,7 @@ export async function updateStartup(formData: FormData) {
     status:           formData.get("status") as string,
     batch:            parseInt(formData.get("batch") as string, 10),
     cycle_start_date: cycleStartDate,
+    fusion_owner_id:  (formData.get("fusion_owner_id") as string) || null,
   }).eq("id", startupId);
 
   if (error) throw new Error(error.message);
@@ -102,6 +103,87 @@ export async function addEntregable(formData: FormData) {
 export async function deleteEntregable(entregableId: string, startupId: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("entregables").delete().eq("id", entregableId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/startups/${startupId}`);
+}
+
+// ─── Métricas mensuales ──────────────────────────────────────────────────────
+
+const METRIC_FIELDS = [
+  "revenue", "mrr", "paying_customers", "active_users",
+  "pipeline_value", "burn_rate", "runway_months",
+] as const;
+
+/** Crea o actualiza las métricas de un mes (una fila por startup y mes). */
+export async function saveMetrics(formData: FormData) {
+  const supabase = await createClient();
+  const startupId = formData.get("startup_id") as string;
+  const month = formData.get("period") as string; // YYYY-MM
+
+  const row: Record<string, unknown> = {
+    startup_id: startupId,
+    period: `${month}-01`,
+    notes: (formData.get("notes") as string) || null,
+  };
+  for (const f of METRIC_FIELDS) {
+    const v = formData.get(f) as string;
+    row[f] = v === "" || v === null ? null : Number(v);
+  }
+
+  const { error } = await supabase
+    .from("startup_metrics")
+    .upsert(row, { onConflict: "startup_id,period" });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/startups/${startupId}`);
+}
+
+export async function deleteMetrics(metricId: string, startupId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("startup_metrics").delete().eq("id", metricId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/startups/${startupId}`);
+}
+
+// ─── Weeklies ────────────────────────────────────────────────────────────────
+
+export async function createWeekly(formData: FormData) {
+  const supabase = await createClient();
+  const startupId = formData.get("startup_id") as string;
+
+  const agenda = ((formData.get("agenda") as string) || "")
+    .split("\n").map((l) => l.trim()).filter(Boolean);
+
+  let actionItems: unknown[] = [];
+  try { actionItems = JSON.parse((formData.get("action_items") as string) || "[]"); } catch { /* empty */ }
+
+  const { error } = await supabase.from("weeklies").insert({
+    startup_id: startupId,
+    date: formData.get("date") as string,
+    agenda,
+    action_items: actionItems,
+    notes: (formData.get("notes") as string) || null,
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/startups/${startupId}`);
+}
+
+export async function toggleActionItem(weeklyId: string, itemId: string, startupId: string) {
+  const supabase = await createClient();
+  const { data, error: readError } = await supabase
+    .from("weeklies").select("action_items").eq("id", weeklyId).single();
+  if (readError) throw new Error(readError.message);
+
+  const items = ((data?.action_items ?? []) as { id: string; done: boolean }[])
+    .map((i) => (i.id === itemId ? { ...i, done: !i.done } : i));
+
+  const { error } = await supabase.from("weeklies").update({ action_items: items }).eq("id", weeklyId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/startups/${startupId}`);
+}
+
+export async function deleteWeekly(weeklyId: string, startupId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("weeklies").delete().eq("id", weeklyId);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/startups/${startupId}`);
 }

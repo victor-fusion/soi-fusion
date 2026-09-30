@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/supabase/middleware";
 
 export async function login(
   _prev: { error: string } | null,
@@ -18,5 +19,5 @@ export async function login(
     return { error: "Email o contraseña incorrectos. Inténtalo de nuevo." };
   }
 
-  redirect("/");
+  redirect(safeNext(formData.get("next") as string | null) ?? "/");
 }

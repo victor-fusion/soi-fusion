@@ -10,6 +10,7 @@ import {
   IconCoin, IconScale, IconSettings, IconUsers, IconCalendar,
 } from "@tabler/icons-react";
 import { EntregableControls } from "./_components/EntregableControls";
+import { EntregableLink } from "./_components/EntregableLink";
 import { CommentsSection } from "./_components/CommentsSection";
 
 const AREA_ICONS: Record<string, typeof IconTarget> = {
@@ -145,6 +146,13 @@ export default async function EntregablePage({
           currentStatus={entregable.status}
           reviewerNotes={entregable.reviewer_notes}
         />
+        <Box mt={20} pt={20} style={{ borderTop: "1px solid #f3f4f6" }}>
+          <EntregableLink
+            entregableId={entregable.id}
+            linkUrl={entregable.link_url}
+            locked={entregable.status === "completado"}
+          />
+        </Box>
       </Paper>
 
       {/* Deadline */}

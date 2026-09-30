@@ -17,6 +17,9 @@ export interface Startup {
   batch: number;
   current_phase: number; // 1-6
   cycle_start_date?: string; // ISO date string, e.g. "2026-04-01"
+  fusion_owner_id?: string | null; // responsable de Fusión (profile admin)
+  north_star_metric?: string;
+  north_star_value?: string;
   created_at: string;
   updated_at: string;
 }
@@ -111,6 +114,10 @@ export interface Entregable {
   file_slots: FileSlot[];
   reviewer_notes?: string;
   deadline?: string;
+  link_url?: string | null;
+  submitted_at?: string | null; // último envío a revisión (trigger)
+  completed_at?: string | null; // aprobado por Fusión (trigger)
+  reviewed_by?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -218,6 +225,23 @@ export interface AgentTask {
   input: Record<string, unknown>;
   output?: Record<string, unknown>;
   approved_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── MÉTRICAS MENSUALES ──────────────────────────────────────────────────────
+export interface StartupMetrics {
+  id: string;
+  startup_id: string;
+  period: string; // primer día del mes, "2026-09-01"
+  revenue?: number | null;
+  mrr?: number | null;
+  paying_customers?: number | null;
+  active_users?: number | null;
+  pipeline_value?: number | null;
+  burn_rate?: number | null;
+  runway_months?: number | null;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
 }

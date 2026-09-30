@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { login } from "./actions";
 import {
   TextInput,
@@ -54,6 +55,9 @@ export default function LoginPage() {
 
         {/* Form */}
         <form action={action}>
+          <Suspense fallback={null}>
+            <NextInput />
+          </Suspense>
           <Stack gap="lg">
             <TextInput
               label="Email"
@@ -126,4 +130,10 @@ export default function LoginPage() {
       </Box>
     </Box>
   );
+}
+
+/** Conserva la ruta de destino tras el login (p. ej. la pantalla de consentimiento OAuth). */
+function NextInput() {
+  const next = useSearchParams().get("next");
+  return next ? <input type="hidden" name="next" value={next} /> : null;
 }

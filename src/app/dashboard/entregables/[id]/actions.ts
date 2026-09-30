@@ -34,3 +34,12 @@ export async function deleteComment(commentId: string, entregableId: string) {
   await supabase.from("entregable_comments").delete().eq("id", commentId);
   revalidatePath(`/dashboard/entregables/${entregableId}`);
 }
+
+export async function updateEntregableLink(entregableId: string, linkUrl: string) {
+  const supabase = await createClient();
+  await supabase
+    .from("entregables")
+    .update({ link_url: linkUrl.trim() || null })
+    .eq("id", entregableId);
+  revalidatePath(`/dashboard/entregables/${entregableId}`);
+}

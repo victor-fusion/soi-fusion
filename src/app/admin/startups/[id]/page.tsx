@@ -2,14 +2,14 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAreas } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
-import type { Entregable, Profile } from "@/types";
+import type { Entregable, Profile, StartupMetrics, Weekly } from "@/types";
 import Link from "next/link";
 import {
   Box, Text, Title, Group, Stack, Badge, Paper, Progress, Avatar,
 } from "@mantine/core";
 import {
   IconArrowLeft, IconCircleCheck, IconCircle, IconClock,
-  IconChevronRight, IconCalendar, IconUsers,
+  IconChevronRight, IconCalendar, IconUsers, IconLink, IconUserStar,
 } from "@tabler/icons-react";
 
 function formatDeadline(dateStr: string) {
@@ -29,6 +29,8 @@ import { AddEntregableForm } from "./_components/AddEntregableForm";
 import { TeamSection } from "./_components/TeamSection";
 import { StartupEditForm } from "./_components/StartupEditForm";
 import { DeleteStartupModal } from "./_components/DeleteStartupModal";
+import { MetricsSection } from "./_components/MetricsSection";
+import { WeekliesSection } from "./_components/WeekliesSection";
 
 const TYPE_LABELS: Record<string, string> = {
   b2b_saas: "B2B SaaS",
@@ -85,6 +87,18 @@ export default async function StartupDetailPage({
     .order("created_at");
 
   const members = (membersData ?? []) as Profile[];
+
+  // Equipo Fusión (posibles responsables), métricas y weeklies
+  const [{ data: adminsData }, { data: metricsData }, { data: weekliesData }] = await Promise.all([
+    supabase.from("profiles").select("id, email, first_name, last_name, full_name").eq("role", "admin").order("first_name"),
+    supabase.from("startup_metrics").select("*").eq("startup_id", id).order("period", { ascending: false }),
+    supabase.from("weeklies").select("*").eq("startup_id", id).order("date", { ascending: false }).limit(10),
+  ]);
+  const owners = (adminsData ?? []).map((a) => ({
+    id: a.id as string,
+    name: [a.first_name, a.last_name].filter(Boolean).join(" ") || a.full_name || a.email,
+  }));
+  const owner = owners.find((o) => o.id === startup.fusion_owner_id);
 
   // Conteos para modal de eliminación
   const relatedCounts = await getStartupRelatedCounts(id);
@@ -168,6 +182,10 @@ export default async function StartupDetailPage({
                     Sector: <strong style={{ color: "#374151" }}>{startup.sector}</strong>
                   </Text>
                 )}
+                <Text style={{ fontSize: 13, color: "#6b7280", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                  <IconUserStar size={13} />
+                  Responsable: <strong style={{ color: owner ? "#374151" : "#d97706" }}>{owner?.name ?? "sin asignar"}</strong>
+                </Text>
                 <Text style={{ fontSize: 13, color: "#6b7280" }}>
                   Ciclo <strong style={{ color: "#374151" }}>{startup.batch}</strong>
                 </Text>
@@ -183,7 +201,7 @@ export default async function StartupDetailPage({
           </Group>
 
           <Group gap={8}>
-            <StartupEditForm startup={startup} />
+            <StartupEditForm startup={startup} owners={owners} />
             <DeleteStartupModal
               startupId={id}
               startupName={startup.name}
@@ -313,9 +331,16 @@ export default async function StartupDetailPage({
                         >
                           <Icon size={14} color={s.color} style={{ flexShrink: 0, marginTop: 2 }} />
                           <Box style={{ flex: 1, minWidth: 0 }}>
-                            <Text style={{ fontSize: 13, color: "#374151" }} lineClamp={1}>
-                              {item.title}
-                            </Text>
+                            <Group gap={6} wrap="nowrap">
+                              <Text style={{ fontSize: 13, color: "#374151" }} lineClamp={1}>
+                                {item.title}
+                              </Text>
+                              {item.link_url && (
+                                <a href={item.link_url} target="_blank" rel="noopener noreferrer" title="Abrir documento" style={{ color: "#16a34a", display: "flex" }}>
+                                  <IconLink size={13} />
+                                </a>
+                              )}
+                            </Group>
                             {item.description && (
                               <Text style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }} lineClamp={2}>
                                 {item.description}
@@ -344,6 +369,16 @@ export default async function StartupDetailPage({
 
           <AddEntregableForm startupId={id} currentPhase={startup.current_phase} areas={AREAS} />
         </Stack>
+      </Box>
+
+      {/* Métricas */}
+      <Box mt={40} style={{ borderTop: "1px solid #f3f4f6", paddingTop: 32 }}>
+        <MetricsSection startupId={id} metrics={(metricsData ?? []) as StartupMetrics[]} />
+      </Box>
+
+      {/* Weeklies */}
+      <Box mt={40} style={{ borderTop: "1px solid #f3f4f6", paddingTop: 32 }}>
+        <WeekliesSection startupId={id} weeklies={(weekliesData ?? []) as Weekly[]} />
       </Box>
 
       {/* Equipo */}
