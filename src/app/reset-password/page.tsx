@@ -42,8 +42,13 @@ export default function ResetPasswordPage() {
           setLoading(false);
         });
     } else {
-      setError("Enlace inválido. Solicita uno nuevo desde la página de inicio de sesión.");
-      setLoading(false);
+      // Plantilla por defecto de Supabase (?code= o #access_token=): el cliente
+      // procesa la URL al inicializarse y getSession() espera a que termine.
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) { setSessionReady(true); }
+        else { setError("Enlace inválido. Solicita uno nuevo desde la página de inicio de sesión."); }
+        setLoading(false);
+      });
     }
   }, []);
 
