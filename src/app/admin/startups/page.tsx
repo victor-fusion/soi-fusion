@@ -31,7 +31,12 @@ export default async function StartupsPage({
   if (!showAll) countQuery = countQuery.eq("batch", selectedBatch);
   const { count: totalCount } = await countQuery;
 
-  let query = supabase.from("startups").select("*").order("name").range(offset, offset + PER_PAGE - 1);
+  let query = supabase
+    .from("startups")
+    .select("*")
+    .order("batch", { ascending: false })
+    .order("name")
+    .range(offset, offset + PER_PAGE - 1);
   if (!showAll) query = query.eq("batch", selectedBatch);
   const { data: startups } = await query;
   const allStartups = (startups ?? []) as Startup[];
