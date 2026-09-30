@@ -54,7 +54,8 @@ export default async function ConsentPage({
               en tu nombre, con los mismos permisos que tienes en la plataforma ({user.email}).
             </Text>
             <Text style={{ color: "#6b7280", fontSize: 13 }}>
-              Podrá leer datos de startups, entregables, métricas y equipo. Puedes revocar el acceso cuando quieras.
+              Podrá leer datos de startups, entregables, métricas y equipo y, si tu cuenta tiene permiso de escritura,
+              registrar cambios en tu nombre. Puedes revocar el acceso cuando quieras.
             </Text>
 
             {decisionError && (

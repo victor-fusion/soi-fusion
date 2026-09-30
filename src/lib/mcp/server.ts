@@ -3,6 +3,7 @@ import { verifySupabaseToken } from "./context";
 import { registerCarteraTools } from "./tools/cartera";
 import { registerEntregablesTools } from "./tools/entregables";
 import { registerSeguimientoTools } from "./tools/seguimiento";
+import { registerEscrituraTools } from "./tools/escritura";
 
 const INSTRUCTIONS = `SOI es el sistema operativo de Fusión Startups, un venture builder de Sevilla.
 Cada startup recorre un ciclo de 6 fases (Descubrir, Solucionar, Activar, Vender, Escalar, Consolidar) con entregables
@@ -13,6 +14,9 @@ Pautas:
 - Si el usuario nombra una fase, área o entregable de forma aproximada, usa 'catalogo' para obtener el valor exacto.
 - Los datos respetan los permisos del usuario: un founder solo ve su startup; el equipo de Fusión ve todo.
 - Si una respuesta depende de datos registrados desde hace poco (historial, fechas de envío/aprobación), avísalo.
+- Las herramientas de escritura (crear/editar startup, cambiar fase, revisar entregable, registrar métricas o weekly)
+  solo funcionan para usuarios autorizados. Antes de usarlas, confirma con el usuario los datos exactos que vas a guardar.
+  No existe ninguna herramienta para borrar: eso se hace desde la web.
 - Responde en español, con cifras concretas y sin inventar datos que las herramientas no devuelvan.`;
 
 const mcpHandler = createMcpHandler(
@@ -20,9 +24,10 @@ const mcpHandler = createMcpHandler(
     registerCarteraTools(server);
     registerEntregablesTools(server);
     registerSeguimientoTools(server);
+    registerEscrituraTools(server);
   },
   {
-    serverInfo: { name: "soi-fusion", version: "1.0.0" },
+    serverInfo: { name: "soi-fusion", version: "1.1.0" },
     instructions: INSTRUCTIONS,
   }
 );

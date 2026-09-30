@@ -62,6 +62,7 @@ export interface Profile {
   linkedin_url?: string;
   calendar_url?: string;
   display_order: number;
+  mcp_write?: boolean; // puede usar las herramientas de escritura del MCP
 }
 
 // ─── ENTREGABLE TEMPLATES (MAESTROS) ─────────────────────────────────────────
