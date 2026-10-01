@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconLayoutGrid } from "@tabler/icons-react";
 import type { Card, Area } from "@/types";
@@ -42,9 +43,12 @@ interface RecursosClientProps {
 export function RecursosClient({ cards, areas }: RecursosClientProps) {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [filterArea, setFilterArea]       = useState("");
-  const [filterSection, setFilterSection] = useState("");
-  const [filterType, setFilterType]       = useState("");
+  // Filtros en la URL: se conservan al entrar en un recurso y volver
+  useRememberListUrl("/admin/recursos");
+  const [filters, setFilters] = useUrlFilters(["area", "seccion", "tipo"] as const);
+  const filterArea    = filters.area;
+  const filterSection = filters.seccion;
+  const filterType    = filters.tipo;
 
   const openNew = () => setDrawerOpen(true);
   const close = () => setDrawerOpen(false);
@@ -61,7 +65,7 @@ export function RecursosClient({ cards, areas }: RecursosClientProps) {
   });
 
   const hasFilters = filterArea || filterSection || filterType;
-  const clearFilters = () => { setFilterArea(""); setFilterSection(""); setFilterType(""); };
+  const clearFilters = () => setFilters({ area: null, seccion: null, tipo: null });
 
   // Agrupar por área
   const byArea = areas.map((a) => ({
@@ -110,15 +114,15 @@ export function RecursosClient({ cards, areas }: RecursosClientProps) {
 
         {/* Filtros */}
         <Group gap={10} mb={24}>
-          <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
+          <select value={filterArea} onChange={(e) => setFilters({ area: e.target.value, seccion: null })} style={selectStyle}>
             <option value="">Todas las áreas</option>
             {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} style={selectStyle}>
+          <select value={filterSection} onChange={(e) => setFilters({ seccion: e.target.value })} style={selectStyle}>
             <option value="">Todas las secciones</option>
             {availableSections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={selectStyle}>
+          <select value={filterType} onChange={(e) => setFilters({ tipo: e.target.value })} style={selectStyle}>
             <option value="">Todos los tipos</option>
             {allTypes.map((t) => <option key={t} value={t}>{TYPE_LABELS[t] ?? t}</option>)}
           </select>

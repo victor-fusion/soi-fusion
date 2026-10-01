@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAreas } from "@/lib/data/areas";
-import Link from "next/link";
+import { BackToList } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Badge } from "@mantine/core";
 import { IconChevronLeft } from "@tabler/icons-react";
 import type { Card } from "@/types";
@@ -62,13 +62,13 @@ export default async function RecursoEditPage({ params }: { params: Promise<{ id
   return (
     <Box p={40} maw={900} mx="auto">
       <Box mb={32}>
-        <Link
-          href="/admin/recursos"
+        <BackToList
+          basePath="/admin/recursos"
           style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#9ca3af", textDecoration: "none", marginBottom: 12 }}
         >
           <IconChevronLeft size={14} />
           Recursos
-        </Link>
+        </BackToList>
         <Group align="center" gap={10} mt={4}>
           <Text style={{ fontSize: "2rem", fontWeight: 700, color: "#111827" }}>{card.title}</Text>
           <Badge

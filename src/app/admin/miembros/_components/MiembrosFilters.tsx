@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { buildUrl } from "@/lib/hooks/list-state";
 
 interface StartupFilterProps {
   startups: { id: string; name: string }[];
@@ -9,15 +10,12 @@ interface StartupFilterProps {
   activeType: string;
 }
 
-export function StartupFilter({ startups, activeStartup, activeBatch, activeType }: StartupFilterProps) {
+export function StartupFilter({ startups, activeStartup }: StartupFilterProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const params = new URLSearchParams();
-    if (activeBatch) params.set("batch", String(activeBatch));
-    if (e.target.value) params.set("startup", e.target.value);
-    if (activeType) params.set("type", activeType);
-    router.push(`/admin/miembros?${params.toString()}`);
+    router.push(buildUrl("/admin/miembros", searchParams, { startup: e.target.value }));
   };
 
   const selectStyle: React.CSSProperties = {
@@ -43,8 +41,9 @@ interface TypeFilterProps {
   activeStartup: string;
 }
 
-export function TypeFilter({ activeType, activeBatch, activeStartup }: TypeFilterProps) {
+export function TypeFilter({ activeType }: TypeFilterProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const TYPES = [
     { value: "cofundador",  label: "Cofundadores" },
@@ -55,11 +54,7 @@ export function TypeFilter({ activeType, activeBatch, activeStartup }: TypeFilte
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const params = new URLSearchParams();
-    if (activeBatch) params.set("batch", String(activeBatch));
-    if (activeStartup) params.set("startup", activeStartup);
-    if (e.target.value) params.set("type", e.target.value);
-    router.push(`/admin/miembros?${params.toString()}`);
+    router.push(buildUrl("/admin/miembros", searchParams, { type: e.target.value }));
   };
 
   const selectStyle: React.CSSProperties = {

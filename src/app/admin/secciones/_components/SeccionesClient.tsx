@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useUrlFilters } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconPencil, IconGripVertical } from "@tabler/icons-react";
 import {
@@ -72,7 +73,8 @@ export function SeccionesClient({ areas, sections: initialSections }: SeccionesC
   const [sections, setSections] = useState(initialSections);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
-  const [filterArea, setFilterArea] = useState("");
+  const [{ area: filterArea }, setFilters] = useUrlFilters(["area"] as const);
+  const setFilterArea = (area: string) => setFilters({ area });
   const [, startTransition] = useTransition();
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));

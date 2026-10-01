@@ -63,6 +63,7 @@ export interface Profile {
   calendar_url?: string;
   display_order: number;
   mcp_write?: boolean; // puede usar las herramientas de escritura del MCP
+  mcp_contacts?: boolean; // puede crear/editar/borrar contactos y miembros vía MCP
 }
 
 // ─── ENTREGABLE TEMPLATES (MAESTROS) ─────────────────────────────────────────

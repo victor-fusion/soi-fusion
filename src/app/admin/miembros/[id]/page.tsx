@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { BackToList } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Avatar, Badge, Paper } from "@mantine/core";
 import { IconArrowLeft } from "@tabler/icons-react";
 import type { Profile } from "@/types";
@@ -59,13 +60,13 @@ export default async function MiembroDetailPage({
   return (
     <Box p={40} maw={800} mx="auto">
       {/* Back */}
-      <Link
-        href="/admin/miembros"
+      <BackToList
+        basePath="/admin/miembros"
         style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#9ca3af", textDecoration: "none", marginBottom: 24 }}
       >
         <IconArrowLeft size={14} />
         Miembros
-      </Link>
+      </BackToList>
 
       {/* Header */}
       <Group gap={16} mb={32} align="flex-start">

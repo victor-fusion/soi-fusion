@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
 import { Box, Text, Title, Group, Stack, Badge, Paper, Avatar } from "@mantine/core";
 import { IconPencil, IconBrandLinkedin, IconPhone, IconSearch } from "@tabler/icons-react";
 import { BatchFilter } from "../../_components/BatchFilter";
@@ -69,7 +70,9 @@ export function MiembrosClient({
   total,
   page,
 }: MiembrosClientProps) {
-  const [search, setSearch] = useState("");
+  useRememberListUrl("/admin/miembros");
+  const [urlFilters, setUrlFilters] = useUrlFilters(["q"] as const);
+  const [search, setSearch] = useState(urlFilters.q);
   const term = search.trim().toLowerCase();
   const filtered = term
     ? members.filter((m) => {
@@ -108,7 +111,7 @@ export function MiembrosClient({
           <IconSearch size={13} color="#9ca3af" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setUrlFilters({ q: e.target.value }); }}
             placeholder="Buscar miembro..."
             style={{ padding: "6px 10px 6px 30px", fontSize: 13, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fafafa", color: "#374151", outline: "none", width: 200 }}
           />

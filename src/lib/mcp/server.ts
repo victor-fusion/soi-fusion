@@ -4,6 +4,7 @@ import { registerCarteraTools } from "./tools/cartera";
 import { registerEntregablesTools } from "./tools/entregables";
 import { registerSeguimientoTools } from "./tools/seguimiento";
 import { registerEscrituraTools } from "./tools/escritura";
+import { registerContactosTools } from "./tools/contactos";
 
 const INSTRUCTIONS = `SOI es el sistema operativo de Fusión Startups, un venture builder de Sevilla.
 Cada startup recorre un ciclo de 6 fases (Descubrir, Solucionar, Activar, Vender, Escalar, Consolidar) con entregables
@@ -16,7 +17,12 @@ Pautas:
 - Si una respuesta depende de datos registrados desde hace poco (historial, fechas de envío/aprobación), avísalo.
 - Las herramientas de escritura (crear/editar startup, cambiar fase, revisar entregable, registrar métricas o weekly)
   solo funcionan para usuarios autorizados. Antes de usarlas, confirma con el usuario los datos exactos que vas a guardar.
-  No existe ninguna herramienta para borrar: eso se hace desde la web.
+  Salvo contactos y miembros, no hay herramientas para borrar: eso se hace desde la web.
+- Hay tres tipos de "contactos": el CRM de cada startup (leads y clientes de esa startup), el CRM de Fusión
+  (inversores, partners, mentores… de Fusión) y los miembros del SOI (personas con usuario). Si el usuario
+  dice "contacto" y no está claro cuál, pregúntale.
+- Ante cualquier duda en una orden de escritura (qué persona, qué startup, qué dato, posible duplicado),
+  pregunta antes de ejecutar. Para borrar, muestra antes el registro exacto y pide confirmación explícita.
 - Responde en español, con cifras concretas y sin inventar datos que las herramientas no devuelvan.`;
 
 const mcpHandler = createMcpHandler(
@@ -25,9 +31,10 @@ const mcpHandler = createMcpHandler(
     registerEntregablesTools(server);
     registerSeguimientoTools(server);
     registerEscrituraTools(server);
+    registerContactosTools(server);
   },
   {
-    serverInfo: { name: "soi-fusion", version: "1.1.0" },
+    serverInfo: { name: "soi-fusion", version: "1.2.0" },
     instructions: INSTRUCTIONS,
   }
 );

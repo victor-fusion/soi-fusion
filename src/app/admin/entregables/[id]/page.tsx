@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAreas } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
-import Link from "next/link";
+import { BackToList } from "@/lib/hooks/list-state";
 import { Box, Text, Group } from "@mantine/core";
 import { IconChevronLeft } from "@tabler/icons-react";
 import type { EntregableTemplate } from "@/types";
@@ -29,13 +29,13 @@ export default async function EntregableEditPage({ params }: { params: Promise<{
   return (
     <Box p={40} maw={900} mx="auto">
       <Box mb={32}>
-        <Link
-          href="/admin/entregables"
+        <BackToList
+          basePath="/admin/entregables"
           style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: "#9ca3af", textDecoration: "none", marginBottom: 12 }}
         >
           <IconChevronLeft size={14} />
           Entregables
-        </Link>
+        </BackToList>
         <Group align="center" gap={10} mt={4}>
           <Text style={{ fontSize: "2rem", fontWeight: 700, color: "#111827" }}>{template.title}</Text>
         </Group>

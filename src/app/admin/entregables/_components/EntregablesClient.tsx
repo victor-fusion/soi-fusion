@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Badge, Paper, Stack } from "@mantine/core";
 import { IconPlus, IconFileDescription } from "@tabler/icons-react";
 import type { EntregableTemplate, Area } from "@/types";
@@ -28,15 +29,18 @@ interface EntregablesClientProps {
 export function EntregablesClient({ templates, areas, phases: PHASES }: EntregablesClientProps) {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [filterArea, setFilterArea]       = useState("");
-  const [filterPhase, setFilterPhase]     = useState(0);
-  const [filterSection, setFilterSection] = useState("");
-  const [filterTipo, setFilterTipo]       = useState("");
+  // Filtros en la URL: se conservan al entrar en una plantilla y volver
+  useRememberListUrl("/admin/entregables");
+  const [filters, setFilters] = useUrlFilters(["fase", "area", "seccion", "tipo"] as const);
+  const filterArea    = filters.area;
+  const filterPhase   = Number(filters.fase) || 0;
+  const filterSection = filters.seccion;
+  const filterTipo    = filters.tipo;
 
   const openNew = () => setDrawerOpen(true);
   const close = () => setDrawerOpen(false);
 
-  const clearFilters = () => { setFilterArea(""); setFilterPhase(0); setFilterSection(""); setFilterTipo(""); };
+  const clearFilters = () => setFilters({ fase: null, area: null, seccion: null, tipo: null });
   const hasFilters = filterArea || filterPhase > 0 || filterSection || filterTipo;
 
   const availableSections = filterArea
@@ -85,19 +89,19 @@ export function EntregablesClient({ templates, areas, phases: PHASES }: Entregab
 
         {/* Filtros */}
         <Group gap={10} mb={24}>
-          <select value={filterPhase} onChange={(e) => setFilterPhase(parseInt(e.target.value, 10))} style={selectStyle}>
+          <select value={filterPhase} onChange={(e) => setFilters({ fase: parseInt(e.target.value, 10) })} style={selectStyle}>
             <option value={0}>Todas las fases</option>
             {PHASES.map((p) => <option key={p.number} value={p.number}>Fase {p.number} · {p.name}</option>)}
           </select>
-          <select value={filterArea} onChange={(e) => { setFilterArea(e.target.value); setFilterSection(""); }} style={selectStyle}>
+          <select value={filterArea} onChange={(e) => setFilters({ area: e.target.value, seccion: null })} style={selectStyle}>
             <option value="">Todas las áreas</option>
             {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} style={selectStyle}>
+          <select value={filterSection} onChange={(e) => setFilters({ seccion: e.target.value })} style={selectStyle}>
             <option value="">Todas las secciones</option>
             {availableSections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)} style={selectStyle}>
+          <select value={filterTipo} onChange={(e) => setFilters({ tipo: e.target.value })} style={selectStyle}>
             <option value="">Todos los tipos</option>
             {Object.entries(TIPO_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>

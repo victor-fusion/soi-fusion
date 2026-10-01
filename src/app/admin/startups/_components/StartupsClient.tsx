@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Stack, Badge, Paper, Progress, Avatar, SimpleGrid } from "@mantine/core";
 import { IconPencil, IconSearch, IconLoader2, IconX } from "@tabler/icons-react";
 import type { Startup } from "@/types";
@@ -242,7 +243,9 @@ export function StartupsClient({
   page,
 }: StartupsClientProps) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
+  useRememberListUrl("/admin/startups");
+  const [urlFilters, setUrlFilters] = useUrlFilters(["q"] as const);
+  const [search, setSearch] = useState(urlFilters.q);
   const [editingStartup, setEditingStartup] = useState<Startup | null>(null);
 
   const term = search.trim().toLowerCase();
@@ -276,7 +279,7 @@ export function StartupsClient({
           <IconSearch size={13} color="#9ca3af" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setUrlFilters({ q: e.target.value }); }}
             placeholder="Buscar startup..."
             style={{ padding: "6px 10px 6px 30px", fontSize: 13, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fafafa", color: "#374151", outline: "none", width: 200 }}
           />

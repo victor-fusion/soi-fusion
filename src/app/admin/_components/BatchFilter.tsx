@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface BatchFilterProps {
   batches: number[];
@@ -10,9 +10,15 @@ interface BatchFilterProps {
 
 export function BatchFilter({ batches, activeBatch, basePath = "/admin" }: BatchFilterProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+  // Conserva el resto de filtros (búsqueda, etc.) y vuelve a la página 1.
+  // batch=0 ("todos") se mantiene explícito: en /admin la ausencia significa "último ciclo".
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    router.push(`${basePath}?batch=${e.target.value}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+    params.set("batch", e.target.value);
+    router.push(`${basePath}?${params.toString()}`);
   };
 
   return (

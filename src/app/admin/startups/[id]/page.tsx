@@ -4,6 +4,7 @@ import { getAreas } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
 import type { Entregable, Profile, StartupMetrics, Weekly } from "@/types";
 import Link from "next/link";
+import { BackToList } from "@/lib/hooks/list-state";
 import {
   Box, Text, Title, Group, Stack, Badge, Paper, Progress, Avatar,
 } from "@mantine/core";
@@ -107,8 +108,8 @@ export default async function StartupDetailPage({
     <Box p={40} maw={1100} mx="auto">
 
       {/* Back */}
-      <Link
-        href="/admin/startups"
+      <BackToList
+        basePath="/admin/startups"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           fontSize: 13, color: "#9ca3af", textDecoration: "none",
@@ -117,7 +118,7 @@ export default async function StartupDetailPage({
       >
         <IconArrowLeft size={14} />
         Startups
-      </Link>
+      </BackToList>
 
       {/* Header */}
       <Box mb={32}>
