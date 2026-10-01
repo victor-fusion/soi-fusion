@@ -55,7 +55,7 @@ export default async function MiembrosPage({
 
   let query = supabase
     .from("profiles")
-    .select("id, startup_id, first_name, last_name, email, role, role_title, member_type, dedication, phone, linkedin_url, avatar_url, startups(id, name, batch)")
+    .select("id, startup_id, first_name, last_name, email, role, role_title, member_type, dedication, phone, linkedin_url, avatar_url, startups!fk_profiles_startup(id, name, batch)")
     .order("first_name")
     .range(offset, offset + PER_PAGE - 1);
 

@@ -35,7 +35,7 @@ export default async function MiembroDetailPage({
 
   const { data: memberData } = await supabase
     .from("profiles")
-    .select("*, startups(id, name, batch)")
+    .select("*, startups!fk_profiles_startup(id, name, batch)")
     .eq("id", id)
     .single();
 

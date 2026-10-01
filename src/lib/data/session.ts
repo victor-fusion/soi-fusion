@@ -16,7 +16,7 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> 
 
   const { data } = await supabase
     .from("profiles")
-    .select("*, startups(*)")
+    .select("*, startups!fk_profiles_startup(*)")
     .eq("id", session.user.id)
     .single();
 
