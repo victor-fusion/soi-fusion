@@ -312,51 +312,79 @@ export function registerContactosTools(server: McpServer) {
     })
   );
 
-  // ─── invitar_miembro ───────────────────────────────────────────────────────
+  // ─── crear_miembro ─────────────────────────────────────────────────────────
   server.registerTool(
-    "invitar_miembro",
+    "crear_miembro",
     {
-      title: "Invitar miembro al SOI",
+      title: "Crear miembro del SOI",
       description:
-        "Da de alta a una persona en el SOI enviándole una invitación por email, y opcionalmente la asigna a una startup " +
-        "y rellena su ficha. Para el equipo de Fusión usa rol='admin'." + ASK_NOTE + PERMISSION_NOTE,
+        "Da de alta a una persona en el SOI (usuario + ficha) y opcionalmente la asigna a una startup. " +
+        "Por defecto NO envía ningún email: la persona queda creada sin acceso hasta que se le invite. " +
+        "Solo con enviar_invitacion=true recibe el email de invitación; úsalo únicamente si el usuario lo pide expresamente. " +
+        "Para el equipo de Fusión usa rol='admin'." + ASK_NOTE + PERMISSION_NOTE,
       inputSchema: z.object({
         email: z.string().email(),
+        enviar_invitacion: z.boolean().optional()
+          .describe("Por defecto false (no se envía nada). true = enviar el email de invitación al SOI."),
         startup: z.string().optional().describe("Startup a la que pertenece (founders)."),
-        rol: z.enum(["founder", "admin"]).optional().describe("Por defecto founder."),
+        rol: z.enum(["founder", "admin"]).optional().describe("Por defecto founder. Admin da acceso a todo: confírmalo con el usuario."),
         nombre: z.string().optional(),
         apellidos: z.string().optional(),
         cargo: z.string().optional(),
         tipo_miembro: z.enum(MEMBER_TYPES).optional(),
         dedicacion: z.enum(DEDICATIONS).optional(),
+        telefono: z.string().optional(),
+        linkedin: z.string().url().optional(),
       }),
       annotations: WRITE,
     },
     safe(async (args, tc) => {
       await requireContactsPermission(tc);
       const { db } = tc;
+      const email = args.email.trim().toLowerCase();
 
-      const { data: existing } = await db.from("profiles").select("id").ilike("email", args.email);
-      if (existing?.length) throw new Error(`${args.email} ya tiene usuario en el SOI. Usa 'editar_miembro'.`);
+      const { data: existing } = await db.from("profiles").select("id").ilike("email", email);
+      if (existing?.length) throw new Error(`${email} ya tiene usuario en el SOI. Usa 'editar_miembro'.`);
 
       const startupId = args.startup ? (await resolveStartup(db, args.startup)).id : null;
+      const fullName = [args.nombre, args.apellidos].filter(Boolean).join(" ") || undefined;
 
-      // Misma Edge Function que la web (generateLink → Resend)
-      const { data: fnData, error: fnError } = await db.functions.invoke("invite-member", { body: { email: args.email } });
-      if (fnError) throw new Error(`No se pudo enviar la invitación: ${fnError.message}`);
-      const newId = (fnData as { user_id?: string })?.user_id;
-      if (!newId) throw new Error("La invitación se envió pero no se obtuvo el id del usuario.");
+      let newId: string | undefined;
+      if (args.enviar_invitacion) {
+        // Misma Edge Function que la web (generateLink → Resend): envía el email
+        const { data: fnData, error: fnError } = await db.functions.invoke("invite-member", { body: { email } });
+        if (fnError) throw new Error(`No se pudo enviar la invitación: ${fnError.message}`);
+        newId = (fnData as { user_id?: string })?.user_id;
+      } else {
+        // Alta silenciosa: auth.admin.createUser no envía emails. Requiere service role.
+        const { data, error } = await createAdminClient().auth.admin.createUser({
+          email,
+          email_confirm: false,
+          user_metadata: fullName ? { full_name: fullName } : undefined,
+        });
+        if (error) throw new Error(`No se pudo crear el usuario: ${error.message}`);
+        newId = data.user?.id;
+      }
+      if (!newId) throw new Error("No se obtuvo el id del usuario creado.");
 
+      // El trigger handle_new_user crea la ficha como founder; aquí se completa
       const update = {
         ...pick(args, {
           nombre: "first_name", apellidos: "last_name", cargo: "role_title",
           tipo_miembro: "member_type", dedicacion: "dedication", rol: "role",
+          telefono: "phone", linkedin: "linkedin_url",
         }),
         ...(startupId ? { startup_id: startupId } : {}),
       };
       if (Object.keys(update).length) assertOk(await db.from("profiles").update(update).eq("id", newId));
 
-      return ok({ invitado: args.email, id: newId, datos: update });
+      return ok({
+        creado: email,
+        id: newId,
+        invitacion_enviada: !!args.enviar_invitacion,
+        datos: update,
+        nota: args.enviar_invitacion ? undefined : "No se ha enviado ningún email. La persona aún no puede entrar al SOI.",
+      });
     })
   );
 
