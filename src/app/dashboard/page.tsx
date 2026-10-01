@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/data/session";
 import { getAreas } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
 import type { Entregable } from "@/types";
@@ -52,17 +53,7 @@ const PHASE_QUESTION: Record<number, string> = {
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/login");
-
-  const [AREAS, PHASES] = await Promise.all([getAreas(), getPhases()]);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*, startups(*)")
-    .eq("id", session.user.id)
-    .single();
-
+  const [AREAS, PHASES, profile] = await Promise.all([getAreas(), getPhases(), getCurrentProfile()]);
   if (!profile) redirect("/login");
 
   const startup = profile.startups as {

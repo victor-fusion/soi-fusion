@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/data/session";
 import { getAreaMap } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
 import type { Entregable, EntregableComment } from "@/types";
@@ -31,24 +32,23 @@ export default async function EntregablePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/login");
+  const commentsQuery = () => supabase
+    .from("entregable_comments")
+    .select("*, author:profiles(full_name, avatar_url, role)")
+    .eq("entregable_id", id)
+    .order("created_at", { ascending: true });
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*, startups(*)")
-    .eq("id", session.user.id)
-    .single();
+  const [profile, { data }, { data: commentsRaw }, { data: repliesRaw }, AREA_MAP, PHASES] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("entregables").select("*").eq("id", id).single(),
+    commentsQuery().is("parent_id", null),           // comentarios raíz
+    commentsQuery().not("parent_id", "is", null),    // replies
+    getAreaMap(),
+    getPhases(),
+  ]);
 
   if (!profile) redirect("/login");
-
   const startup = profile.startups as { id: string; name: string; current_phase: number } | null;
-
-  const { data } = await supabase
-    .from("entregables")
-    .select("*")
-    .eq("id", id)
-    .single();
 
   if (!data) notFound();
   const entregable = data as Entregable;
@@ -56,24 +56,7 @@ export default async function EntregablePage({
   // Seguridad: solo puede ver sus propios entregables
   if (!startup || entregable.startup_id !== startup.id) notFound();
 
-  // Comentarios con datos del autor
-  const { data: commentsRaw } = await supabase
-    .from("entregable_comments")
-    .select("*, author:profiles(full_name, avatar_url, role)")
-    .eq("entregable_id", id)
-    .is("parent_id", null)
-    .order("created_at", { ascending: true });
-
   const topComments = (commentsRaw ?? []) as EntregableComment[];
-
-  // Replies para cada comentario raíz
-  const { data: repliesRaw } = await supabase
-    .from("entregable_comments")
-    .select("*, author:profiles(full_name, avatar_url, role)")
-    .eq("entregable_id", id)
-    .not("parent_id", "is", null)
-    .order("created_at", { ascending: true });
-
   const allReplies = (repliesRaw ?? []) as EntregableComment[];
 
   // Anida replies en sus comentarios padre
@@ -82,7 +65,6 @@ export default async function EntregablePage({
     replies: allReplies.filter((r) => r.parent_id === c.id),
   }));
 
-  const [AREA_MAP, PHASES] = await Promise.all([getAreaMap(), getPhases()]);
   const area = AREA_MAP[entregable.area];
   const section = area?.sections.find((s) => s.id === entregable.section);
   const phase = PHASES.find((p) => p.number === entregable.phase);
@@ -168,7 +150,7 @@ export default async function EntregablePage({
         <CommentsSection
           entregableId={id}
           comments={comments}
-          currentUserId={session.user.id}
+          currentUserId={profile.id}
         />
       </Paper>
 

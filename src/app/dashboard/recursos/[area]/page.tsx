@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/data/session";
 import { getAreaMap } from "@/lib/data/areas";
 import type { Card, Entregable } from "@/types";
 import Link from "next/link";
@@ -52,22 +53,22 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
   const { area: areaId } = await params;
   const { section: sectionId } = await searchParams;
 
-  const AREA_MAP = await getAreaMap();
+  const supabase = await createClient();
+
+  // Áreas, perfil y tarjetas de la sección en paralelo
+  const [AREA_MAP, profile, { data: cardsData }] = await Promise.all([
+    getAreaMap(),
+    getCurrentProfile(),
+    sectionId
+      ? supabase.from("cards").select("*").eq("section_id", sectionId).eq("is_active", true).order("order")
+      : Promise.resolve({ data: [] }),
+  ]);
+
   const area = AREA_MAP[areaId];
   if (!area) notFound();
+  if (!profile) redirect("/login");
 
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/login");
-
-  // Perfil + startup para cargar entregables del área
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*, startups(*)")
-    .eq("id", session.user.id)
-    .single();
-
-  const startup = profile?.startups as {
+  const startup = profile.startups as {
     id: string; name: string; current_phase: number;
   } | null;
 
@@ -143,14 +144,7 @@ export default async function RecursosAreaPage({ params, searchParams }: PagePro
   // Con sección seleccionada → cargar tarjetas
   const section = area.sections.find((s) => s.id === sectionId);
 
-  const { data } = await supabase
-    .from("cards")
-    .select("*")
-    .eq("section_id", sectionId)
-    .eq("is_active", true)
-    .order("order");
-
-  const cards = (data ?? []) as Card[];
+  const cards = (cardsData ?? []) as Card[];
 
   return (
     <Box p={40} maw={1100} mx="auto">

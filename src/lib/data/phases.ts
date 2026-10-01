@@ -1,24 +1,35 @@
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createPublicClient } from "@/lib/supabase/public";
 import { PHASES } from "@/constants/areas";
 
 type Phase = { number: number; name: string; color: string };
 
-/**
- * Devuelve las fases desde la BD (migración 013).
- * Si la tabla no existe o está vacía, usa los constants como fallback.
- */
-export async function getPhases(): Promise<Phase[]> {
-  try {
-    const supabase = await createClient();
+/** Tag de caché: las Server Actions que editan fases llaman a updateTag(PHASES_TAG). */
+export const PHASES_TAG = "phases";
 
-    const { data, error } = await supabase
+// Lanza en caso de error para que el fallback nunca quede cacheado.
+const fetchPhases = unstable_cache(
+  async (): Promise<Phase[]> => {
+    const { data, error } = await createPublicClient()
       .from("phases")
       .select("number, name, color")
       .order("number");
 
-    if (error || !data || data.length === 0) return PHASES;
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((p) => ({ number: p.number, name: p.name, color: p.color }));
+  },
+  ["phases"],
+  { tags: [PHASES_TAG], revalidate: 3600 }
+);
 
-    return data.map((p) => ({ number: p.number, name: p.name, color: p.color }));
+/**
+ * Devuelve las fases desde la BD (migración 013), cacheadas entre peticiones.
+ * Si la tabla no existe o está vacía, usa los constants como fallback.
+ */
+export async function getPhases(): Promise<Phase[]> {
+  try {
+    const phases = await fetchPhases();
+    return phases.length > 0 ? phases : PHASES;
   } catch {
     return PHASES;
   }

@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPhases } from "@/lib/data/phases";
 import type { Startup } from "@/types";
@@ -13,23 +12,15 @@ export default async function StartupsPage({
 }) {
   const { batch: batchParam, page: pageParam } = await searchParams;
   const supabase = await createClient();
-  const phases = await getPhases();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const page = Math.max(1, parseInt(pageParam ?? "1", 10));
   const offset = (page - 1) * PER_PAGE;
-
-  const { data: batchRows } = await supabase.from("startups").select("batch").order("batch");
-  const availableBatches = [...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch))].sort() as number[];
 
   const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : 0;
   const showAll = selectedBatch === 0;
 
   let countQuery = supabase.from("startups").select("*", { count: "exact", head: true });
   if (!showAll) countQuery = countQuery.eq("batch", selectedBatch);
-  const { count: totalCount } = await countQuery;
 
   let query = supabase
     .from("startups")
@@ -38,7 +29,15 @@ export default async function StartupsPage({
     .order("name")
     .range(offset, offset + PER_PAGE - 1);
   if (!showAll) query = query.eq("batch", selectedBatch);
-  const { data: startups } = await query;
+
+  const [phases, { data: batchRows }, { count: totalCount }, { data: startups }] = await Promise.all([
+    getPhases(),
+    supabase.from("startups").select("batch").order("batch"),
+    countQuery,
+    query,
+  ]);
+
+  const availableBatches = [...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch))].sort((a, b) => a - b) as number[];
   const allStartups = (startups ?? []) as Startup[];
   const total = totalCount ?? 0;
 

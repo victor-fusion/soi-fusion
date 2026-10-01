@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPhases } from "@/lib/data/phases";
 import type { Startup } from "@/types";
@@ -38,28 +37,21 @@ export default async function AdminPage({
 }) {
   const { batch: batchParam } = await searchParams;
   const supabase = await createClient();
-  const PHASES = await getPhases();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/login");
-
-  // Todos los ciclos disponibles
-  const { data: batchRows } = await supabase
-    .from("startups")
-    .select("batch")
-    .order("batch");
-  const availableBatches = [...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch))].sort();
+  // Una sola consulta de startups: de ella salen los ciclos disponibles y el filtro
+  const [PHASES, { data: startupsData }] = await Promise.all([
+    getPhases(),
+    supabase.from("startups").select("*").order("name"),
+  ]);
+  const everyStartup = (startupsData ?? []) as Startup[];
+  const availableBatches = [...new Set(everyStartup.map((s) => s.batch))].sort((a, b) => a - b);
 
   // Ciclo activo por defecto: el mayor disponible. 0 = todos.
   const latestBatch = availableBatches.at(-1) ?? 5;
   const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : latestBatch;
   const showAll = selectedBatch === 0;
 
-  let query = supabase.from("startups").select("*").order("name");
-  if (!showAll) query = query.eq("batch", selectedBatch);
-
-  const { data: startups } = await query;
-  const allStartups = (startups ?? []) as Startup[];
+  const allStartups = showAll ? everyStartup : everyStartup.filter((s) => s.batch === selectedBatch);
 
   const startupIds = allStartups.map((s) => s.id);
   const { data: entregables } = startupIds.length > 0

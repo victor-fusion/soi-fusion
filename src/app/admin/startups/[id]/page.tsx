@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAreas } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
@@ -56,54 +56,42 @@ export default async function StartupDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/login");
-
-  // Startup
-  const { data: startup } = await supabase
-    .from("startups")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (!startup) notFound();
-
-  // Entregables (fase actual)
-  const { data: entregablesData } = await supabase
-    .from("entregables")
-    .select("*")
-    .eq("startup_id", id)
-    .eq("phase", startup.current_phase)
-    .order("area");
-
-  const entregables = (entregablesData ?? []) as Entregable[];
-
-  // Miembros del equipo
-  const { data: membersData } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("startup_id", id)
-    .order("display_order")
-    .order("created_at");
-
-  const members = (membersData ?? []) as Profile[];
-
-  // Equipo Fusión (posibles responsables), métricas y weeklies
-  const [{ data: adminsData }, { data: metricsData }, { data: weekliesData }] = await Promise.all([
+  // Todo en paralelo: los entregables se piden de todas las fases y se filtran
+  // por la fase actual aquí, para no tener que esperar a la startup.
+  const [
+    { data: startup },
+    { data: entregablesData },
+    { data: membersData },
+    { data: adminsData },
+    { data: metricsData },
+    { data: weekliesData },
+    relatedCounts,
+    AREAS,
+    PHASES,
+  ] = await Promise.all([
+    supabase.from("startups").select("*").eq("id", id).single(),
+    supabase.from("entregables").select("*").eq("startup_id", id).order("area"),
+    supabase.from("profiles").select("*").eq("startup_id", id).order("display_order").order("created_at"),
+    // Equipo Fusión (posibles responsables), métricas y weeklies
     supabase.from("profiles").select("id, email, first_name, last_name, full_name").eq("role", "admin").order("first_name"),
     supabase.from("startup_metrics").select("*").eq("startup_id", id).order("period", { ascending: false }),
     supabase.from("weeklies").select("*").eq("startup_id", id).order("date", { ascending: false }).limit(10),
+    getStartupRelatedCounts(id),  // conteos para el modal de eliminación
+    getAreas(),
+    getPhases(),
   ]);
+
+  if (!startup) notFound();
+
+  const entregables = ((entregablesData ?? []) as Entregable[])
+    .filter((e) => e.phase === startup.current_phase);
+  const members = (membersData ?? []) as Profile[];
+
   const owners = (adminsData ?? []).map((a) => ({
     id: a.id as string,
     name: [a.first_name, a.last_name].filter(Boolean).join(" ") || a.full_name || a.email,
   }));
   const owner = owners.find((o) => o.id === startup.fusion_owner_id);
-
-  // Conteos para modal de eliminación
-  const relatedCounts = await getStartupRelatedCounts(id);
-
-  const [AREAS, PHASES] = await Promise.all([getAreas(), getPhases()]);
 
   const currentPhase = PHASES.find((p) => p.number === startup.current_phase) ?? PHASES[0];
   const totalDone = entregables.filter((e) => e.status === "completado").length;

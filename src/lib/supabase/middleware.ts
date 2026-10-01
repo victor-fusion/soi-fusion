@@ -25,9 +25,10 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims verifica el JWT en local con las claves públicas (ES256) y refresca
+  // la sesión si ha caducado; evita la llamada de red de getUser en cada navegación.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const pathname = request.nextUrl.pathname;
 

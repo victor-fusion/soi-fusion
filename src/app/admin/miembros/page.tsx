@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MiembrosClient } from "./_components/MiembrosClient";
 
@@ -30,19 +29,19 @@ export default async function MiembrosPage({
   const offset = (page - 1) * PER_PAGE;
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: batchRows } = await supabase.from("startups").select("batch").order("batch");
-  const availableBatches = [
-    ...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch)),
-  ].sort() as number[];
   const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : 0;
   const showAllBatches = selectedBatch === 0;
 
   let startupsQuery = supabase.from("startups").select("id, name, batch").order("name");
   if (!showAllBatches) startupsQuery = startupsQuery.eq("batch", selectedBatch);
-  const { data: startupRows } = await startupsQuery;
+
+  const [{ data: batchRows }, { data: startupRows }] = await Promise.all([
+    supabase.from("startups").select("batch").order("batch"),
+    startupsQuery,
+  ]);
+  const availableBatches = [
+    ...new Set((batchRows ?? []).map((r: { batch: number }) => r.batch)),
+  ].sort((a, b) => a - b) as number[];
   const allStartups = (startupRows ?? []) as { id: string; name: string; batch: number }[];
   const batchStartupIds = allStartups.map((s) => s.id);
 
@@ -53,8 +52,6 @@ export default async function MiembrosPage({
     countQuery = countQuery.in("startup_id", batchStartupIds);
   }
   if (typeParam) countQuery = countQuery.eq("member_type", typeParam);
-  const { count: totalCount } = await countQuery;
-  const total = totalCount ?? 0;
 
   let query = supabase
     .from("profiles")
@@ -69,7 +66,8 @@ export default async function MiembrosPage({
   }
   if (typeParam) query = query.eq("member_type", typeParam);
 
-  const { data } = await query;
+  const [{ count: totalCount }, { data }] = await Promise.all([countQuery, query]);
+  const total = totalCount ?? 0;
   const members = (data ?? []) as unknown as MemberRow[];
 
   return (

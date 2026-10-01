@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { AREAS_TAG } from "@/lib/data/areas";
 import { createClient } from "@/lib/supabase/server";
 
 // ─── ÁREAS ───────────────────────────────────────────────────────────────────
@@ -23,6 +24,7 @@ export async function createArea(formData: FormData) {
     .insert({ id, name, color, sort_order: (maxOrder?.sort_order ?? 0) + 1 });
 
   if (error) throw new Error(error.message);
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
 }
 
@@ -38,6 +40,7 @@ export async function updateArea(formData: FormData) {
     .eq("id", id);
 
   if (error) throw new Error(error.message);
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
 }
 
@@ -45,6 +48,7 @@ export async function deleteArea(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("areas").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
 }
 
@@ -69,6 +73,7 @@ export async function createSection(formData: FormData) {
     .insert({ id, area_id, name, sort_order: (maxOrder?.sort_order ?? 0) + 1 });
 
   if (error) throw new Error(error.message);
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
   revalidatePath("/admin/secciones");
 }
@@ -86,6 +91,7 @@ export async function updateSection(formData: FormData) {
     .eq("area_id", area_id);
 
   if (error) throw new Error(error.message);
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
   revalidatePath("/admin/secciones");
 }
@@ -99,6 +105,7 @@ export async function deleteSection(id: string, area_id: string) {
     .eq("area_id", area_id);
 
   if (error) throw new Error(error.message);
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
   revalidatePath("/admin/secciones");
 }
@@ -112,6 +119,7 @@ export async function reorderAreas(orderedIds: string[]) {
       supabase.from("areas").update({ sort_order: index + 1 }).eq("id", id)
     )
   );
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
   revalidatePath("/admin/secciones");
 }
@@ -123,6 +131,7 @@ export async function reorderSections(orderedIds: Array<{ id: string; area_id: s
       supabase.from("area_sections").update({ sort_order: index + 1 }).eq("id", id).eq("area_id", area_id)
     )
   );
+  updateTag(AREAS_TAG);
   revalidatePath("/admin/areas");
   revalidatePath("/admin/secciones");
 }

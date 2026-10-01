@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { PHASES_TAG } from "@/lib/data/phases";
 import { createClient } from "@/lib/supabase/server";
 
 export async function createFase(formData: FormData) {
@@ -23,6 +24,7 @@ export async function createFase(formData: FormData) {
     .insert({ number, name, color, description });
 
   if (error) throw new Error(error.message);
+  updateTag(PHASES_TAG);
   revalidatePath("/admin/fases");
 }
 
@@ -39,6 +41,7 @@ export async function updateFase(formData: FormData) {
     .eq("id", id);
 
   if (error) throw new Error(error.message);
+  updateTag(PHASES_TAG);
   revalidatePath("/admin/fases");
 }
 
@@ -50,6 +53,7 @@ export async function deleteFase(id: number) {
     .eq("id", id);
 
   if (error) throw new Error(error.message);
+  updateTag(PHASES_TAG);
   revalidatePath("/admin/fases");
 }
 
@@ -60,5 +64,6 @@ export async function reorderFases(orderedIds: number[]) {
       supabase.from("phases").update({ sort_order: index + 1, number: index + 1 }).eq("id", id)
     )
   );
+  updateTag(PHASES_TAG);
   revalidatePath("/admin/fases");
 }
