@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getPhases } from "@/lib/data/phases";
+import { activeCycle, getCycles } from "@/lib/data/cycles";
 import type { Startup } from "@/types";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -39,16 +40,19 @@ export default async function AdminPage({
   const supabase = await createClient();
 
   // Una sola consulta de startups: de ella salen los ciclos disponibles y el filtro
-  const [PHASES, { data: startupsData }] = await Promise.all([
+  const [PHASES, cycles, { data: startupsData }] = await Promise.all([
     getPhases(),
+    getCycles(),
     supabase.from("startups").select("*").order("name"),
   ]);
   const everyStartup = (startupsData ?? []) as Startup[];
-  const availableBatches = [...new Set(everyStartup.map((s) => s.batch))].sort((a, b) => a - b);
+  // Todos los ciclos de la tabla (aunque aún no tengan startups) más los que usen las startups
+  const availableBatches = [...new Set([...cycles.map((c) => c.number), ...everyStartup.map((s) => s.batch)])]
+    .sort((a, b) => a - b);
 
-  // Ciclo activo por defecto: el mayor disponible. 0 = todos.
-  const latestBatch = availableBatches.at(-1) ?? 5;
-  const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : latestBatch;
+  // Por defecto, el ciclo activo (Configuración); si no hay, el mayor con startups. 0 = todos.
+  const defaultBatch = activeCycle(cycles)?.number ?? availableBatches.at(-1) ?? 0;
+  const selectedBatch = batchParam !== undefined ? parseInt(batchParam, 10) : defaultBatch;
   const showAll = selectedBatch === 0;
 
   const allStartups = showAll ? everyStartup : everyStartup.filter((s) => s.batch === selectedBatch);
@@ -230,7 +234,7 @@ export default async function AdminPage({
           <ThemeIcon size={48} radius="xl" color="gray" variant="light" mx="auto" mb="md">
             <IconUsers size={22} />
           </ThemeIcon>
-          <Text style={{ color: "#6b7280" }}>No hay startups en el Ciclo 5 todavía</Text>
+          <Text style={{ color: "#6b7280" }}>No hay startups en el Ciclo {selectedBatch} todavía</Text>
           <Text style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>
             Añade startups desde{" "}
             <Link href="/admin/startups" style={{ color: "#2563eb" }}>Startups</Link>

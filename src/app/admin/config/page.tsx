@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { getPhases } from "@/lib/data/phases";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Cycle } from "@/types";
+import { CyclesSection } from "./_components/CyclesSection";
+
+/** En Configuración se leen sin caché, para ver al momento lo que se acaba de editar. */
+async function getCyclesFresh(supabase: SupabaseClient): Promise<Cycle[]> {
+  const { data } = await supabase.from("cycles").select("number, name, start_date, end_date, is_active").order("number");
+  return (data ?? []) as Cycle[];
+}
 import {
   Box, Text, Title, Group, Stack, Paper, Badge, ThemeIcon,
 } from "@mantine/core";
@@ -9,24 +17,17 @@ import { IconSettings, IconCalendar, IconUsers, IconBuildingStore } from "@table
 export default async function ConfigPage() {
   const supabase = await createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/login");
+  const [PHASES, cycles, { data: batchRows }, { count: founderCount }, { count: adminCount }] = await Promise.all([
+    getPhases(),
+    getCyclesFresh(supabase),
+    supabase.from("startups").select("batch"),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "founder"),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "admin"),
+  ]);
 
-  const PHASES = await getPhases();
-
-  const { count: startupCount } = await supabase
-    .from("startups")
-    .select("*", { count: "exact", head: true });
-
-  const { count: founderCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "founder");
-
-  const { count: adminCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "admin");
+  const startupCount = batchRows?.length ?? 0;
+  const startupsPerCycle: Record<number, number> = {};
+  for (const r of batchRows ?? []) startupsPerCycle[r.batch] = (startupsPerCycle[r.batch] ?? 0) + 1;
 
   return (
     <Box p={40} maw={800} mx="auto">
@@ -40,36 +41,8 @@ export default async function ConfigPage() {
 
       <Stack gap={20}>
 
-        {/* Ciclo activo */}
-        <Paper p={24} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
-          <Group gap={10} mb={20}>
-            <ThemeIcon size={32} radius="lg" color="green" variant="light">
-              <IconCalendar size={16} />
-            </ThemeIcon>
-            <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>Ciclo activo</Text>
-          </Group>
-
-          <Group gap={32}>
-            <Box>
-              <Text style={{ fontSize: 11, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
-                Ciclo
-              </Text>
-              <Text style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827", marginTop: 2 }}>5</Text>
-            </Box>
-            <Box>
-              <Text style={{ fontSize: 11, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
-                Inicio
-              </Text>
-              <Text style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827", marginTop: 2 }}>Abril 2026</Text>
-            </Box>
-            <Box>
-              <Text style={{ fontSize: 11, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
-                Fases
-              </Text>
-              <Text style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827", marginTop: 2 }}>6</Text>
-            </Box>
-          </Group>
-        </Paper>
+        {/* Ciclos */}
+        <CyclesSection cycles={cycles} startupsPerCycle={startupsPerCycle} />
 
         {/* Usuarios */}
         <Paper p={24} radius="lg" withBorder style={{ borderColor: "#f3f4f6" }}>
@@ -97,7 +70,7 @@ export default async function ConfigPage() {
               <Text style={{ fontSize: 11, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
                 Startups
               </Text>
-              <Text style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827", marginTop: 2 }}>{startupCount ?? 0}</Text>
+              <Text style={{ fontSize: "1.5rem", fontWeight: 700, color: "#111827", marginTop: 2 }}>{startupCount}</Text>
             </Box>
           </Group>
         </Paper>

@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { Box, Text, Group, SimpleGrid, Avatar } from "@mantine/core";
 import { IconX, IconLoader2, IconPencil } from "@tabler/icons-react";
-import type { Startup } from "@/types";
+import type { Cycle, Startup } from "@/types";
+import { CycleSelect } from "@/components/ui/CycleSelect";
 import { updateStartup } from "../actions";
 
 const TYPES = [
@@ -25,9 +26,10 @@ const STATUSES = [
 interface StartupEditFormProps {
   startup: Startup;
   owners: { id: string; name: string }[];
+  cycles: Cycle[];
 }
 
-export function StartupEditForm({ startup, owners }: StartupEditFormProps) {
+export function StartupEditForm({ startup, owners, cycles }: StartupEditFormProps) {
   const [open, setOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState(startup.logo_url ?? "");
   const [webUrl, setWebUrl] = useState(startup.web_url ?? "");
@@ -227,11 +229,7 @@ export function StartupEditForm({ startup, owners }: StartupEditFormProps) {
                   </Box>
                   <Box>
                     <label style={labelStyle}>Ciclo</label>
-                    <select name="batch" defaultValue={startup.batch} style={{ ...inputStyle, cursor: "pointer" }}>
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <option key={n} value={n}>Ciclo {n}</option>
-                      ))}
-                    </select>
+                    <CycleSelect cycles={cycles} defaultValue={startup.batch} style={{ ...inputStyle, cursor: "pointer" }} />
                   </Box>
                 </SimpleGrid>
 

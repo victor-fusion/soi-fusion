@@ -35,9 +35,10 @@ const NAV_BOTTOM: { href: string; label: string; icon: typeof IconSettings; exac
 interface AdminSidebarProps {
   profile: Profile;
   startupCount: number;
+  cycleNumber: number | null;
 }
 
-export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
+export function AdminSidebar({ profile, startupCount, cycleNumber }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -73,7 +74,7 @@ export function AdminSidebar({ profile, startupCount }: AdminSidebarProps) {
           Fusión Startups
         </Text>
         <Text style={{ fontSize: "12px", color: "#9ca3af", marginTop: 2 }}>
-          Admin · Ciclo 5
+          Admin{cycleNumber ? ` · Ciclo ${cycleNumber}` : ""}
         </Text>
       </Box>
 

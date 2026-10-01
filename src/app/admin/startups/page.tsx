@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getPhases } from "@/lib/data/phases";
+import { getCycles } from "@/lib/data/cycles";
 import type { Startup } from "@/types";
 import { StartupsClient } from "./_components/StartupsClient";
 
@@ -30,8 +31,9 @@ export default async function StartupsPage({
     .range(offset, offset + PER_PAGE - 1);
   if (!showAll) query = query.eq("batch", selectedBatch);
 
-  const [phases, { data: batchRows }, { count: totalCount }, { data: startups }] = await Promise.all([
+  const [phases, cycles, { data: batchRows }, { count: totalCount }, { data: startups }] = await Promise.all([
     getPhases(),
+    getCycles(),
     supabase.from("startups").select("batch").order("batch"),
     countQuery,
     query,
@@ -67,6 +69,7 @@ export default async function StartupsPage({
       selectedBatch={selectedBatch}
       total={total}
       page={page}
+      cycles={cycles}
     />
   );
 }

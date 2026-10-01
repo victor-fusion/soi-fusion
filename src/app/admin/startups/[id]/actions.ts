@@ -2,13 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { recomputeDeadlines } from "@/lib/data/deadlines";
 
 export async function updateStartup(formData: FormData) {
   const supabase = await createClient();
   const startupId = formData.get("startup_id") as string;
   const cycleStartDate = (formData.get("cycle_start_date") as string) || null;
 
-  const { error } = await supabase.from("startups").update({
+  const update: Record<string, unknown> = {
     name:             formData.get("name") as string,
     logo_url:         (formData.get("logo_url") as string) || null,
     web_url:          (formData.get("web_url") as string) || null,
@@ -18,23 +19,17 @@ export async function updateStartup(formData: FormData) {
     status:           formData.get("status") as string,
     batch:            parseInt(formData.get("batch") as string, 10),
     cycle_start_date: cycleStartDate,
-    fusion_owner_id:  (formData.get("fusion_owner_id") as string) || null,
-  }).eq("id", startupId);
+  };
+  // Solo el formulario de la ficha tiene responsable: el drawer del listado no debe borrarlo
+  if (formData.has("fusion_owner_id")) {
+    update.fusion_owner_id = (formData.get("fusion_owner_id") as string) || null;
+  }
 
+  const { error } = await supabase.from("startups").update(update).eq("id", startupId);
   if (error) throw new Error(error.message);
 
   // Recalcular deadlines de entregables si hay fecha de inicio
-  if (cycleStartDate) {
-    for (let phase = 1; phase <= 6; phase++) {
-      const deadline = new Date(cycleStartDate);
-      deadline.setDate(deadline.getDate() + phase * 30);
-      await supabase
-        .from("entregables")
-        .update({ deadline: deadline.toISOString().split("T")[0] })
-        .eq("startup_id", startupId)
-        .eq("phase", phase);
-    }
-  }
+  if (cycleStartDate) await recomputeDeadlines(supabase, startupId, cycleStartDate);
 
   revalidatePath(`/admin/startups/${startupId}`);
   revalidatePath("/admin");

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAreas } from "@/lib/data/areas";
 import { getPhases } from "@/lib/data/phases";
+import { getCycles } from "@/lib/data/cycles";
 import type { Entregable, Profile, StartupMetrics, Weekly } from "@/types";
 import Link from "next/link";
 import { BackToList } from "@/lib/hooks/list-state";
@@ -69,6 +70,7 @@ export default async function StartupDetailPage({
     relatedCounts,
     AREAS,
     PHASES,
+    cycles,
   ] = await Promise.all([
     supabase.from("startups").select("*").eq("id", id).single(),
     supabase.from("entregables").select("*").eq("startup_id", id).order("area"),
@@ -80,6 +82,7 @@ export default async function StartupDetailPage({
     getStartupRelatedCounts(id),  // conteos para el modal de eliminación
     getAreas(),
     getPhases(),
+    getCycles(),
   ]);
 
   if (!startup) notFound();
@@ -190,7 +193,7 @@ export default async function StartupDetailPage({
           </Group>
 
           <Group gap={8}>
-            <StartupEditForm startup={startup} owners={owners} />
+            <StartupEditForm startup={startup} owners={owners} cycles={cycles} />
             <DeleteStartupModal
               startupId={id}
               startupName={startup.name}

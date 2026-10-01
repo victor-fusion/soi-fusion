@@ -3,6 +3,8 @@
 import { useTransition } from "react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { createStartup } from "../actions";
+import type { Cycle } from "@/types";
+import { CycleSelect } from "@/components/ui/CycleSelect";
 
 const TYPE_OPTIONS = [
   { value: "b2b_saas",        label: "B2B SaaS" },
@@ -14,9 +16,10 @@ const TYPE_OPTIONS = [
 
 interface StartupFormProps {
   onClose: () => void;
+  cycles: Cycle[];
 }
 
-export function StartupForm({ onClose }: StartupFormProps) {
+export function StartupForm({ onClose, cycles }: StartupFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const inputStyle: React.CSSProperties = {
@@ -70,11 +73,15 @@ export function StartupForm({ onClose }: StartupFormProps) {
 
       <div>
         <label style={labelStyle}>Ciclo *</label>
-        <select name="batch" defaultValue={5} style={{ ...inputStyle, cursor: "pointer" }}>
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <option key={n} value={n}>Ciclo {n}</option>
-          ))}
-        </select>
+        <CycleSelect cycles={cycles} style={{ ...inputStyle, cursor: "pointer" }} />
+      </div>
+
+      <div>
+        <label style={labelStyle}>Fecha de inicio</label>
+        <input type="date" name="cycle_start_date" style={inputStyle} />
+        <p style={{ fontSize: 11, color: "#9ca3af", margin: "5px 0 0" }}>
+          Si la dejas vacía se usa la fecha de inicio del ciclo.
+        </p>
       </div>
 
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", paddingTop: 8, borderTop: "1px solid #f3f4f6" }}>

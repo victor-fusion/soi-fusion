@@ -27,7 +27,7 @@ export function registerCarteraTools(server: McpServer) {
         db.from("areas").select("id, name").order("sort_order"),
         db.from("area_sections").select("id, area_id, name").order("sort_order"),
         db.from("entregable_templates").select("phase, area, section, title, description").eq("is_active", true).order("phase").order("order"),
-        db.from("startups").select("batch"),
+        db.from("cycles").select("number, name, start_date, end_date, is_active").order("number"),
       ]);
       const secs = assertOk(sections) as { id: string; area_id: string; name: string }[];
       return ok({
@@ -37,7 +37,7 @@ export function registerCarteraTools(server: McpServer) {
           secciones: secs.filter((s) => s.area_id === a.id).map(({ id, name }) => ({ id, name })),
         })),
         entregables_tipo: assertOk(templates),
-        ciclos: [...new Set((assertOk(batches) as { batch: number }[]).map((b) => b.batch))].sort(),
+        ciclos: assertOk(batches),
         estados_startup: STARTUP_STATUSES,
         tipos_startup: STARTUP_TYPES,
         estados_entregable: ENT_STATUSES,

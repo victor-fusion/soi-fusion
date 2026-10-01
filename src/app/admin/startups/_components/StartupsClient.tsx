@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Stack, Badge, Paper, Progress, Avatar, SimpleGrid } from "@mantine/core";
 import { IconPencil, IconSearch, IconLoader2, IconX } from "@tabler/icons-react";
-import type { Startup } from "@/types";
+import type { Cycle, Startup } from "@/types";
+import { CycleSelect } from "@/components/ui/CycleSelect";
 import { BatchFilter } from "../../_components/BatchFilter";
 import { NewStartupButton } from "./NewStartupButton";
 import { Pagination } from "@/components/ui/Pagination";
@@ -53,11 +54,12 @@ interface StartupsClientProps {
   selectedBatch: number;
   total: number;
   page: number;
+  cycles: Cycle[];
 }
 
 // ─── Edit Drawer ─────────────────────────────────────────────────────────────
 
-function EditDrawer({ startup, onClose }: { startup: Startup; onClose: () => void }) {
+function EditDrawer({ startup, cycles, onClose }: { startup: Startup; cycles: Cycle[]; onClose: () => void }) {
   const router = useRouter();
   const [logoPreview, setLogoPreview] = useState(startup.logo_url ?? "");
   const [webUrl, setWebUrl] = useState(startup.web_url ?? "");
@@ -190,9 +192,7 @@ function EditDrawer({ startup, onClose }: { startup: Startup; onClose: () => voi
               </Box>
               <Box>
                 <label style={labelStyle}>Ciclo</label>
-                <select name="batch" defaultValue={startup.batch} style={{ ...inputStyle, cursor: "pointer" }}>
-                  {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Ciclo {n}</option>)}
-                </select>
+                <CycleSelect cycles={cycles} defaultValue={startup.batch} style={{ ...inputStyle, cursor: "pointer" }} />
               </Box>
             </SimpleGrid>
 
@@ -241,6 +241,7 @@ export function StartupsClient({
   selectedBatch,
   total,
   page,
+  cycles,
 }: StartupsClientProps) {
   const router = useRouter();
   useRememberListUrl("/admin/startups");
@@ -262,7 +263,7 @@ export function StartupsClient({
               {total} startup{total !== 1 ? "s" : ""}
             </Text>
           </Box>
-          <NewStartupButton />
+          <NewStartupButton cycles={cycles} />
         </Group>
       </Box>
 
@@ -435,6 +436,7 @@ export function StartupsClient({
 
       {editingStartup && (
         <EditDrawer
+          cycles={cycles}
           startup={editingStartup}
           onClose={() => setEditingStartup(null)}
         />

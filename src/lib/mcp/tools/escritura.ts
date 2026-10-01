@@ -4,6 +4,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ok, safe, type ToolContext } from "../context";
 import { assertOk, fetchAll, personName, phaseNames, resolveStartup, today, UUID_RE, type PersonRow } from "../data";
 import { DATE, STARTUP_STATUSES, STARTUP_TYPES } from "./shared";
+import { recomputeDeadlines } from "@/lib/data/deadlines";
+import { activeCycle } from "@/lib/cycle-utils";
+import type { Cycle } from "@/types";
 
 // Escriben datos pero nunca borran. Los clientes MCP piden confirmación al usuario.
 const WRITE = { readOnlyHint: false, destructiveHint: false, openWorldHint: false } as const;
@@ -38,20 +41,6 @@ async function resolveOwner(db: SupabaseClient, userId: string, ref: string): Pr
   return matches[0].id;
 }
 
-/** Misma regla que la web: deadline de la fase N = inicio de ciclo + N × 30 días. */
-async function recomputeDeadlines(db: SupabaseClient, startupId: string, cycleStart: string) {
-  for (let phase = 1; phase <= 6; phase++) {
-    const deadline = new Date(cycleStart);
-    deadline.setDate(deadline.getDate() + phase * 30);
-    assertOk(
-      await db.from("entregables")
-        .update({ deadline: deadline.toISOString().split("T")[0] })
-        .eq("startup_id", startupId)
-        .eq("phase", phase)
-    );
-  }
-}
-
 const startupFields = {
   tipo: z.enum(STARTUP_TYPES).optional(),
   sector: z.string().optional(),
@@ -69,10 +58,11 @@ export function registerEscrituraTools(server: McpServer) {
     {
       title: "Crear startup",
       description:
-        "Da de alta una startup nueva. Se le asignan automáticamente los entregables tipo de las 6 fases." + WRITE_NOTE,
+        "Da de alta una startup nueva. Se le asignan automáticamente los entregables tipo de las 6 fases. " +
+        "Sin 'ciclo' se usa el ciclo activo; sin 'fecha_inicio', la fecha de inicio del ciclo." + WRITE_NOTE,
       inputSchema: z.object({
         nombre: z.string().min(1),
-        ciclo: z.number().int().min(1),
+        ciclo: z.number().int().min(1).optional().describe("Por defecto, el ciclo activo."),
         fase: z.number().int().min(1).max(6).optional().describe("Fase inicial (por defecto 1)."),
         ...startupFields,
       }),
@@ -85,25 +75,32 @@ export function registerEscrituraTools(server: McpServer) {
       const { data: existing } = await db.from("startups").select("id").ilike("name", args.nombre.trim());
       if (existing?.length) throw new Error(`Ya existe una startup llamada "${args.nombre}".`);
 
+      const cycles = assertOk(await db.from("cycles").select("number, name, start_date, end_date, is_active").order("number")) as Cycle[];
+      const cycle = args.ciclo !== undefined ? cycles.find((c) => c.number === args.ciclo) : activeCycle(cycles);
+      if (!cycle) {
+        throw new Error(`El ciclo ${args.ciclo ?? "activo"} no existe. Ciclos disponibles: ${cycles.map((c) => c.number).join(", ")}.`);
+      }
+      const fechaInicio = args.fecha_inicio ?? cycle.start_date ?? undefined;
+
       const created = assertOk(
         await db.from("startups").insert({
           name: args.nombre.trim(),
-          batch: args.ciclo,
+          batch: cycle.number,
           current_phase: args.fase ?? 1,
           type: args.tipo ?? "b2b_saas",
           status: args.estado ?? "activa",
           sector: args.sector ?? null,
           tagline: args.tagline ?? null,
           web_url: args.web ?? null,
-          cycle_start_date: args.fecha_inicio ?? null,
+          cycle_start_date: fechaInicio ?? null,
           fusion_owner_id: args.responsable ? await resolveOwner(db, userId, args.responsable) : null,
         }).select("id, name").single()
       ) as { id: string; name: string };
 
-      if (args.fecha_inicio) await recomputeDeadlines(db, created.id, args.fecha_inicio);
+      if (fechaInicio) await recomputeDeadlines(db, created.id, fechaInicio);
       const { count } = await db.from("entregables").select("id", { count: "exact", head: true }).eq("startup_id", created.id);
 
-      return ok({ creada: created.name, id: created.id, entregables_asignados: count ?? 0 });
+      return ok({ creada: created.name, id: created.id, ciclo: cycle.number, fecha_inicio: fechaInicio ?? null, entregables_asignados: count ?? 0 });
     })
   );
 

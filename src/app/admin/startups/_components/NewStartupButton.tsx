@@ -4,8 +4,9 @@ import { useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { SlideDrawer } from "@/components/ui/SlideDrawer";
 import { StartupForm } from "./StartupForm";
+import type { Cycle } from "@/types";
 
-export function NewStartupButton() {
+export function NewStartupButton({ cycles }: { cycles: Cycle[] }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -28,7 +29,7 @@ export function NewStartupButton() {
         title="Nueva startup"
         subtitle="Se asignarán automáticamente todos los entregables del ciclo"
       >
-        {open && <StartupForm onClose={() => setOpen(false)} />}
+        {open && <StartupForm cycles={cycles} onClose={() => setOpen(false)} />}
       </SlideDrawer>
     </>
   );

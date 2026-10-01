@@ -24,6 +24,15 @@ export interface Startup {
   updated_at: string;
 }
 
+// ─── CICLOS ──────────────────────────────────────────────────────────────────
+export interface Cycle {
+  number: number;
+  name?: string | null;
+  start_date?: string | null; // "2026-10-01"
+  end_date?: string | null;
+  is_active: boolean;
+}
+
 // ─── USERS ────────────────────────────────────────────────────────────────────
 export type MemberType = "cofundador" | "empleado" | "advisor" | "becario" | "contratista";
 export type MemberDedication = "full-time" | "part-time" | "puntual";
