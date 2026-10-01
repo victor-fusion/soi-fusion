@@ -9,9 +9,10 @@ const PER_PAGE = 15;
 export default async function StartupsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string; page?: string }>;
+  searchParams: Promise<{ batch?: string; page?: string; q?: string }>;
 }) {
-  const { batch: batchParam, page: pageParam } = await searchParams;
+  const { batch: batchParam, page: pageParam, q: qParam } = await searchParams;
+  const searchTerm = (qParam ?? "").trim();
   const supabase = await createClient();
 
   const page = Math.max(1, parseInt(pageParam ?? "1", 10));
@@ -22,6 +23,7 @@ export default async function StartupsPage({
 
   let countQuery = supabase.from("startups").select("*", { count: "exact", head: true });
   if (!showAll) countQuery = countQuery.eq("batch", selectedBatch);
+  if (searchTerm) countQuery = countQuery.ilike("name", `%${searchTerm}%`);
 
   let query = supabase
     .from("startups")
@@ -30,6 +32,7 @@ export default async function StartupsPage({
     .order("name")
     .range(offset, offset + PER_PAGE - 1);
   if (!showAll) query = query.eq("batch", selectedBatch);
+  if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
 
   const [phases, cycles, { data: batchRows }, { count: totalCount }, { data: startups }] = await Promise.all([
     getPhases(),
@@ -70,6 +73,7 @@ export default async function StartupsPage({
       total={total}
       page={page}
       cycles={cycles}
+      query={searchTerm}
     />
   );
 }

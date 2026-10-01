@@ -2,6 +2,13 @@ import type { Cycle } from "@/types";
 
 // Utilidades puras (sin dependencias de servidor): usables en componentes de cliente.
 
+// Un color por ciclo; se repite cada 8 ciclos (4 años).
+const CYCLE_COLORS = ["#0891B2", "#7C3AED", "#DB2777", "#EA580C", "#2563EB", "#16A34A", "#CA8A04", "#DC2626"];
+
+export function cycleColor(number: number): string {
+  return CYCLE_COLORS[(Math.max(number, 1) - 1) % CYCLE_COLORS.length];
+}
+
 /** Ciclo activo; si no hay ninguno marcado, el de número más alto. */
 export function activeCycle(cycles: Cycle[]): Cycle | null {
   return cycles.find((c) => c.is_active) ?? cycles.at(-1) ?? null;

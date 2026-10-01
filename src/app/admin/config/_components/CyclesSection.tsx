@@ -5,6 +5,7 @@ import { Box, Text, Group, Stack, Paper, ThemeIcon, Badge, SimpleGrid } from "@m
 import { IconCalendar, IconPlus, IconPencil, IconTrash, IconLoader2, IconCheck } from "@tabler/icons-react";
 import type { Cycle } from "@/types";
 import { saveCycle, setActiveCycle, deleteCycle } from "../actions";
+import { CycleBadge } from "@/components/ui/CycleBadge";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 10px",
@@ -119,9 +120,8 @@ export function CyclesSection({ cycles, startupsPerCycle }: CyclesSectionProps) 
             }}
           >
             <Group gap={14}>
-              <Text style={{ fontSize: 14, fontWeight: 700, color: "#111827", minWidth: 70 }}>
-                {c.name || `Ciclo ${c.number}`}
-              </Text>
+              <CycleBadge number={c.number} size="sm" />
+              {c.name && <Text style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>{c.name}</Text>}
               <Text style={{ fontSize: 13, color: "#6b7280" }}>
                 {fmt(c.start_date)} → {fmt(c.end_date)}
               </Text>

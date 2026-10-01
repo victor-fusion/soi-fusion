@@ -22,9 +22,12 @@ type MemberRow = {
 export default async function MiembrosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ batch?: string; startup?: string; type?: string; page?: string }>;
+  searchParams: Promise<{ batch?: string; startup?: string; type?: string; page?: string; q?: string }>;
 }) {
-  const { batch: batchParam, startup: startupParam, type: typeParam, page: pageParam } = await searchParams;
+  const { batch: batchParam, startup: startupParam, type: typeParam, page: pageParam, q: qParam } = await searchParams;
+  const searchTerm = (qParam ?? "").replace(/["(),]/g, " ").trim();
+  // Búsqueda por nombre, apellidos o email
+  const searchFilter = `first_name.ilike."%${searchTerm}%",last_name.ilike."%${searchTerm}%",email.ilike."%${searchTerm}%"`;
   const page = Math.max(1, parseInt(pageParam ?? "1", 10));
   const offset = (page - 1) * PER_PAGE;
   const supabase = await createClient();
@@ -52,6 +55,7 @@ export default async function MiembrosPage({
     countQuery = countQuery.in("startup_id", batchStartupIds);
   }
   if (typeParam) countQuery = countQuery.eq("member_type", typeParam);
+  if (searchTerm) countQuery = countQuery.or(searchFilter);
 
   let query = supabase
     .from("profiles")
@@ -65,6 +69,7 @@ export default async function MiembrosPage({
     query = query.in("startup_id", batchStartupIds);
   }
   if (typeParam) query = query.eq("member_type", typeParam);
+  if (searchTerm) query = query.or(searchFilter);
 
   const [{ count: totalCount }, { data }] = await Promise.all([countQuery, query]);
   const total = totalCount ?? 0;
@@ -80,6 +85,7 @@ export default async function MiembrosPage({
       typeParam={typeParam ?? ""}
       total={total}
       page={page}
+      query={searchTerm}
     />
   );
 }

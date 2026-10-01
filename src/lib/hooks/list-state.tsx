@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -92,4 +92,38 @@ export function BackToList({
       {children}
     </Link>
   );
+}
+
+/**
+ * Buscador de listados paginados: escribe ?q= en la URL (con espera de 300 ms) y el
+ * servidor filtra, de modo que el total y la paginación tienen en cuenta la búsqueda.
+ */
+export function ListSearch({ placeholder, style }: { placeholder: string; style?: React.CSSProperties }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const q = useSearchParams().get("q") ?? "";
+
+  const [value, setValue] = useState(q);
+  const [prevQ, setPrevQ] = useState(q);
+  const [sent, setSent] = useState(q);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Si la URL cambia desde fuera (p. ej. "Limpiar filtros"), el campo se sincroniza
+  if (q !== prevQ) {
+    setPrevQ(q);
+    if (q !== sent) setValue(q);
+  }
+
+  const handleChange = (v: string) => {
+    setValue(v);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      const term = v.trim();
+      setSent(term);
+      const current = new URLSearchParams(window.location.search);
+      router.replace(buildUrl(pathname, current, { q: term }), { scroll: false });
+    }, 300);
+  };
+
+  return <input value={value} onChange={(e) => handleChange(e.target.value)} placeholder={placeholder} style={style} />;
 }

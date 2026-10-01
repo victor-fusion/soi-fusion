@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
+import { ListSearch, useRememberListUrl } from "@/lib/hooks/list-state";
 import { Box, Text, Group, Stack, Badge, Paper, Progress, Avatar, SimpleGrid } from "@mantine/core";
 import { IconPencil, IconSearch, IconLoader2, IconX } from "@tabler/icons-react";
 import type { Cycle, Startup } from "@/types";
@@ -13,6 +13,7 @@ import { NewStartupButton } from "./NewStartupButton";
 import { Pagination } from "@/components/ui/Pagination";
 import { Suspense } from "react";
 import { updateStartup } from "../[id]/actions";
+import { CycleBadge } from "@/components/ui/CycleBadge";
 
 type Phase = { number: number; name: string; color: string };
 
@@ -55,6 +56,7 @@ interface StartupsClientProps {
   total: number;
   page: number;
   cycles: Cycle[];
+  query: string;
 }
 
 // ─── Edit Drawer ─────────────────────────────────────────────────────────────
@@ -242,15 +244,14 @@ export function StartupsClient({
   total,
   page,
   cycles,
+  query,
 }: StartupsClientProps) {
   const router = useRouter();
   useRememberListUrl("/admin/startups");
-  const [urlFilters, setUrlFilters] = useUrlFilters(["q"] as const);
-  const [search, setSearch] = useState(urlFilters.q);
   const [editingStartup, setEditingStartup] = useState<Startup | null>(null);
 
-  const term = search.trim().toLowerCase();
-  const filtered = term ? startups.filter((s) => s.name.toLowerCase().includes(term)) : startups;
+  // La búsqueda la aplica el servidor (?q=): aquí ya llegan filtradas y paginadas
+  const filtered = startups;
 
   return (
     <Box p={40} maw={1100} mx="auto">
@@ -271,21 +272,19 @@ export function StartupsClient({
         <Suspense fallback={null}>
           <BatchFilter batches={availableBatches} activeBatch={selectedBatch} basePath="/admin/startups" />
         </Suspense>
-        {selectedBatch !== 0 && (
+        {(selectedBatch !== 0 || query) && (
           <Link href="/admin/startups" style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
             Limpiar filtros
           </Link>
         )}
         <Box style={{ position: "relative", marginLeft: "auto" }}>
           <IconSearch size={13} color="#9ca3af" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          <input
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setUrlFilters({ q: e.target.value }); }}
+          <ListSearch
             placeholder="Buscar startup..."
             style={{ padding: "6px 10px 6px 30px", fontSize: 13, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fafafa", color: "#374151", outline: "none", width: 200 }}
           />
         </Box>
-        <Text style={{ fontSize: 12, color: "#9ca3af" }}>{filtered.length} resultados</Text>
+        <Text style={{ fontSize: 12, color: "#9ca3af" }}>{total} resultados</Text>
       </Group>
 
       <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
@@ -359,7 +358,7 @@ export function StartupsClient({
                     </div>
                   </div>
 
-                  <Text style={{ fontSize: 12, color: "#6b7280" }}>Ciclo {startup.batch}</Text>
+                  <div><CycleBadge number={startup.batch} /></div>
 
                   <Text style={{ fontSize: 12, color: "#6b7280" }} truncate>{startup.sector ?? "—"}</Text>
 

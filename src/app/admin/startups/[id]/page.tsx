@@ -33,6 +33,7 @@ import { StartupEditForm } from "./_components/StartupEditForm";
 import { DeleteStartupModal } from "./_components/DeleteStartupModal";
 import { MetricsSection } from "./_components/MetricsSection";
 import { WeekliesSection } from "./_components/WeekliesSection";
+import { CycleBadge } from "@/components/ui/CycleBadge";
 
 const TYPE_LABELS: Record<string, string> = {
   b2b_saas: "B2B SaaS",
@@ -178,9 +179,7 @@ export default async function StartupDetailPage({
                   <IconUserStar size={13} />
                   Responsable: <strong style={{ color: owner ? "#374151" : "#d97706" }}>{owner?.name ?? "sin asignar"}</strong>
                 </Text>
-                <Text style={{ fontSize: 13, color: "#6b7280" }}>
-                  Ciclo <strong style={{ color: "#374151" }}>{startup.batch}</strong>
-                </Text>
+                <CycleBadge number={startup.batch} size="sm" />
                 {startup.cycle_start_date && (
                   <Text style={{ fontSize: 13, color: "#6b7280" }}>
                     Inicio: <strong style={{ color: "#374151" }}>

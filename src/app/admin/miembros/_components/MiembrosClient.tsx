@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRememberListUrl, useUrlFilters } from "@/lib/hooks/list-state";
+import { ListSearch, useRememberListUrl } from "@/lib/hooks/list-state";
 import { Box, Text, Title, Group, Stack, Badge, Paper, Avatar } from "@mantine/core";
 import { IconPencil, IconBrandLinkedin, IconPhone, IconSearch } from "@tabler/icons-react";
 import { BatchFilter } from "../../_components/BatchFilter";
@@ -10,6 +9,7 @@ import { StartupFilter, TypeFilter } from "./MiembrosFilters";
 import { NewMemberButton } from "./NewMemberButton";
 import { Pagination } from "@/components/ui/Pagination";
 import { Suspense } from "react";
+import { CycleBadge } from "@/components/ui/CycleBadge";
 
 const TYPE_LABELS: Record<string, string> = {
   cofundador:  "Cofundador",
@@ -58,6 +58,7 @@ interface MiembrosClientProps {
   typeParam: string;
   total: number;
   page: number;
+  query: string;
 }
 
 export function MiembrosClient({
@@ -69,17 +70,11 @@ export function MiembrosClient({
   typeParam,
   total,
   page,
+  query,
 }: MiembrosClientProps) {
   useRememberListUrl("/admin/miembros");
-  const [urlFilters, setUrlFilters] = useUrlFilters(["q"] as const);
-  const [search, setSearch] = useState(urlFilters.q);
-  const term = search.trim().toLowerCase();
-  const filtered = term
-    ? members.filter((m) => {
-        const name = [m.first_name, m.last_name].filter(Boolean).join(" ").toLowerCase();
-        return name.includes(term) || m.email.toLowerCase().includes(term);
-      })
-    : members;
+  // La búsqueda la aplica el servidor (?q=): aquí ya llegan filtrados y paginados
+  const filtered = members;
 
   return (
     <Box p={40} maw={1100} mx="auto">
@@ -102,21 +97,19 @@ export function MiembrosClient({
         </Suspense>
         <StartupFilter startups={allStartups} activeStartup={startupParam} activeBatch={selectedBatch} activeType={typeParam} />
         <TypeFilter activeType={typeParam} activeBatch={selectedBatch} activeStartup={startupParam} />
-        {(selectedBatch !== 0 || startupParam || typeParam) && (
+        {(selectedBatch !== 0 || startupParam || typeParam || query) && (
           <Link href="/admin/miembros" style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
             Limpiar filtros
           </Link>
         )}
         <Box style={{ position: "relative", marginLeft: "auto" }}>
           <IconSearch size={13} color="#9ca3af" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          <input
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setUrlFilters({ q: e.target.value }); }}
+          <ListSearch
             placeholder="Buscar miembro..."
             style={{ padding: "6px 10px 6px 30px", fontSize: 13, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fafafa", color: "#374151", outline: "none", width: 200 }}
           />
         </Box>
-        <Text style={{ fontSize: 12, color: "#9ca3af" }}>{filtered.length} resultados</Text>
+        <Text style={{ fontSize: 12, color: "#9ca3af" }}>{total} resultados</Text>
       </Group>
 
       <Paper p={0} radius="lg" withBorder style={{ borderColor: "#f3f4f6", overflow: "hidden" }}>
@@ -183,7 +176,7 @@ export function MiembrosClient({
                       <Link href={`/admin/startups/${startup.id}`} style={{ fontSize: 13, color: "#374151", textDecoration: "none", fontWeight: 500 }} onClick={(e) => e.stopPropagation()}>
                         {startup.name}
                       </Link>
-                      <Text style={{ fontSize: 11, color: "#9ca3af" }}>Ciclo {startup.batch}</Text>
+                      <div style={{ marginTop: 2 }}><CycleBadge number={startup.batch} /></div>
                     </Box>
                   ) : (
                     <Text style={{ fontSize: 12, color: "#d1d5db" }}>—</Text>
