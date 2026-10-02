@@ -1,3 +1,4 @@
+import { IconX } from "@tabler/icons-react";
 import { AREAS, STATUS, type DelivStatus } from "../_data";
 
 export function PageHeader({
@@ -83,4 +84,84 @@ export function dueLabel(days: number) {
   if (days === 0) return { text: "Vence hoy", color: "var(--amber)" };
   if (days <= 3) return { text: `Vence en ${days} d`, color: "var(--amber)" };
   return { text: `En ${days} días`, color: "var(--muted)" };
+}
+
+/** Cifra destacada en tarjeta. */
+export function Kpi({ label, value, sub }: { label: string; value: React.ReactNode; sub?: React.ReactNode }) {
+  return (
+    <div className="card" style={{ padding: "16px 18px" }}>
+      <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 500 }}>{label}</div>
+      <div className="display" style={{ fontSize: 26, marginTop: 4 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: "var(--faint)" }}>{sub}</div>}
+    </div>
+  );
+}
+
+/** Minigráfica de línea (sin ejes). El último punto se marca. */
+export function Sparkline({ values, width = 84, height = 26, color = "var(--ink-2)" }: {
+  values: number[]; width?: number; height?: number; color?: string;
+}) {
+  const max = Math.max(...values, 1);
+  const pad = 4;
+  const x = (i: number) => pad + (i * (width - pad * 2)) / Math.max(values.length - 1, 1);
+  const y = (v: number) => height - pad - (v / max) * (height - pad * 2);
+  const pts = values.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+  const last = values.length - 1;
+  return (
+    <svg width={width} height={height} aria-hidden style={{ display: "block", overflow: "visible" }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={x(last)} cy={y(values[last])} r={3} fill={color} stroke="#fff" strokeWidth={2} />
+    </svg>
+  );
+}
+
+/** Panel lateral derecho con fondo oscurecido. */
+export function Drawer({ title, onClose, children, width = 460, footer }: {
+  title: React.ReactNode; onClose: () => void; children: React.ReactNode; width?: number; footer?: React.ReactNode;
+}) {
+  return (
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, background: "rgba(28,25,23,0.25)", zIndex: 50, display: "flex", justifyContent: "flex-end" }}
+    >
+      <div className="rise" style={{ width, maxWidth: "100%", height: "100%", background: "var(--paper)", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ minWidth: 0 }}>{title}</div>
+          <button type="button" className="btn btn-ghost" style={{ padding: 6 }} onClick={onClose} aria-label="Cerrar"><IconX size={18} /></button>
+        </div>
+        <div className="scroll-y" style={{ flex: 1, padding: "20px 24px" }}>{children}</div>
+        {footer && <div style={{ padding: "14px 24px", borderTop: "1px solid var(--line)", display: "flex", gap: 8, justifyContent: "flex-end" }}>{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+export type GateState = "ok" | "parcial" | "pendiente";
+
+const GATE_STYLE: Record<GateState, { label: string; color: string; bg: string; mark: string }> = {
+  ok:        { label: "Cumplido",  color: "#15803D", bg: "#F0FDF4", mark: "✓" },
+  parcial:   { label: "Parcial",   color: "#B45309", bg: "#FEF3C7", mark: "◐" },
+  pendiente: { label: "Pendiente", color: "#6B7280", bg: "#F3F4F6", mark: "○" },
+};
+
+/** Criterios de salida de fase con su evidencia (mismo bloque en la vista founder y en la de Fusión). */
+export function GateCriteria({ criteria, compact }: {
+  criteria: { text: string; evidence: string; state: GateState }[]; compact?: boolean;
+}) {
+  return (
+    <div>
+      {criteria.map((c, i) => {
+        const s = GATE_STYLE[c.state];
+        return (
+          <div key={c.text} style={{ display: "flex", alignItems: "center", gap: 10, padding: compact ? "8px 0" : "12px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
+            <span aria-hidden style={{ width: 22, height: 22, borderRadius: "50%", background: s.bg, color: s.color, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{s.mark}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: compact ? 13 : 14.5, fontWeight: 600, lineHeight: 1.35 }}>{c.text}</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>{s.label} · {c.evidence}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
