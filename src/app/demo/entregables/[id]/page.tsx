@@ -67,7 +67,7 @@ export default function EntregablePage() {
   return (
     <Page wide>
       <Link href="/demo/camino" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--muted)", textDecoration: "none", marginBottom: 18 }}>
-        <IconArrowLeft size={14} /> Mi camino
+        <IconArrowLeft size={14} /> Mi ciclo
       </Link>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 380px", gap: 28, alignItems: "start" }}>
@@ -219,7 +219,7 @@ export default function EntregablePage() {
 
           {resources.length > 0 && (
             <section className="card rise d4" style={{ padding: 20 }}>
-              <div className="eyebrow" style={{ marginBottom: 10 }}>Del Arsenal para esto</div>
+              <div className="eyebrow" style={{ marginBottom: 10 }}>De Recursos para esto</div>
               {resources.map((r) => {
                 const Icon = RES_ICON[r.type] ?? IconBook;
                 return (

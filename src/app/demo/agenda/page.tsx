@@ -55,7 +55,7 @@ export default function AgendaPage() {
     <Page wide>
       <PageHeader
         eyebrow="Con Fusión"
-        title="Agenda y mentores"
+        title="Agenda"
         subtitle="Tu semana en un vistazo y acceso directo a los mentores de Fusión. Reserva una sesión en dos clics."
       />
 

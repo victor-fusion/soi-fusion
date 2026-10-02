@@ -14,17 +14,17 @@ type NavItem = { href: string; label: string; icon: typeof IconSun; exact?: bool
 const NAV: { group: string | null; items: NavItem[] }[] = [
   { group: null, items: [
     { href: "/demo", label: "Hoy", icon: IconSun, exact: true },
-    { href: "/demo/camino", label: "Mi camino", icon: IconRoute },
-    { href: "/demo/arsenal", label: "Arsenal", icon: IconBooks },
+    { href: "/demo/camino", label: "Mi ciclo", icon: IconRoute },
+    { href: "/demo/arsenal", label: "Recursos", icon: IconBooks },
   ] },
   { group: "Trabajo", items: [
-    { href: "/demo/crm", label: "Clientes (CRM)", icon: IconLayoutKanban },
+    { href: "/demo/crm", label: "CRM", icon: IconLayoutKanban },
     { href: "/demo/agente", label: "Agente SDR", icon: IconRobot, badge: 3 },
     { href: "/demo/metricas", label: "Métricas", icon: IconChartLine },
   ] },
   { group: "Con Fusión", items: [
     { href: "/demo/weeklies", label: "Weeklies", icon: IconNotes },
-    { href: "/demo/agenda", label: "Agenda y mentores", icon: IconCalendarEvent },
+    { href: "/demo/agenda", label: "Agenda", icon: IconCalendarEvent },
     { href: "/demo/comunidad", label: "Comunidad", icon: IconUsersGroup },
   ] },
   { group: "Startup", items: [

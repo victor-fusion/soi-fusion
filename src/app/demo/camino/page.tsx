@@ -28,7 +28,7 @@ export default function CaminoPage() {
     <Page>
       <PageHeader
         eyebrow={`Ciclo ${CYCLE.number} · ${CYCLE.start} → ${CYCLE.end}`}
-        title="Mi camino"
+        title="Mi ciclo"
         subtitle="Seis fases, un objetivo por fase. Cada entregable es una prueba de que habéis avanzado."
       />
 
@@ -93,7 +93,7 @@ export default function CaminoPage() {
             <div className="card rise" style={{ padding: 40, textAlign: "center", color: "var(--muted)" }}>
               <IconLock size={26} style={{ marginBottom: 10 }} />
               <div className="display" style={{ fontSize: 22, color: "var(--ink)" }}>Aún no habéis llegado aquí</div>
-              <div style={{ fontSize: 14, marginTop: 6 }}>Los entregables de {phase.name} se desbloquean al completar la fase anterior. Puedes consultar sus recursos en el Arsenal.</div>
+              <div style={{ fontSize: 14, marginTop: 6 }}>Los entregables de {phase.name} se desbloquean al completar la fase anterior. Puedes consultar sus recursos en Recursos.</div>
             </div>
           )}
           {byArea.map((g, gi) => (

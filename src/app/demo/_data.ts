@@ -96,7 +96,7 @@ export const AGENDA_TODAY = [
 export const NOTIFICATIONS = [
   { id: "n1", who: "Víctor Humanes", text: "ha pedido cambios en «Propuesta diferenciada»", when: "hace 2 h", href: "/demo/entregables/propuesta", unread: true },
   { id: "n2", who: "Agente SDR", text: "ha preparado 3 mensajes nuevos para revisar", when: "hace 3 h", href: "/demo/agente", unread: true },
-  { id: "n3", who: "Fusión", text: "Nuevo recurso en el Arsenal: «Pricing para SaaS verticales»", when: "ayer", href: "/demo/arsenal", unread: true },
+  { id: "n3", who: "Fusión", text: "Nuevo en Recursos: «Pricing para SaaS verticales»", when: "ayer", href: "/demo/arsenal", unread: true },
   { id: "n4", who: "Víctor Humanes", text: "ha aprobado «Lista de 100 ICPs»", when: "ayer", href: "/demo/camino", unread: false },
   { id: "n5", who: "Comunidad", text: "Jueves 19: Demo Day interno del ciclo 6", when: "hace 2 días", href: "/demo/comunidad", unread: false },
 ];

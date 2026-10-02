@@ -7,7 +7,7 @@ import { Avatar, Page, PageHeader } from "../_components/ui";
 
 const ANNOUNCEMENTS = [
   { from: "Equipo Fusión", when: "hoy", text: "El jueves cerramos la sala grande a las 17:00 para preparar el Demo Day. Las salas pequeñas siguen disponibles." },
-  { from: "Víctor Humanes", when: "ayer", text: "Nuevo playbook en el Arsenal: «Pricing para SaaS verticales». Muy recomendable si estáis en Solucionar." },
+  { from: "Víctor Humanes", when: "ayer", text: "Nuevo playbook en Recursos: «Pricing para SaaS verticales». Muy recomendable si estáis en Solucionar." },
 ];
 
 export default function ComunidadPage() {

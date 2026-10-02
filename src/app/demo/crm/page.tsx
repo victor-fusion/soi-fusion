@@ -29,7 +29,7 @@ export default function CrmPage() {
     <Page wide>
       <PageHeader
         eyebrow="Trabajo"
-        title="Clientes"
+        title="CRM"
         subtitle="Tu pipeline de clínicas. Arrastra una tarjeta para cambiarla de etapa."
         actions={<button type="button" className="btn btn-primary"><IconPlus size={15} /> Nuevo contacto</button>}
       />

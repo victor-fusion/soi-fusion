@@ -36,7 +36,7 @@ export default function ArsenalPage() {
   return (
     <Page wide>
       <PageHeader
-        eyebrow="El Arsenal"
+        eyebrow="Recursos"
         title="Todo lo que necesitas para avanzar"
         subtitle="Playbooks, plantillas y herramientas de IA del equipo de Fusión, ordenados por lo que te toca ahora."
       />
@@ -72,7 +72,7 @@ export default function ArsenalPage() {
         ))}
         <div style={{ marginLeft: "auto", position: "relative", width: 240 }}>
           <IconSearch size={14} style={{ position: "absolute", left: 11, top: 12, color: "var(--faint)" }} />
-          <input className="field" placeholder="Buscar en el Arsenal" value={q} onChange={(e) => setQ(e.target.value)} style={{ paddingLeft: 32, paddingTop: 8, paddingBottom: 8, fontSize: 13 }} />
+          <input className="field" placeholder="Buscar en Recursos" value={q} onChange={(e) => setQ(e.target.value)} style={{ paddingLeft: 32, paddingTop: 8, paddingBottom: 8, fontSize: 13 }} />
         </div>
       </div>
       <div className="rise d2" style={{ display: "flex", gap: 8, marginBottom: 20 }}>
