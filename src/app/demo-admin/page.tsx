@@ -6,12 +6,15 @@ import { IconChevronRight, IconClock } from "@tabler/icons-react";
 import { CYCLE, TODAY_LABEL } from "../demo/_data";
 import { Kpi, Page, PageHeader, SectionTitle } from "../demo/_components/ui";
 import { HEALTH, MEETINGS_TODAY, PORTFOLIO, RECENT_ACTIVITY, REVIEW_QUEUE, REVIEW_TYPES, ADMIN_ME } from "./_data";
+import { useResolved } from "./_components/review-store";
 import { HealthBadge, PhasePill, SignalPill, StartupLogo, WeeklyPrepDrawer } from "./_components/admin-ui";
 
 export default function AdminHoyPage() {
   const [prep, setPrep] = useState<(typeof MEETINGS_TODAY)[number] | null>(null);
 
   const attention = PORTFOLIO.filter((s) => s.health !== "bien").sort((a, b) => HEALTH[a.health].order - HEALTH[b.health].order);
+  const done = useResolved();
+  const queue = REVIEW_QUEUE.filter((q) => !done.has(q.id));
   const atRisk = PORTFOLIO.filter((s) => s.health === "riesgo").length;
 
   return (
@@ -23,7 +26,7 @@ export default function AdminHoyPage() {
       />
 
       <div className="rise d1" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 28 }}>
-        <Kpi label="Esperan tu revisión" value={REVIEW_QUEUE.length} sub={`${REVIEW_QUEUE.filter((r) => r.high).length} con prioridad alta`} />
+        <Kpi label="Esperan tu revisión" value={queue.length} sub={`${queue.filter((r) => r.high).length} con prioridad alta`} />
         <Kpi label="Startups en riesgo" value={atRisk} sub={`y ${attention.length - atRisk} que piden atención`} />
         <Kpi label="Weeklies hoy" value={MEETINGS_TODAY.length} sub="prepáralas en un clic" />
       </div>
@@ -55,9 +58,9 @@ export default function AdminHoyPage() {
           {/* Cola de revisión resumida */}
           <section className="card rise d3" style={{ padding: "18px 0 6px" }}>
             <div style={{ padding: "0 22px" }}>
-              <SectionTitle aside={<Link href="/demo-admin/revision" style={{ textDecoration: "none" }}>Ver todo ({REVIEW_QUEUE.length}) →</Link>}>Cola de revisión</SectionTitle>
+              <SectionTitle aside={<Link href="/demo-admin/revision" style={{ textDecoration: "none" }}>Ver todo ({queue.length}) →</Link>}>Cola de revisión</SectionTitle>
             </div>
-            {REVIEW_QUEUE.slice(0, 4).map((r) => (
+            {queue.slice(0, 4).map((r) => (
               <Link key={r.id} href="/demo-admin/revision" className="row-hover"
                 style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 22px", borderTop: "1px solid var(--line)", textDecoration: "none" }}>
                 <span className="pill" style={{ background: "var(--paper-2)", color: "var(--ink-2)", minWidth: 92, justifyContent: "center" }}>{REVIEW_TYPES[r.type].label}</span>

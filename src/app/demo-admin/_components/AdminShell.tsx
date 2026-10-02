@@ -8,7 +8,8 @@ import {
   IconBooks, IconChecklist, IconSettings, IconBell, IconSearch, IconX, IconArrowRight,
 } from "@tabler/icons-react";
 import { CYCLE, TODAY_LABEL } from "../../demo/_data";
-import { ADMIN_ME, ADMIN_NOTIFICATIONS, PORTFOLIO, REVIEW_QUEUE } from "../_data";
+import { ADMIN_ME, ADMIN_NOTIFICATIONS, PORTFOLIO } from "../_data";
+import { usePendingCount } from "./review-store";
 
 type NavItem = { href: string; label: string; icon: typeof IconSun; exact?: boolean; badge?: number };
 
@@ -16,7 +17,7 @@ const NAV: { group: string | null; items: NavItem[] }[] = [
   { group: null, items: [
     { href: "/demo-admin", label: "Hoy", icon: IconSun, exact: true },
     { href: "/demo-admin/cartera", label: "Salud de la cartera", icon: IconHeartbeat },
-    { href: "/demo-admin/revision", label: "Cola de revisión", icon: IconInbox, badge: REVIEW_QUEUE.length },
+    { href: "/demo-admin/revision", label: "Cola de revisión", icon: IconInbox, badge: -1 },
   ] },
   { group: "Programa", items: [
     { href: "/demo-admin/ciclos", label: "Ciclos", icon: IconChartBar },
@@ -36,6 +37,7 @@ const EXISTING = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [notifOpen, setNotifOpen] = useState(false);
+  const pending = usePendingCount();
   const unread = ADMIN_NOTIFICATIONS.filter((n) => n.unread).length;
   const pct = Math.round((CYCLE.week / CYCLE.totalWeeks) * 100);
 
@@ -77,7 +79,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <Link key={item.href} href={item.href} className={`nav-link${isActive(item.href, item.exact) ? " active" : ""}`}>
                     <Icon size={16} stroke={1.8} />
                     <span style={{ flex: 1 }}>{item.label}</span>
-                    {item.badge ? (
+                    {item.badge === -1 && pending > 0 ? (
+                      <span style={{ fontSize: 11, fontWeight: 600, background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px" }}>{pending}</span>
+                    ) : item.badge && item.badge > 0 ? (
                       <span style={{ fontSize: 11, fontWeight: 600, background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px" }}>{item.badge}</span>
                     ) : null}
                   </Link>
