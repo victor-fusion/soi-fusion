@@ -15,7 +15,7 @@ export const STARTUP = {
   owner: "Víctor Humanes",
 };
 
-export const ME = { name: "Lucía Romero", first: "Lucía", role: "CEO · Cofundadora", initials: "LR" };
+export const ME = { name: "Marta Romero", first: "Marta", role: "CEO · Cofundadora", initials: "MR" };
 
 export const PHASES = [
   { n: 1, name: "Descubrir",  color: "#2563EB", weeks: "1–4",   status: "done" as const },
@@ -102,9 +102,9 @@ export const NOTIFICATIONS = [
 ];
 
 export const TEAM = [
-  { name: "Lucía Romero", role: "CEO · Cofundadora", type: "Cofundadora", dedication: "Full-time", initials: "LR", color: "#16A34A", office: ["L", "M", "X", "J"] },
+  { name: "Marta Romero", role: "CEO · Cofundadora", type: "Cofundadora", dedication: "Full-time", initials: "MR", color: "#16A34A", office: ["L", "M", "X", "J"] },
   { name: "Pablo Ortega", role: "CTO · Cofundador", type: "Cofundador", dedication: "Full-time", initials: "PO", color: "#2563EB", office: ["L", "M", "J", "V"] },
-  { name: "Marta Gil", role: "Growth", type: "Empleada", dedication: "Part-time", initials: "MG", color: "#EA580C", office: ["M", "J"] },
+  { name: "Irene Gil", role: "Growth", type: "Empleada", dedication: "Part-time", initials: "IG", color: "#EA580C", office: ["M", "J"] },
 ];
 
 export const FUSION_TEAM = [
@@ -177,9 +177,9 @@ export const WEEKLIES = [
     agenda: ["Cierre Lista de 100 ICPs", "Arranque del agente SDR", "Bloqueos del mockup"],
     notes: "La lista de ICPs queda aprobada. El agente SDR empieza con 20 clínicas de Sevilla capital. El mockup va con retraso por el flujo de recordatorios: priorizar la vista de agenda para las validaciones.",
     tasks: [
-      { text: "Enseñar el mockup a 5 clínicas", owner: "Lucía", due: "21 nov", done: false },
-      { text: "Configurar el ICP del agente SDR", owner: "Marta", due: "12 nov", done: true },
-      { text: "Pedir a Ana Prieto una sesión de pricing", owner: "Lucía", due: "14 nov", done: true },
+      { text: "Enseñar el mockup a 5 clínicas", owner: "Marta", due: "21 nov", done: false },
+      { text: "Configurar el ICP del agente SDR", owner: "Irene", due: "12 nov", done: true },
+      { text: "Pedir a Ana Prieto una sesión de pricing", owner: "Marta", due: "14 nov", done: true },
       { text: "Simplificar flujo de recordatorios en Figma", owner: "Pablo", due: "15 nov", done: true },
     ],
   },
@@ -188,7 +188,7 @@ export const WEEKLIES = [
     agenda: ["Cierre de la fase Descubrir", "Plan de la fase Solucionar"],
     notes: "Fase 1 completada con 34 entrevistas. El dolor más repetido: ausencias sin avisar (≈15 % de las citas). Foco de la fase 2: recordatorios + agenda compartida.",
     tasks: [
-      { text: "Completar la Lista de 100 ICPs", owner: "Marta", due: "12 nov", done: true },
+      { text: "Completar la Lista de 100 ICPs", owner: "Irene", due: "12 nov", done: true },
       { text: "Primera versión de la identidad de marca", owner: "Pablo", due: "10 nov", done: true },
     ],
   },

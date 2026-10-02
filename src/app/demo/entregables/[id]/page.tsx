@@ -27,7 +27,7 @@ const CRITERIA = [
 
 const COMMENTS = [
   { who: "Víctor Humanes", initials: "VH", color: "#374151", when: "hace 2 h", text: "Buen avance. Falta comparar con Qvet y con la agenda en papel: ¿qué gana la clínica en minutos/semana? Cuantifícalo y lo cerramos en la weekly." },
-  { who: "Lucía Romero", initials: "LR", color: "#16A34A", when: "hace 1 h", text: "¡Hecho! Lo estoy rehaciendo con los datos de las entrevistas. Lo reenvío hoy." },
+  { who: "Marta Romero", initials: "MR", color: "#16A34A", when: "hace 1 h", text: "¡Hecho! Lo estoy rehaciendo con los datos de las entrevistas. Lo reenvío hoy." },
 ];
 
 const RES_ICON: Record<string, typeof IconBook> = { Playbook: IconBook, Plantilla: IconChecklist, "Herramienta IA": IconSparkles, Checklist: IconChecklist, Recurso: IconTool };
