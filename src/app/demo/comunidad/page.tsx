@@ -17,7 +17,7 @@ export default function ComunidadPage() {
   return (
     <Page wide>
       <PageHeader
-        eyebrow={`Con Fusión · Ciclo ${CYCLE.number}`}
+        eyebrow={`Fusión Startups · Ciclo ${CYCLE.number}`}
         title="Comunidad"
         subtitle="Las startups con las que compartes ciclo, oficina y aprendizajes."
         actions={<span className="pill" style={{ background: "var(--green-soft)", color: "var(--green-ink)", padding: "7px 14px", fontSize: 13 }}><IconMapPin size={14} /> {inOffice} personas en la oficina hoy</span>}

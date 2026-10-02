@@ -20,7 +20,7 @@ export default function WeekliesPage() {
   return (
     <Page wide>
       <PageHeader
-        eyebrow="Con Fusión"
+        eyebrow="Fusión Startups"
         title="Weeklies"
         subtitle="Cada semana, 30 minutos con tu responsable de Fusión. Aquí queda lo que se habla y lo que se acuerda."
       />

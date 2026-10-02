@@ -22,7 +22,7 @@ const NAV: { group: string | null; items: NavItem[] }[] = [
     { href: "/demo/agente", label: "Agente SDR", icon: IconRobot, badge: 3 },
     { href: "/demo/metricas", label: "Métricas", icon: IconChartLine },
   ] },
-  { group: "Con Fusión", items: [
+  { group: "Fusión Startups", items: [
     { href: "/demo/weeklies", label: "Weeklies", icon: IconNotes },
     { href: "/demo/agenda", label: "Agenda", icon: IconCalendarEvent },
     { href: "/demo/comunidad", label: "Comunidad", icon: IconUsersGroup },
