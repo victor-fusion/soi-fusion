@@ -54,7 +54,7 @@ export default function WeekliesPage() {
         {/* Detalle */}
         <article key={w.id} className="card rise" style={{ padding: 28 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-            <Avatar initials="VH" color="#14532D" size={38} />
+            <Avatar initials="VH" color="#374151" size={38} />
             <div>
               <div className="display" style={{ fontSize: 24, fontWeight: 500, lineHeight: 1.15 }}>Semana {w.week}</div>
               <div style={{ fontSize: 13, color: "var(--muted)" }}>{w.date} · con {w.with}</div>
@@ -76,7 +76,7 @@ export default function WeekliesPage() {
           {w.notes && (
             <>
               <div className="eyebrow" style={{ margin: "26px 0 10px" }}>Notas de Víctor</div>
-              <p style={{ fontSize: 15, lineHeight: 1.65, color: "var(--ink-2)", margin: 0, padding: "14px 16px", background: "#fffdf9", borderLeft: "3px solid var(--green)", borderRadius: "0 10px 10px 0" }}>{w.notes}</p>
+              <p style={{ fontSize: 15, lineHeight: 1.65, color: "var(--ink-2)", margin: 0, padding: "14px 16px", background: "#fafafa", borderLeft: "3px solid var(--green)", borderRadius: "0 10px 10px 0" }}>{w.notes}</p>
             </>
           )}
 

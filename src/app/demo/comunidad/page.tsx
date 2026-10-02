@@ -31,7 +31,7 @@ export default function ComunidadPage() {
               {COHORT.map((c, i) => {
                 const phase = PHASES.find((p) => p.n === c.phase)!;
                 return (
-                  <div key={c.name} className={`card card-hover rise d${Math.min(i + 1, 6)}`} style={{ padding: 18, borderColor: c.isMe ? "#bbf7d0" : undefined, background: c.isMe ? "linear-gradient(160deg, #fff 60%, #f0fdf4)" : undefined }}>
+                  <div key={c.name} className={`card card-hover rise d${Math.min(i + 1, 6)}`} style={{ padding: 18, borderColor: c.isMe ? "#bbf7d0" : undefined, background: undefined }}>
                     <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                       <div style={{ width: 42, height: 42, borderRadius: 11, background: c.color, color: "#fff", display: "grid", placeItems: "center", fontWeight: 800, fontSize: 17, flexShrink: 0 }}>{c.name[0]}</div>
                       <div style={{ minWidth: 0, flex: 1 }}>
@@ -63,7 +63,7 @@ export default function ComunidadPage() {
             </div>
             {ANNOUNCEMENTS.map((a, i) => (
               <div key={i} style={{ display: "flex", gap: 12, padding: "14px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
-                <Avatar initials={a.from === "Equipo Fusión" ? "F" : "VH"} color="#14532D" size={32} />
+                <Avatar initials={a.from === "Equipo Fusión" ? "F" : "VH"} color="#374151" size={32} />
                 <div>
                   <div style={{ fontSize: 13.5 }}><strong>{a.from}</strong> <span style={{ color: "var(--faint)", fontSize: 12 }}>· {a.when}</span></div>
                   <div style={{ fontSize: 14.5, color: "var(--ink-2)", marginTop: 3, lineHeight: 1.55 }}>{a.text}</div>
@@ -93,15 +93,15 @@ export default function ComunidadPage() {
             ))}
           </section>
 
-          <section className="rise d3" style={{ padding: 20, borderRadius: "var(--radius)", background: "var(--forest)", color: "#ecfdf3" }}>
+          <section className="rise d3" style={{ padding: 20, borderRadius: "var(--radius)", background: "#fff", border: "1px solid var(--line)", color: "var(--ink)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <IconGift size={17} color="#4ade80" />
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Ventajas de ser de Fusión</div>
+              <IconGift size={17} color="#16a34a" />
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Ventajas de ser de Fusión</div>
             </div>
             {PERKS.map((p) => (
-              <div key={p.title} style={{ padding: "9px 0", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: 13.5, fontWeight: 650, color: "#fff" }}>{p.title}</div>
-                <div style={{ fontSize: 12.5, color: "rgba(236,253,243,0.65)", marginTop: 1 }}>{p.detail}</div>
+              <div key={p.title} style={{ padding: "9px 0", borderTop: "1px solid var(--line)" }}>
+                <div style={{ fontSize: 13.5, fontWeight: 650, color: "var(--ink)" }}>{p.title}</div>
+                <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 1 }}>{p.detail}</div>
               </div>
             ))}
           </section>

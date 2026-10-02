@@ -59,7 +59,7 @@ export default function CaminoPage() {
                 }}>
                   {isDone ? <IconCheck size={17} stroke={3} /> : p.status === "next" ? <IconLock size={14} /> : p.n}
                 </span>
-                <span className="display" style={{ fontSize: 17, fontWeight: isSel ? 600 : 400, color: isSel ? "var(--ink)" : "var(--muted)" }}>{p.name}</span>
+                <span style={{ fontSize: 14.5, fontWeight: isSel ? 700 : 500, color: isSel ? "var(--ink)" : "var(--muted)" }}>{p.name}</span>
                 <span style={{ fontSize: 11.5, color: "var(--faint)", marginTop: -6 }}>Semanas {p.weeks}</span>
               </button>
             );
@@ -71,7 +71,7 @@ export default function CaminoPage() {
       <div key={selected} style={{ display: "grid", gridTemplateColumns: "300px minmax(0, 1fr)", gap: 24 }}>
         <aside className="card rise" style={{ padding: 24, alignSelf: "start", position: "sticky", top: 84 }}>
           <div className="eyebrow" style={{ color: phase.color }}>Fase {phase.n}</div>
-          <div className="display" style={{ fontSize: 32, fontWeight: 500, marginTop: 4 }}>{phase.name}</div>
+          <div className="display" style={{ fontSize: 24, marginTop: 4 }}>{phase.name}</div>
           <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.55, marginTop: 10 }}>{PHASE_GOALS[phase.n]}</p>
           {items.length > 0 ? (
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 20, paddingTop: 18, borderTop: "1px dashed var(--line-2)" }}>

@@ -38,7 +38,7 @@ export default function CrmPage() {
         {kpis.map((k) => (
           <div key={k.label} className="card" style={{ padding: "16px 18px" }}>
             <div style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 500 }}>{k.label}</div>
-            <div className="display" style={{ fontSize: 32, fontWeight: 500, marginTop: 4 }}>{k.value}</div>
+            <div className="display" style={{ fontSize: 26, marginTop: 4 }}>{k.value}</div>
             <div style={{ fontSize: 12, color: "var(--faint)" }}>{k.sub}</div>
           </div>
         ))}

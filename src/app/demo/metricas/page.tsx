@@ -165,7 +165,7 @@ export default function MetricasPage() {
         <div className="card" style={{ padding: 24 }}>
           <div style={{ fontSize: 13, color: "var(--muted)", fontWeight: 500 }}>MRR de noviembre</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginTop: 6 }}>
-            <span style={{ fontSize: 56, fontWeight: 650, letterSpacing: "-0.03em", lineHeight: 1 }}>{last.mrr} €</span>
+            <span style={{ fontSize: 44, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1 }}>{last.mrr} €</span>
             <span style={{ fontSize: 14, fontWeight: 600, color: "var(--green-ink)" }}>+{delta} € vs. octubre</span>
           </div>
           <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 8 }}>{last.pilots} clínicas · 2 ya pagan tras el piloto</div>

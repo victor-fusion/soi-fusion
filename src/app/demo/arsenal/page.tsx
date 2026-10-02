@@ -49,7 +49,7 @@ export default function ArsenalPage() {
             const t = TYPE_STYLE[r.type];
             const Icon = t.icon;
             return (
-              <button key={r.id} type="button" onClick={() => setOpen(r)} className="card card-hover" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", textAlign: "left", padding: 18, cursor: "pointer", fontFamily: "inherit", background: `linear-gradient(170deg, #fff 60%, ${t.color}0d)` }}>
+              <button key={r.id} type="button" onClick={() => setOpen(r)} className="card card-hover" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", textAlign: "left", padding: 18, cursor: "pointer", fontFamily: "inherit" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <span style={{ width: 34, height: 34, borderRadius: 9, background: `${t.color}14`, display: "grid", placeItems: "center" }}><Icon size={18} color={t.color} /></span>
                   {r.isNew && <span className="pill" style={{ background: "var(--green-soft)", color: "var(--green-ink)" }}>Nuevo</span>}
@@ -110,7 +110,7 @@ export default function ArsenalPage() {
               <span className="pill" style={{ background: `${TYPE_STYLE[open.type].color}14`, color: TYPE_STYLE[open.type].color }}>{open.type}</span>
               <AreaTag area={open.area} />
             </div>
-            <h2 className="display" style={{ fontSize: 30, fontWeight: 500, margin: "0 0 14px", lineHeight: 1.15 }}>{open.title}</h2>
+            <h2 className="display" style={{ fontSize: 24, margin: "0 0 14px", lineHeight: 1.25 }}>{open.title}</h2>
             <p style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.65 }}>
               Aquí se mostraría el contenido completo del recurso: el playbook paso a paso, la plantilla rellenable
               o la herramienta de IA lista para usar con los datos de tu startup.

@@ -108,7 +108,7 @@ export const TEAM = [
 ];
 
 export const FUSION_TEAM = [
-  { name: "Víctor Humanes", role: "Responsable de Turnio · PM", initials: "VH", color: "#14532D" },
+  { name: "Víctor Humanes", role: "Responsable de Turnio · PM", initials: "VH", color: "#374151" },
 ];
 
 export const MENTORS = [

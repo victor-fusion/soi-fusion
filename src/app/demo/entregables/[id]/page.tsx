@@ -26,7 +26,7 @@ const CRITERIA = [
 ];
 
 const COMMENTS = [
-  { who: "Víctor Humanes", initials: "VH", color: "#14532D", when: "hace 2 h", text: "Buen avance. Falta comparar con Qvet y con la agenda en papel: ¿qué gana la clínica en minutos/semana? Cuantifícalo y lo cerramos en la weekly." },
+  { who: "Víctor Humanes", initials: "VH", color: "#374151", when: "hace 2 h", text: "Buen avance. Falta comparar con Qvet y con la agenda en papel: ¿qué gana la clínica en minutos/semana? Cuantifícalo y lo cerramos en la weekly." },
   { who: "Lucía Romero", initials: "LR", color: "#16A34A", when: "hace 1 h", text: "¡Hecho! Lo estoy rehaciendo con los datos de las entrevistas. Lo reenvío hoy." },
 ];
 
@@ -82,7 +82,7 @@ export default function EntregablePage() {
               <span style={{ fontSize: 12, fontWeight: 600, color: due.color }}>{d.due} · {due.text}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-              <h1 className="display" style={{ fontSize: 40, fontWeight: 500, margin: 0, lineHeight: 1.05 }}>{d.title}</h1>
+              <h1 className="display" style={{ fontSize: 28, margin: 0, lineHeight: 1.2 }}>{d.title}</h1>
               <StatusPill status={status} />
             </div>
             <p style={{ fontSize: 15.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 12, maxWidth: 720 }}>{d.brief}</p>
@@ -171,38 +171,39 @@ export default function EntregablePage() {
 
         {/* ─── Copiloto + apoyo ─── */}
         <aside style={{ display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 84 }}>
-          <section className="rise d2" style={{ borderRadius: "var(--radius)", background: "var(--forest)", color: "#ecfdf3", display: "flex", flexDirection: "column", maxHeight: 520 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-              <IconSparkles size={18} color="#4ade80" />
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Copiloto</div>
-              <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(236,253,243,0.5)" }}>Conoce tus entrevistas, ICP y CRM</span>
+          <section className="rise d2" style={{ borderRadius: "var(--radius)", background: "#fff", border: "1px solid var(--line)", color: "var(--ink)", display: "flex", flexDirection: "column", maxHeight: 520 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 18px", borderBottom: "1px solid var(--line)" }}>
+              <IconSparkles size={18} color="#16a34a" />
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Copiloto</div>
+              <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>Conoce tus entrevistas, ICP y CRM</span>
             </div>
             <div className="scroll-y" style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
               {messages.map((m, i) => (
                 <div key={i} style={{
                   alignSelf: m.from === "me" ? "flex-end" : "flex-start", maxWidth: "88%",
                   padding: "10px 12px", borderRadius: 12, fontSize: 13.5, lineHeight: 1.5,
-                  background: m.from === "me" ? "#4ade80" : "rgba(255,255,255,0.07)",
-                  color: m.from === "me" ? "#0f2a1d" : "#ecfdf3",
+                  background: m.from === "me" ? "#111827" : "#f3f4f6",
+                  color: m.from === "me" ? "#fff" : "var(--ink-2)",
                 }}>
                   {m.text}
                 </div>
               ))}
               {isPropuesta && !values.diferencial && (
-                <button type="button" className="btn" onClick={applySuggestion} style={{ alignSelf: "flex-start", background: "#4ade80", borderColor: "#4ade80", color: "#0f2a1d" }}>
+                <button type="button" className="btn btn-green" onClick={applySuggestion} style={{ alignSelf: "flex-start" }}>
                   Añadir a «Diferencial»
                 </button>
               )}
             </div>
-            <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid var(--line)" }}>
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") send(); }}
                 placeholder="Pregunta a tu copiloto…"
-                style={{ flex: 1, padding: "9px 12px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "#fff", fontFamily: "inherit", fontSize: 13, outline: "none" }}
+                className="field"
+                style={{ flex: 1, padding: "8px 12px", fontSize: 13 }}
               />
-              <button type="button" onClick={send} className="btn" style={{ background: "#4ade80", borderColor: "#4ade80", color: "#0f2a1d", padding: "8px 10px" }}><IconSend size={15} /></button>
+              <button type="button" onClick={send} className="btn btn-primary" style={{ padding: "8px 10px" }}><IconSend size={15} /></button>
             </div>
           </section>
 

@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
-import { Fraunces } from "next/font/google";
 import { DemoShell } from "./_components/DemoShell";
 import "./demo.css";
-
-// Tipografía editorial solo para el prototipo (titulares y cifras)
-const fraunces = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-  axes: ["opsz", "SOFT"],
-});
 
 export const metadata: Metadata = {
   title: "SOI · Prototipo",
@@ -18,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`demo-root ${fraunces.variable}`}>
+    <div className="demo-root">
       <DemoShell>{children}</DemoShell>
     </div>
   );

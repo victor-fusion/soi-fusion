@@ -43,34 +43,33 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* ─── Sidebar ─── */}
+      {/* ─── Sidebar (misma línea que el SOI actual) ─── */}
       <aside
         style={{
-          width: 248, flexShrink: 0, height: "100vh", position: "sticky", top: 0,
-          background: "linear-gradient(180deg, var(--forest) 0%, #0b2117 100%)",
-          display: "flex", flexDirection: "column", color: "#ecfdf3",
+          width: 240, flexShrink: 0, height: "100vh", position: "sticky", top: 0,
+          background: "#fafafa", borderRight: "1px solid #f3f4f6",
+          display: "flex", flexDirection: "column",
         }}
       >
-        <div style={{ padding: "22px 20px 18px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", color: "#4ade80" }}>FUSIÓN STARTUPS</div>
-          <div className="display" style={{ fontSize: 26, fontWeight: 600, marginTop: 2, color: "#fff" }}>SOI</div>
+        <div style={{ padding: "22px 20px 18px", fontSize: 16, color: "#111827" }}>
+          <span style={{ fontWeight: 800 }}>SOI</span> <span style={{ fontWeight: 400 }}>Fusión</span>
         </div>
 
         {/* Startup actual */}
-        <div style={{ margin: "0 12px 14px", padding: 12, borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ margin: "0 12px 16px", padding: 12, borderRadius: 12, background: "#fff", border: "1px solid #f3f4f6" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: "#16a34a", display: "grid", placeItems: "center", fontWeight: 800, color: "#fff" }}>T</div>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#f3f4f6", display: "grid", placeItems: "center", fontWeight: 700, color: "#6b7280" }}>T</div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{STARTUP.name}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(236,253,243,0.55)" }}>Ciclo {CYCLE.number} · Fase {STARTUP.phase}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>{STARTUP.name}</div>
+              <div style={{ fontSize: 12, color: "#9ca3af" }}>Ciclo {CYCLE.number} · Fase {STARTUP.phase}</div>
             </div>
           </div>
           <div style={{ marginTop: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(236,253,243,0.55)", marginBottom: 5 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#9ca3af", marginBottom: 5 }}>
               <span>Semana {CYCLE.week} de {CYCLE.totalWeeks}</span><span>{pct}%</span>
             </div>
-            <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.1)" }}>
-              <div style={{ width: `${pct}%`, height: "100%", borderRadius: 4, background: "#4ade80" }} />
+            <div style={{ height: 4, borderRadius: 4, background: "#f3f4f6" }}>
+              <div style={{ width: `${pct}%`, height: "100%", borderRadius: 4, background: "#16a34a" }} />
             </div>
           </div>
         </div>
@@ -79,7 +78,7 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
           {NAV.map((g, gi) => (
             <div key={gi} style={{ marginBottom: 14 }}>
               {g.group && (
-                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(236,253,243,0.35)", padding: "0 12px 6px" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9ca3af", padding: "0 12px 6px" }}>
                   {g.group}
                 </div>
               )}
@@ -87,10 +86,10 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
                 const Icon = item.icon;
                 return (
                   <Link key={item.href} href={item.href} className={`nav-link${isActive(item.href, item.exact) ? " active" : ""}`}>
-                    <Icon size={17} stroke={1.7} />
+                    <Icon size={16} stroke={1.8} />
                     <span style={{ flex: 1 }}>{item.label}</span>
                     {item.badge ? (
-                      <span style={{ fontSize: 10.5, fontWeight: 700, background: "#4ade80", color: "#0f2a1d", borderRadius: 999, padding: "1px 7px" }}>{item.badge}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, background: "#f3f4f6", color: "#374151", borderRadius: 999, padding: "1px 7px" }}>{item.badge}</span>
                     ) : null}
                   </Link>
                 );
@@ -99,11 +98,11 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <div style={{ padding: 14, borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#ecfdf3", color: "#0f2a1d", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 800 }}>{ME.initials}</div>
+        <div style={{ padding: 14, borderTop: "1px solid #f3f4f6", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", color: "#6b7280", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700 }}>{ME.initials}</div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600 }}>{ME.name}</div>
-            <div style={{ fontSize: 11.5, color: "rgba(236,253,243,0.5)" }}>{ME.role}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{ME.name}</div>
+            <div style={{ fontSize: 12, color: "#9ca3af" }}>{ME.role}</div>
           </div>
         </div>
       </aside>
@@ -117,7 +116,7 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
 
         <header style={{
           height: 60, display: "flex", alignItems: "center", gap: 16, padding: "0 32px",
-          borderBottom: "1px solid var(--line)", background: "rgba(250,248,244,0.85)", backdropFilter: "blur(8px)",
+          borderBottom: "1px solid var(--line)", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)",
           position: "sticky", top: 0, zIndex: 20,
         }}>
           <div style={{ fontSize: 13, color: "var(--muted)", fontWeight: 500 }}>{TODAY_LABEL}</div>
@@ -152,7 +151,7 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
         >
           <div className="rise" style={{ width: 400, height: "100%", background: "var(--paper)", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 22px", borderBottom: "1px solid var(--line)" }}>
-              <div className="display" style={{ fontSize: 22, fontWeight: 600 }}>Avisos</div>
+              <div className="display" style={{ fontSize: 18 }}>Avisos</div>
               <button type="button" className="btn btn-ghost" style={{ padding: 6 }} onClick={() => setNotifOpen(false)}><IconX size={18} /></button>
             </div>
             <div className="scroll-y" style={{ flex: 1 }}>

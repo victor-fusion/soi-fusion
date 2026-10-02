@@ -6,9 +6,9 @@ export function PageHeader({
   return (
     <div className="rise" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, marginBottom: 28 }}>
       <div>
-        {eyebrow && <div className="eyebrow" style={{ marginBottom: 8 }}>{eyebrow}</div>}
-        <h1 className="display" style={{ fontSize: 40, fontWeight: 500, lineHeight: 1.05, margin: 0 }}>{title}</h1>
-        {subtitle && <div style={{ fontSize: 15, color: "var(--muted)", marginTop: 10, maxWidth: 640 }}>{subtitle}</div>}
+        {eyebrow && <div style={{ fontSize: 13, color: "var(--faint)", fontWeight: 500, marginBottom: 4 }}>{eyebrow}</div>}
+        <h1 className="display" style={{ fontSize: 32, lineHeight: 1.2, margin: 0 }}>{title}</h1>
+        {subtitle && <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 6, maxWidth: 640 }}>{subtitle}</div>}
       </div>
       {actions && <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>{actions}</div>}
     </div>
@@ -44,7 +44,7 @@ export function AreaTag({ area }: { area: string }) {
   );
 }
 
-export function Avatar({ initials, color = "#14532D", size = 32 }: { initials: string; color?: string; size?: number }) {
+export function Avatar({ initials, color = "#6b7280", size = 32 }: { initials: string; color?: string; size?: number }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
@@ -71,7 +71,7 @@ export function Ring({ value, size = 64, stroke = 6, color = "var(--green)", lab
           strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} strokeLinecap="round"
         />
       </svg>
-      <div className="display" style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontSize: size * 0.26, fontWeight: 600 }}>
+      <div className="display" style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontSize: size * 0.24 }}>
         {label ?? `${value}%`}
       </div>
     </div>

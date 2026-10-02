@@ -19,9 +19,9 @@ export default function EquipoPage() {
 
       {/* Ficha de la startup */}
       <section className="card rise d1" style={{ padding: 24, display: "flex", gap: 20, alignItems: "center", marginBottom: 24 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 16, background: "var(--green)", color: "#fff", display: "grid", placeItems: "center", fontWeight: 800, fontSize: 28 }}>T</div>
+        <div style={{ width: 64, height: 64, borderRadius: 16, background: "#f3f4f6", color: "#6b7280", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 26 }}>T</div>
         <div style={{ flex: 1 }}>
-          <div className="display" style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.1 }}>{STARTUP.name}</div>
+          <div className="display" style={{ fontSize: 24, lineHeight: 1.2 }}>{STARTUP.name}</div>
           <div style={{ fontSize: 14.5, color: "var(--ink-2)", marginTop: 4 }}>{STARTUP.tagline}</div>
           <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 13, color: "var(--muted)" }}>
             <span>{STARTUP.sector}</span>
@@ -59,13 +59,13 @@ export default function EquipoPage() {
 
       <div className="eyebrow rise d4" style={{ marginBottom: 12 }}>Os acompaña desde Fusión</div>
       {FUSION_TEAM.map((f) => (
-        <section key={f.name} className="rise d5" style={{ display: "flex", alignItems: "center", gap: 16, padding: 20, borderRadius: "var(--radius)", background: "var(--forest)", color: "#ecfdf3" }}>
-          <div style={{ width: 46, height: 46, borderRadius: "50%", background: "#ecfdf3", color: "var(--forest)", display: "grid", placeItems: "center", fontWeight: 800 }}>{f.initials}</div>
+        <section key={f.name} className="rise d5" style={{ display: "flex", alignItems: "center", gap: 16, padding: 20, borderRadius: "var(--radius)", background: "#fff", border: "1px solid var(--line)", color: "var(--ink)" }}>
+          <div style={{ width: 46, height: 46, borderRadius: "50%", background: "#f3f4f6", color: "#374151", display: "grid", placeItems: "center", fontWeight: 800 }}>{f.initials}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{f.name}</div>
-            <div style={{ fontSize: 13, color: "rgba(236,253,243,0.65)" }}>{f.role} · weekly los martes 10:00</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>{f.name}</div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>{f.role} · weekly los martes 10:00</div>
           </div>
-          <Link href="/demo/agenda" className="btn" style={{ background: "#4ade80", borderColor: "#4ade80", color: "#0f2a1d" }}>Reservar un hueco</Link>
+          <Link href="/demo/agenda" className="btn btn-primary">Reservar un hueco</Link>
         </section>
       ))}
     </Page>

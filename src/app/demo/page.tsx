@@ -27,8 +27,8 @@ export default function HoyPage() {
       {/* Saludo */}
       <div className="rise" style={{ marginBottom: 32 }}>
         <div className="eyebrow" style={{ marginBottom: 10 }}>Semana {CYCLE.week} · Fase {phase.n} · {phase.name}</div>
-        <h1 className="display" style={{ fontSize: 52, fontWeight: 400, lineHeight: 1, margin: 0 }}>
-          Buenos días, <em style={{ fontStyle: "italic", color: "var(--green-ink)" }}>{ME.first}</em>.
+        <h1 className="display" style={{ fontSize: 32, lineHeight: 1.2, margin: 0 }}>
+          Buenos días, {ME.first}
         </h1>
         <p style={{ fontSize: 16, color: "var(--muted)", marginTop: 14, maxWidth: 620, lineHeight: 1.55 }}>
           Tienes <strong style={{ color: "var(--ink)" }}>{pending} cosas</strong> para hoy y{" "}
@@ -78,7 +78,7 @@ export default function HoyPage() {
               {upcoming.map((d) => {
                 const due = dueLabel(d.dueDays);
                 return (
-                  <Link key={d.id} href={`/demo/entregables/${d.id}`} className="card card-hover" style={{ padding: 16, textDecoration: "none", background: "#fffdf9" }}>
+                  <Link key={d.id} href={`/demo/entregables/${d.id}`} className="card card-hover" style={{ padding: 16, textDecoration: "none", background: "#fafafa" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
                       <StatusPill status={d.status} />
                       <span style={{ fontSize: 12, fontWeight: 600, color: due.color }}>{due.text}</span>
@@ -121,7 +121,7 @@ export default function HoyPage() {
             </div>
           </section>
 
-          <section className="card rise d3" style={{ padding: 22, background: "linear-gradient(160deg, #fff 55%, #f3faf5)" }}>
+          <section className="card rise d3" style={{ padding: 22 }}>
             <SectionTitle>Tu fase</SectionTitle>
             <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
               <Ring value={pct} size={78} color={phase.color} />
@@ -133,7 +133,7 @@ export default function HoyPage() {
             <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px dashed var(--line-2)" }}>
               <div style={{ fontSize: 12, color: "var(--muted)" }}>Tu métrica norte</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 4 }}>
-                <span className="display" style={{ fontSize: 34, fontWeight: 500 }}>{STARTUP.northStar.value}</span>
+                <span className="display" style={{ fontSize: 28 }}>{STARTUP.northStar.value}</span>
                 <span style={{ fontSize: 14, color: "var(--muted)" }}>/ {STARTUP.northStar.target} {STARTUP.northStar.metric.toLowerCase()}</span>
               </div>
             </div>
@@ -154,12 +154,12 @@ export default function HoyPage() {
 
           <Link href="/demo/entregables/propuesta" className="rise d5" style={{
             display: "flex", gap: 12, padding: 18, borderRadius: "var(--radius)", textDecoration: "none",
-            background: "var(--forest)", color: "#ecfdf3",
+            background: "#fff", border: "1px solid var(--line)", color: "var(--ink)",
           }}>
-            <IconSparkles size={20} color="#4ade80" style={{ flexShrink: 0, marginTop: 2 }} />
+            <IconSparkles size={20} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Tu copiloto tiene una propuesta</div>
-              <div style={{ fontSize: 13, color: "rgba(236,253,243,0.7)", marginTop: 3, lineHeight: 1.45 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Tu copiloto tiene una propuesta</div>
+              <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 3, lineHeight: 1.45 }}>
                 Ha redactado tu frase de diferenciación con los datos de tus 34 entrevistas.
               </div>
             </div>
