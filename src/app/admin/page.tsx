@@ -289,6 +289,11 @@ export default async function AdminPage({
                               <IconAlertTriangle size={13} color="#d97706" style={{ flexShrink: 0 }} />
                             )}
                           </Group>
+                          {startup.sector && (
+                            <Text style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 2 }} truncate>
+                              {startup.sector}
+                            </Text>
+                          )}
                           {startup.tagline && (
                             <Text style={{ fontSize: 12, color: "#6b7280" }} lineClamp={1}>
                               {startup.tagline}

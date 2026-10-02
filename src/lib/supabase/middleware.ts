@@ -37,6 +37,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/api/mcp") ||
+    pathname.startsWith("/demo") ||   // prototipo público con datos ficticios
     pathname.startsWith("/.well-known")
   ) {
     return supabaseResponse;

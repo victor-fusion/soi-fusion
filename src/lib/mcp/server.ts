@@ -34,7 +34,7 @@ const mcpHandler = createMcpHandler(
     registerContactosTools(server);
   },
   {
-    serverInfo: { name: "soi-fusion", version: "1.3.0" },
+    serverInfo: { name: "soi-fusion", version: "1.4.0" },
     instructions: INSTRUCTIONS,
   }
 );

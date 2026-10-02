@@ -383,7 +383,113 @@ export function registerContactosTools(server: McpServer) {
         id: newId,
         invitacion_enviada: !!args.enviar_invitacion,
         datos: update,
-        nota: args.enviar_invitacion ? undefined : "No se ha enviado ningún email. La persona aún no puede entrar al SOI.",
+        nota: args.enviar_invitacion ? undefined : "No se ha enviado ningún email. La persona aún no puede entrar al SOI: invítala después con enviar_invitacion.",
+      });
+    })
+  );
+
+  // ─── enviar_invitacion ─────────────────────────────────────────────────────
+  server.registerTool(
+    "enviar_invitacion",
+    {
+      title: "Enviar invitaciones al SOI",
+      description:
+        "Envía el email de invitación al SOI a personas ya creadas que aún no han activado su cuenta. " +
+        "Destinatarios: UNO de persona, startup (todos sus miembros) o ciclo (miembros de todas las startups del ciclo). " +
+        "Funciona en dos pasos: 1) sin 'enviar' devuelve una vista previa (quién lo recibiría y quién se omite) sin mandar nada; " +
+        "2) muestra esa lista al usuario y, solo si la confirma, vuelve a llamar con enviar=true y emails = la lista exacta " +
+        "confirmada. Solo se envía a esos emails." + ASK_NOTE + PERMISSION_NOTE,
+      inputSchema: z.object({
+        persona: z.string().optional().describe("Email, nombre o id de una persona."),
+        startup: z.string().optional().describe("Nombre o id de una startup: todos sus miembros."),
+        ciclo: z.number().int().optional().describe("Número de ciclo: miembros de todas sus startups."),
+        enviar: z.boolean().optional().describe("Por defecto false (solo vista previa). true = enviar los correos."),
+        emails: z.array(z.string().email()).max(100).optional()
+          .describe("Obligatorio con enviar=true: los emails de la vista previa que el usuario ha confirmado."),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    },
+    safe(async (args, tc) => {
+      await requireContactsPermission(tc);
+      const { db } = tc;
+
+      const targets = [args.persona, args.startup, args.ciclo].filter((v) => v !== undefined);
+      if (targets.length !== 1) throw new Error("Indica uno (y solo uno) de: persona, startup o ciclo.");
+
+      // 1. Candidatos
+      let people: PersonRow[];
+      let ambito: string;
+      if (args.persona) {
+        people = [await resolvePerson(db, args.persona)];
+        ambito = `persona ${args.persona}`;
+      } else {
+        let startupIds: string[];
+        if (args.startup) {
+          const s = await resolveStartup(db, args.startup);
+          startupIds = [s.id];
+          ambito = `startup ${s.name}`;
+        } else {
+          const rows = assertOk(await db.from("startups").select("id").eq("batch", args.ciclo!)) as { id: string }[];
+          startupIds = rows.map((r) => r.id);
+          ambito = `ciclo ${args.ciclo} (${startupIds.length} startups)`;
+        }
+        people = startupIds.length
+          ? await fetchAll<PersonRow>(() =>
+              db.from("profiles").select("id, email, full_name, first_name, last_name, role, startup_id")
+                .in("startup_id", startupIds).order("id"))
+          : [];
+      }
+
+      // 2. Estado de cada cuenta (requiere service role: auth.users)
+      const admin = createAdminClient();
+      const activated = new Set<string>();
+      for (let page = 1; ; page++) {
+        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+        if (error) throw new Error(error.message);
+        for (const u of data.users) if (u.email_confirmed_at || u.last_sign_in_at) activated.add(u.id);
+        if (data.users.length < 1000) break;
+      }
+
+      const pendientes = people.filter((p) => !activated.has(p.id));
+      const yaActivos = people.filter((p) => activated.has(p.id));
+      const label = (p: PersonRow) => ({ nombre: personName(p), email: p.email });
+
+      // 3. Vista previa
+      if (!args.enviar) {
+        return ok({
+          vista_previa: true,
+          ambito,
+          recibirian_invitacion: pendientes.map(label),
+          omitidos_cuenta_ya_activa: yaActivos.map(label),
+          siguiente_paso: pendientes.length
+            ? "Muestra la lista al usuario. Si confirma, llama de nuevo con enviar=true y emails = esos emails."
+            : "No hay nadie pendiente de invitar.",
+        });
+      }
+
+      // 4. Envío: solo a los emails confirmados que siguen pendientes
+      if (!args.emails?.length) throw new Error("Con enviar=true hay que indicar 'emails' (la lista confirmada de la vista previa).");
+      const confirmed = new Set(args.emails.map((e) => e.toLowerCase()));
+      const toSend = pendientes.filter((p) => confirmed.has(p.email.toLowerCase()));
+      const notEligible = [...confirmed].filter((e) => !toSend.some((p) => p.email.toLowerCase() === e));
+
+      const enviados: string[] = [];
+      const fallidos: { email: string; error: string }[] = [];
+      for (const p of toSend) {
+        // Misma Edge Function que la web (generateLink → Resend)
+        const { error } = await db.functions.invoke("invite-member", { body: { email: p.email } });
+        if (error) fallidos.push({ email: p.email, error: error.message });
+        else enviados.push(p.email);
+      }
+
+      return ok({
+        ambito,
+        enviados,
+        fallidos,
+        omitidos: notEligible.map((email) => ({
+          email,
+          motivo: yaActivos.some((p) => p.email.toLowerCase() === email) ? "cuenta ya activa" : "no pertenece a este ámbito",
+        })),
       });
     })
   );
