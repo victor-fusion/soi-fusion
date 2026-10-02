@@ -1,9 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { IconCalendarEvent, IconCheck, IconPlus } from "@tabler/icons-react";
+import { IconCalendarEvent, IconCheck, IconPencil, IconPlus, IconSend, IconSparkles } from "@tabler/icons-react";
 import { WEEKLIES } from "../_data";
 import { Avatar, Page, PageHeader } from "../_components/ui";
+
+// Borrador que SOI prepara con lo que ha pasado en la semana (entregables, CRM, métricas y tareas).
+const DRAFT = `Entregables: «Lista de 100 ICPs» y «Identidad de marca» completados; «Scripts de prospección» en revisión.
+CRM: 3 contactos nuevos; Vet Aljarafe pasa a propuesta; AniCura Bormujos empieza piloto.
+Métricas: MRR 178 € (sin cambios). 4 clínicas en piloto.
+Arrastramos: enseñar el mockup a 5 clínicas (3 de 5).
+Bloqueo: necesitamos feedback del pricing antes de enviar la propuesta a Vet Aljarafe.`;
 
 export default function WeekliesPage() {
   const [selectedId, setSelectedId] = useState(WEEKLIES[0].id);
@@ -12,6 +19,9 @@ export default function WeekliesPage() {
   );
   const [extraAgenda, setExtraAgenda] = useState<string[]>([]);
   const [newPoint, setNewPoint] = useState("");
+  const [draft, setDraft] = useState(DRAFT);
+  const [editingDraft, setEditingDraft] = useState(false);
+  const [draftSent, setDraftSent] = useState(false);
 
   const w = WEEKLIES.find((x) => x.id === selectedId)!;
   const openTasks = WEEKLIES.flatMap((wk) => wk.tasks.map((t, i) => ({ ...t, key: `${wk.id}-${i}`, week: wk.week })))
@@ -61,6 +71,30 @@ export default function WeekliesPage() {
             </div>
             {w.upcoming && <span className="pill" style={{ marginLeft: "auto", background: "var(--green-soft)", color: "var(--green-ink)" }}><IconCalendarEvent size={13} /> Hoy 10:00</span>}
           </div>
+
+          {w.upcoming && (
+            <div style={{ marginBottom: 24, padding: 18, borderRadius: 12, border: `1px solid ${draftSent ? "#bbf7d0" : "var(--line-2)"}`, background: draftSent ? "var(--green-soft)" : "#fafafa" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <IconSparkles size={16} color="var(--green-ink)" />
+                <div style={{ fontSize: 14, fontWeight: 700 }}>Borrador de la weekly</div>
+                {draftSent && <span className="pill" style={{ marginLeft: "auto", background: "#fff", color: "var(--green-ink)" }}><IconCheck size={12} /> Enviada · Víctor la verá antes de la reunión</span>}
+              </div>
+              {!draftSent && <div style={{ fontSize: 13, color: "var(--muted)", margin: "4px 0 0" }}>SOI ha preparado esto con lo que ha pasado esta semana. Revísalo y añade lo que falta.</div>}
+              {editingDraft ? (
+                <textarea className="field" rows={6} value={draft} onChange={(e) => setDraft(e.target.value)} style={{ marginTop: 12, lineHeight: 1.6, background: "#fff" }} />
+              ) : (
+                <ul style={{ margin: "12px 0 0", paddingLeft: 18, fontSize: 14, lineHeight: 1.7, color: "var(--ink-2)" }}>
+                  {draft.split("\n").filter(Boolean).map((l) => <li key={l}>{l}</li>)}
+                </ul>
+              )}
+              {!draftSent && (
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 14 }}>
+                  <button type="button" className="btn" onClick={() => setEditingDraft((x) => !x)}><IconPencil size={15} /> {editingDraft ? "Listo" : "Editar"}</button>
+                  <button type="button" className="btn btn-green" onClick={() => { setDraftSent(true); setEditingDraft(false); }}><IconSend size={15} /> Enviar a Víctor</button>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="eyebrow" style={{ marginBottom: 10 }}>Agenda</div>
           <ol style={{ margin: 0, paddingLeft: 20, fontSize: 15, lineHeight: 1.9 }}>

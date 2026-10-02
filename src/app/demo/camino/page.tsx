@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { IconCheck, IconChevronRight, IconLock } from "@tabler/icons-react";
 import { AREAS, CYCLE, DELIVERABLES, PHASES, STARTUP } from "../_data";
-import { AreaTag, Page, PageHeader, Ring, StatusPill, dueLabel } from "../_components/ui";
+import { AreaTag, GateCriteria, Page, PageHeader, Ring, StatusPill, dueLabel } from "../_components/ui";
+import { PHASE_GATE } from "../../demo-admin/_data";
 
 const PHASE_GOALS: Record<number, string> = {
   1: "Validar que el problema existe y que el cliente está bien definido.",
@@ -82,8 +83,12 @@ export default function CaminoPage() {
             </div>
           ) : null}
           {phase.status === "current" && (
-            <div style={{ marginTop: 18, padding: 12, borderRadius: 10, background: "#fef3c7", fontSize: 13, color: "#92400e", lineHeight: 1.45 }}>
-              Para pasar a <strong>Activar</strong> necesitáis el mockup validado por 5 clínicas y el pricing v1.
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px dashed var(--line-2)" }}>
+              <div className="eyebrow" style={{ marginBottom: 4 }}>Criterios para pasar a {PHASE_GATE.to}</div>
+              <GateCriteria criteria={PHASE_GATE.criteria} compact />
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 8, lineHeight: 1.45 }}>
+                Fusión decide el cambio de fase en la weekly con estos datos delante.
+              </div>
             </div>
           )}
         </aside>

@@ -90,7 +90,7 @@ export const REVIEW_QUEUE: ReviewItem[] = [
     detail: "Lonja cumple 4 de 4 criterios de salida de Activar. Alba propone el cambio de fase." },
   { id: "q5", type: "plantilla", startupId: "ruta-verde", startup: "Ruta Verde", title: "Canvas de diferenciación competitiva", by: "Daniel Soto", when: "hace 1 día", days: 1, high: false,
     detail: "Compara con Glovo, mensajeros en furgoneta y reparto propio. Diferencial: entrega en zonas de bajas emisiones sin restricción horaria." },
-  { id: "q6", type: "weekly", startupId: "turnio", startup: "Turnio", title: "Borrador de la weekly · semana 8", by: "Marta Romero", when: "hace 1 h", days: 0, high: false,
+  { id: "q6", type: "weekly", startupId: "turnio", startup: "Turnio", title: "Borrador de la weekly · semana 7", by: "Marta Romero", when: "hace 1 h", days: 0, high: false,
     detail: "2 entregables completados, 1 en revisión. 3 contactos nuevos en el CRM; Vet Aljarafe pasa a propuesta. MRR 178 € sin cambios. Arrastra: enseñar el mockup a 5 clínicas (3/5)." },
   { id: "q7", type: "sdr", startupId: "turnio", startup: "Turnio", title: "Mensaje a Clínica Veterinaria San Bernardo", by: "Marta Romero (aprobado)", when: "hace 3 h", days: 0, high: false,
     detail: "Hola Inés, he visto que habéis abierto la nueva sede de Nervión, ¡enhorabuena! Con dos agendas suele pasar que los huecos y las ausencias se disparan. En Turnio ayudamos a clínicas como Los Remedios a reducir un 30 % las citas perdidas con recordatorios por WhatsApp. ¿Te enseño en 15 minutos cómo lo hacen?" },

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
-  IconArrowLeft, IconSparkles, IconSend, IconCheck, IconAlertCircle, IconBook, IconTool, IconChecklist, IconLink,
+  IconArrowLeft, IconSparkles, IconSend, IconCheck, IconAlertCircle, IconBook, IconTool, IconChecklist, IconLink, IconFileText, IconUpload,
 } from "@tabler/icons-react";
 import { COPILOT_MESSAGES, DELIVERABLES, PHASES, RESOURCES, STATUS, type DelivStatus } from "../../_data";
 import { AreaTag, Avatar, Page, StatusPill, dueLabel } from "../../_components/ui";
@@ -45,6 +45,7 @@ export default function EntregablePage() {
     { from: "ai", text: `Hola, soy tu copiloto para «${d.title}». Conozco tus entrevistas, tu ICP y tus entregables anteriores. ¿Por dónde empezamos?` },
   ]);
   const [input, setInput] = useState("");
+  const [files, setFiles] = useState<string[]>([`${d.id}-v1.pdf`]);
   const [checks, setChecks] = useState<Record<number, boolean>>({ 0: true, 1: true, 3: true });
 
   const phase = PHASES.find((p) => p.n === d.phase)!;
@@ -133,6 +134,29 @@ export default function EntregablePage() {
                   <IconLink size={14} style={{ position: "absolute", left: 12, top: 13, color: "var(--faint)" }} />
                   <input className="field" placeholder="https://drive.google.com/…" disabled={locked} style={{ paddingLeft: 32 }} />
                 </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 13.5, fontWeight: 700 }}>Archivos</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 7, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--line-2)", background: "#fff" }}>
+                  <IconFileText size={18} color="var(--muted)" />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>{files[0]}</div>
+                    <div style={{ fontSize: 12, color: "var(--faint)" }}>240 KB · subido ayer</div>
+                  </div>
+                </div>
+                {files.slice(1).map((f) => (
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--line-2)", background: "#fff" }}>
+                    <IconFileText size={18} color="var(--muted)" />
+                    <div style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>{f}</div>
+                    <span style={{ fontSize: 12, color: "var(--green-ink)" }}>Subido</span>
+                  </div>
+                ))}
+                {!locked && (
+                  <button type="button" onClick={() => setFiles((f) => [...f, `anexo-${f.length}.pdf`])}
+                    style={{ width: "100%", marginTop: 8, padding: "18px 12px", borderRadius: 10, border: "1.5px dashed var(--line-2)", background: "#fafafa", cursor: "pointer", fontFamily: "inherit", fontSize: 13, color: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    <IconUpload size={16} /> Arrastra archivos aquí o <strong style={{ color: "var(--ink-2)" }}>añadir archivo</strong>
+                  </button>
+                )}
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
