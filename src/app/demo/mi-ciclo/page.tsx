@@ -16,7 +16,7 @@ const PHASE_GOALS: Record<number, string> = {
   6: "Consolidar equipo, operaciones y financiación.",
 };
 
-export default function CaminoPage() {
+export default function MiCicloPage() {
   const [selected, setSelected] = useState(STARTUP.phase);
   const phase = PHASES.find((p) => p.n === selected)!;
   const items = DELIVERABLES.filter((d) => d.phase === selected);

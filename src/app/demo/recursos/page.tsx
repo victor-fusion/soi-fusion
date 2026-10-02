@@ -15,7 +15,7 @@ const TYPE_STYLE: Record<string, { icon: typeof IconBook; color: string }> = {
 
 type Resource = (typeof RESOURCES)[number];
 
-export default function ArsenalPage() {
+export default function RecursosPage() {
   const [area, setArea] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [q, setQ] = useState("");

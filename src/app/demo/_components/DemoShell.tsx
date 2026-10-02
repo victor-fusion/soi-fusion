@@ -14,8 +14,8 @@ type NavItem = { href: string; label: string; icon: typeof IconSun; exact?: bool
 const NAV: { group: string | null; items: NavItem[] }[] = [
   { group: null, items: [
     { href: "/demo", label: "Hoy", icon: IconSun, exact: true },
-    { href: "/demo/camino", label: "Mi ciclo", icon: IconRoute },
-    { href: "/demo/arsenal", label: "Recursos", icon: IconBooks },
+    { href: "/demo/mi-ciclo", label: "Mi ciclo", icon: IconRoute },
+    { href: "/demo/recursos", label: "Recursos", icon: IconBooks },
   ] },
   { group: "Trabajo", items: [
     { href: "/demo/crm", label: "CRM", icon: IconLayoutKanban },

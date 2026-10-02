@@ -71,7 +71,7 @@ export default function HoyPage() {
           </section>
 
           <section className="card rise d2" style={{ padding: 24 }}>
-            <SectionTitle aside={<Link href="/demo/camino" style={{ color: "var(--green-ink)", fontWeight: 600, textDecoration: "none" }}>Ver mi camino →</Link>}>
+            <SectionTitle aside={<Link href="/demo/mi-ciclo" style={{ color: "var(--green-ink)", fontWeight: 600, textDecoration: "none" }}>Ver mi ciclo →</Link>}>
               Próximas entregas
             </SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>

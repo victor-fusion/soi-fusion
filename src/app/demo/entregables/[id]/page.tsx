@@ -67,7 +67,7 @@ export default function EntregablePage() {
 
   return (
     <Page wide>
-      <Link href="/demo/camino" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--muted)", textDecoration: "none", marginBottom: 18 }}>
+      <Link href="/demo/mi-ciclo" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--muted)", textDecoration: "none", marginBottom: 18 }}>
         <IconArrowLeft size={14} /> Mi ciclo
       </Link>
 
@@ -247,7 +247,7 @@ export default function EntregablePage() {
               {resources.map((r) => {
                 const Icon = RES_ICON[r.type] ?? IconBook;
                 return (
-                  <Link key={r.id} href="/demo/arsenal" className="row-hover" style={{ display: "flex", gap: 10, padding: "9px 8px", margin: "0 -8px", borderRadius: 8, textDecoration: "none" }}>
+                  <Link key={r.id} href="/demo/recursos" className="row-hover" style={{ display: "flex", gap: 10, padding: "9px 8px", margin: "0 -8px", borderRadius: 8, textDecoration: "none" }}>
                     <Icon size={17} color="var(--green-ink)" style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
                       <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.35 }}>{r.title}</div>

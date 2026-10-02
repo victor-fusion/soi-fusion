@@ -96,7 +96,7 @@ export const REVIEW_QUEUE: ReviewItem[] = [
     detail: "Hola Inés, he visto que habéis abierto la nueva sede de Nervión, ¡enhorabuena! Con dos agendas suele pasar que los huecos y las ausencias se disparan. En Turnio ayudamos a clínicas como Los Remedios a reducir un 30 % las citas perdidas con recordatorios por WhatsApp. ¿Te enseño en 15 minutos cómo lo hacen?" },
 ];
 
-/** Criterios de salida de la fase 2 (Solucionar → Activar) para Turnio. Los mismos que ve la founder en /demo/camino. */
+/** Criterios de salida de la fase 2 (Solucionar → Activar) para Turnio. Los mismos que ve la founder en /demo/mi-ciclo. */
 export const PHASE_GATE = {
   from: "Solucionar", to: "Activar",
   criteria: [
