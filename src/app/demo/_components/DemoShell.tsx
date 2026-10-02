@@ -109,11 +109,6 @@ export function DemoShell({ children }: { children: React.ReactNode }) {
 
       {/* ─── Contenido ─── */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        {/* Aviso de prototipo */}
-        <div style={{ background: "#fef3c7", color: "#92400e", fontSize: 12, fontWeight: 600, textAlign: "center", padding: "5px 12px", borderBottom: "1px solid #fde68a" }}>
-          Prototipo navegable · datos ficticios · nada de lo que hagas aquí se guarda
-        </div>
-
         <header style={{
           height: 60, display: "flex", alignItems: "center", gap: 16, padding: "0 32px",
           borderBottom: "1px solid var(--line)", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)",
